@@ -1,0 +1,27 @@
+package com.zero9platform.domain.gpp_favorite.entity;
+
+import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
+import com.zero9platform.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Entity
+@Table(name = "gpp_favorites")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class GppFavorite {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gpp_id")
+    private GroupPurchasePost groupPurchasePost;
+}
