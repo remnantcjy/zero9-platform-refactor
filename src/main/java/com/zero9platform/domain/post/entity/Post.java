@@ -38,4 +38,12 @@ public class Post extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
+    public Post(User user, String title, String content, String image) {
+        this.user = user;
+        this.title = title;
+        this.content = content;
+        this.image = image;
+        this.viewCount = 0L;
+        this.deletedAt = null;
+    }
 }
