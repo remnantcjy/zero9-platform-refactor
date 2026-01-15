@@ -61,4 +61,5 @@ public class GroupPurchasePost extends BaseEntity {
 
     @Column
     private LocalDateTime deletedAt;
+
 }
