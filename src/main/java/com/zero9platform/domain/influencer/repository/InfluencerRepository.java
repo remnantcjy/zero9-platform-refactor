@@ -1,5 +1,6 @@
 package com.zero9platform.domain.influencer.repository;
 
+import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.domain.influencer.entity.Influencer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,12 +19,6 @@ public interface InfluencerRepository extends JpaRepository<Influencer, Long> {
         WHERE (:approved IS NULL OR i.influencerApprovalStatus = :approved) AND u.role = 'INFLUENCER'
     """)
     List<Influencer> findByApprovalStatusAndUser(@Param("approved") Boolean approved);
-
-    /**
-     * 인플루언서 승인 조회
-     */
-    @Query("SELECT COUNT(i) FROM Influencer i WHERE i.user.id = :userId AND i.influencerApprovalStatus = false")
-    long countByUserId(@Param("userId") Long userId);
 
     /**
      * 인플루언서 user_id 조회
