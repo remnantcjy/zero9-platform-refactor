@@ -2,9 +2,10 @@ package com.zero9platform.domain.search;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.search.entity.Search;
-import com.zero9platform.domain.search.model.SearchResponse;
+import com.zero9platform.domain.search.model.SearchItem;
 import com.zero9platform.domain.search.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.search.repository.SearchRepository;
 import com.zero9platform.domain.user_influencer.entity.UserInfluencer;
@@ -30,14 +31,16 @@ public class SearchService {
      * 공동구매 검색
      */
     @Transactional
-    public SearchResponse search(String keyword, int page, int size) {
+    public PageResponse search(String keyword, int page, int size) {
 
         // NPE 방어
-        if (keyword == null || keyword.isBlank()) {throw new CustomException(ExceptionCode.INVALID_KEYWORD);}
+        if (keyword == null || keyword.isBlank()) {
+            throw new CustomException(ExceptionCode.INVALID_KEYWORD);
+        }
 
         //페이징 준비
         PageRequest pageRequest = PageRequest.of(page, size);
-        Page<GroupPurchasePost> searchResult = null;
+        Page<GroupPurchasePost> searchResult;
 
         //인플루언서 이름 찾기
         Optional<UserInfluencer> influencerInfo =
@@ -49,24 +52,28 @@ public class SearchService {
                     influencerInfo.get().getUser(),
                     pageRequest
             );
-            // 인플루언서는 있는데 상품이 없음
-            if (searchResult.isEmpty()) {throw new CustomException(ExceptionCode.INFLUENCER_POST_NOT_FOUND);}
-        }
 
-        // 싱품명 검색
-        if(!influencerInfo.isPresent()) {
-            searchResult = groupPurchasePostRepository.search(
-                    keyword,
-                    pageRequest);
+            // 인플루언서는 있는데 상품이 없음
+            if (searchResult.isEmpty()) {
+                throw new CustomException(ExceptionCode.INFLUENCER_POST_NOT_FOUND);
+            }
+
+        } else {
+            // 싱품명 검색
+            searchResult = groupPurchasePostRepository.search(keyword, pageRequest);
             // 상품 검색 결과 없음
-            if (searchResult.isEmpty()) {throw new CustomException(ExceptionCode.PRODUCT_NOT_FOUND);}
+            if (searchResult.isEmpty()) {
+                throw new CustomException(ExceptionCode.PRODUCT_NOT_FOUND);
+            }
         }
 
         //키워드 카운터 1 증가후 저장하기
         saveSearchKeyword(keyword);
 
+        Page<SearchItem> mappedPage = searchResult.map(SearchItem::from);
+
         //응답 객체로 전달
-        return SearchResponse.from(searchResult);
+        return PageResponse.from(mappedPage);
     }
 
 

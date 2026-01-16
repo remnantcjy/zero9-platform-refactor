@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Component
-@Profile("local")
+//@Profile("local")
 @RequiredArgsConstructor
 public class DevDataInitializer implements CommandLineRunner {
 

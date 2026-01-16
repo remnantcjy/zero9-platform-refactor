@@ -1,6 +1,7 @@
 package com.zero9platform.domain.search;
 
 import com.zero9platform.common.model.CommonResponse;
+import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.search.model.SearchResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,8 +22,8 @@ public class SearchController {
     @GetMapping("/searches")
     public ResponseEntity<CommonResponse<SearchResponse>> searchGetHander(@RequestParam(required = false) String keyword, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
-        SearchResponse search = searchService.search(keyword, page, size);
-        CommonResponse commonResponse = new CommonResponse(true,"통합 검색 결과 조회 성공",search);
+        PageResponse pageResponse = searchService.search(keyword, page, size);
+        CommonResponse commonResponse = new CommonResponse(true,"통합 검색 결과 조회 성공",pageResponse);
     return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
     }
 
