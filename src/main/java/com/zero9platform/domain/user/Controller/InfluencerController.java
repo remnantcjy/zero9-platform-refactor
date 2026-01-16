@@ -24,7 +24,7 @@ public class InfluencerController {
      * 인플루언서 목록 조회
      */
     @GetMapping("/influencers")
-    public ResponseEntity<CommonResponse<List<InfluencerDetailResponse>>> UserInfluencersHandler(@RequestParam(required = false) Boolean approved)  {
+    public ResponseEntity<CommonResponse<List<InfluencerDetailResponse>>> InfluencersListHandler(@RequestParam(required = false) Boolean approved)  {
 
         List<InfluencerDetailResponse> influencerList = influencerService.influencerList(approved);
 
