@@ -14,7 +14,6 @@ import com.zero9platform.domain.grouppurchase_post.model.response.GroupPurchaseP
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -80,6 +79,7 @@ public class GroupPurchasePostService {
 
         // 1. 삭제되지 않은 공동구매 게시물 페이징 조회
         Page<GroupPurchasePost> page = groupPurchasePostRepository.findAllByDeletedAtIsNull(pageable);
+        // 승인된 공동구매 게시물만 조회되도록, 보이도록
 
         // 2. Entity -> ListResponse DTO 변환
         Page<GroupPurchasePostListResponse> responsePage = page.map(GroupPurchasePostListResponse::from);
@@ -97,6 +97,7 @@ public class GroupPurchasePostService {
         // 1. 공동구매 게시물 조회(삭제처리 제외) + 유효성 검사
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
+        // 승인된 공동구매 게시물만 조회되도록, 보이도록
 
         // 2. 조회수 증가 (아직 동시성 문제 고려 안했음, 추후 고민할 것)
         int updated = groupPurchasePostRepository.increaseViewCount(gppId);
@@ -115,11 +116,12 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 수정
      */
     @Transactional
-    public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, @Valid GroupPurchasePostUpdateRequest request) {
+    public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request) {
 
         // 1. 공동구매 게시물 조회(삭제처리 제외) + 유효성 검사
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
+        // 승인상태가 대기중/거부됨 일때는 수정이 안되야함
         
         // 2. User 조회 (나중에 토큰에서 userId 가져올거임 - 컨트롤러단에 @AuthenticationPrincipal 추가)
         User user = userRepository.findById(request.getUserId())
