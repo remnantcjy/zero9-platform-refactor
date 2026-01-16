@@ -29,7 +29,6 @@ public class Influencer {
     private LocalDateTime approvalAt;
 
     public Influencer(User user) {
-
         this.user = user;
         this.influencerApprovalStatus = false;
     }
@@ -38,7 +37,6 @@ public class Influencer {
      * 인플루언서 승인상태 변경
      */
     public void influencerApprove(Boolean approve) {
-
         this.influencerApprovalStatus = approve;
         this.approvalAt = LocalDateTime.now();
     }
