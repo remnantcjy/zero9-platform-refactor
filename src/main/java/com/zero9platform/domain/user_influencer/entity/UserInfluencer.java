@@ -1,3 +1,4 @@
+
 package com.zero9platform.domain.user_influencer.entity;
 
 import com.zero9platform.domain.user.entity.User;

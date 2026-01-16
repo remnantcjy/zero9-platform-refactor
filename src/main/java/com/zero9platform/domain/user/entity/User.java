@@ -2,6 +2,7 @@ package com.zero9platform.domain.user.entity;
 
 import com.zero9platform.common.entity.BaseEntity;
 import com.zero9platform.common.enums.UserRole;
+import com.zero9platform.domain.influencer.entity.Influencer;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,25 +20,25 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(length = 100, nullable = false, unique = true)
     private String loginId;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(length = 100, nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(length = 20, nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private UserRole role;
+    @Column(length = 20, nullable = false)
+    private String role;
 
-    @Column(nullable = false, unique = true)
+    @Column(length = 20, nullable = false, unique = true)
     private String phone;
 
-    @Column(nullable = false, unique = true)
+    @Column(length = 20, nullable = false, unique = true)
     private String nickname;
 
     @Column
@@ -49,6 +50,36 @@ public class User extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
+    /**
+     * User 생성자
+     */
+    public User(String loginId, String password, String email, String name, String role, String phone, String nickname) {
+
+        this.loginId = loginId;
+        this.password = password;
+        this.email = email;
+        this.name = name;
+        this.role = role;
+        this.phone = phone;
+        this.nickname = nickname;
+    }
+
+    /**
+     * 사용자 프로필 업데이트
+     */
+    public void userUpdate(String email, String nickname, String phone) {
+
+        this.email = email;
+        this.nickname = nickname;
+        this.phone = phone;
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    public void userDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 
     public User(
             String loginId,
