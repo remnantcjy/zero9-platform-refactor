@@ -2,15 +2,17 @@ package com.zero9platform.domain.post;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
+import com.zero9platform.domain.post.model.request.PostUpdateRequest;
 import com.zero9platform.domain.post.model.response.PostCreateResponse;
 import com.zero9platform.domain.post.model.response.PostGetDetailResponse;
-import com.zero9platform.domain.post.model.response.PostGetListResponse;
 import com.zero9platform.domain.post.model.response.PostPageResponse;
+import com.zero9platform.domain.post.model.response.PostUpdateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -46,4 +48,13 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 목록조회 성공", response));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<CommonResponse<PostUpdateResponse>> postUpdateHandler(@PathVariable Long id, @RequestBody PostUpdateRequest request) {
+        // 인증/인가 구현 시 수정예정
+        Long userId = 1L;
+
+        PostUpdateResponse response = postService.postUpdate(userId, id, request);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 수정 성공", response));
+    }
 }

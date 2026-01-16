@@ -50,4 +50,10 @@ public class Post extends BaseEntity {
     public void increaseViewCount() {
         this.viewCount = this.viewCount + 1L;
     }
+
+    public void update(String title, String content, String image) {
+        if(title != null) this.title = title;
+        if(content != null) this.content = content;
+        if(image != null) this.image = image;
+    }
 }
