@@ -32,7 +32,7 @@ public class CommentService {
     public CommentCreateResponse commentCreate(Long userId, CommentCreateRequest request) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(request.getPostId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
