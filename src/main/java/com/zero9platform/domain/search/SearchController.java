@@ -23,8 +23,10 @@ public class SearchController {
     public ResponseEntity<CommonResponse<SearchResponse>> searchGetHander(@RequestParam(required = false) String keyword, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
 
         PageResponse pageResponse = searchService.search(keyword, page, size);
-        CommonResponse commonResponse = new CommonResponse(true,"통합 검색 결과 조회 성공",pageResponse);
-    return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
+
+        CommonResponse commonResponse = new CommonResponse(true, "통합 검색 결과 조회 성공", pageResponse);
+
+        return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
     }
 
 }

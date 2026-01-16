@@ -3,16 +3,14 @@ package com.zero9platform.global.init;
 import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.common.enums.GppProgressStatus;
-import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.search.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.user.entity.User;
-import com.zero9platform.domain.user.entity.UserRepository;
+import com.zero9platform.domain.user.repository.UserRepository;
 import com.zero9platform.domain.user_influencer.entity.UserInfluencer;
 import com.zero9platform.domain.user_influencer.entity.UserInfluencerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +43,7 @@ public class DevDataInitializer implements CommandLineRunner {
                         "password",
                         "user1@test.com",
                         "홍길동",
-                        UserRole.USER,
+                        "USER",
                         "01011112222",
                         "엘튼존"
                 )
@@ -57,7 +55,7 @@ public class DevDataInitializer implements CommandLineRunner {
                         "password",
                         "user2@test.com",
                         "김철수",
-                        UserRole.USER,
+                        "USER",
                         "01033334444",
                         "존레논"
                 )
@@ -69,7 +67,7 @@ public class DevDataInitializer implements CommandLineRunner {
                         "password",
                         "user3@test.com",
                         "상만덕",
-                        UserRole.USER,
+                        "USER",
                         "01055556666",
                         "마산주먹"
                 )

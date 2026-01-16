@@ -6,13 +6,13 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
-
 @Getter
 @RequiredArgsConstructor
 public class SearchItem {
 
     private final Long gppId;
     private final Long userId;
+    private final String nickname;
     private final String image;
     private final String productName;
     private final Long price;
@@ -25,6 +25,7 @@ public class SearchItem {
         return new SearchItem(
                 post.getId(),
                 post.getUser().getId(),
+                post.getUser().getNickname(),
                 post.getImage(),
                 post.getProductName(),
                 post.getPrice(),
