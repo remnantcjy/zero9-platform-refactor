@@ -10,6 +10,7 @@ import com.zero9platform.domain.user.model.user.request.UserUpdateRequest;
 import com.zero9platform.domain.user.model.user.response.UserCreateResponse;
 import com.zero9platform.domain.user.model.user.response.UserDetailResponse;
 import com.zero9platform.domain.user.model.user.response.UserUpdateResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class UserController {
      * 회원가입
      */
     @PostMapping("/users")
-    public ResponseEntity<CommonResponse<UserCreateResponse>> createUserHandler(@RequestBody UserCreateRequest request) {
+    public ResponseEntity<CommonResponse<UserCreateResponse>> createUserHandler(@Valid @RequestBody UserCreateRequest request) {
 
         UserCreateResponse response = userService.createUser(request);
 
@@ -71,7 +72,7 @@ public class UserController {
      * 사용자 프로필 수정
      */
     @PutMapping("/users")
-    public ResponseEntity<CommonResponse<UserUpdateResponse>> userUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody UserUpdateRequest request) {
+    public ResponseEntity<CommonResponse<UserUpdateResponse>> userUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @Valid  @RequestBody UserUpdateRequest request) {
 
         UserUpdateResponse response = userService.userUpdate(authUser.getId(), request);
 
@@ -79,7 +80,7 @@ public class UserController {
     }
 
     @DeleteMapping("/users")
-    public ResponseEntity<CommonResponse<Void>> userDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody UserDeleteRequest request) {
+    public ResponseEntity<CommonResponse<Void>> userDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody UserDeleteRequest request) {
 
         userService.userDelete(authUser.getId(), request);
 
