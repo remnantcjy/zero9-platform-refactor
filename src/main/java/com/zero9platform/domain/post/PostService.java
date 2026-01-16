@@ -6,10 +6,14 @@ import com.zero9platform.domain.post.entity.Post;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.response.PostCreateResponse;
 import com.zero9platform.domain.post.model.response.PostGetDetailResponse;
+import com.zero9platform.domain.post.model.response.PostGetListResponse;
+import com.zero9platform.domain.post.model.response.PostPageResponse;
 import com.zero9platform.domain.post.repository.PostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,5 +45,16 @@ public class PostService {
         post.increaseViewCount();
 
         return PostGetDetailResponse.from(post);
+    }
+
+    @Transactional(readOnly = true)
+    public PostPageResponse postGetList(Pageable pageable) {
+
+        Page<Post> postPage = postRepository.findAllByDeletedAtIsNull(pageable);
+
+        Page<PostGetListResponse> page =
+                postPage.map(PostGetListResponse::from);
+
+        return  PostPageResponse.from(page);
     }
 }

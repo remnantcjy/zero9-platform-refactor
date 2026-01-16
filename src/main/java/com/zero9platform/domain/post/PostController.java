@@ -1,12 +1,12 @@
 package com.zero9platform.domain.post;
 
 import com.zero9platform.common.model.CommonResponse;
-import com.zero9platform.domain.post.entity.Post;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.response.PostCreateResponse;
 import com.zero9platform.domain.post.model.response.PostGetDetailResponse;
+import com.zero9platform.domain.post.model.response.PostGetListResponse;
+import com.zero9platform.domain.post.model.response.PostPageResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,5 +36,13 @@ public class PostController {
         PostGetDetailResponse response = postService.postGetDetail(id);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 상세조회 성공", response));
+    }
+
+    @GetMapping
+    public ResponseEntity<CommonResponse<PostPageResponse>> postGetListHandler(Pageable pageable){
+
+        PostPageResponse response = postService.postGetList(pageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 목록조회 성공", response));
     }
 }
