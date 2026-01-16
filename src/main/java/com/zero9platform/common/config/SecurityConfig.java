@@ -1,6 +1,7 @@
 package com.zero9platform.common.config;
 
 import com.zero9platform.common.enums.UserRole;
+import com.zero9platform.common.jwt.JwtAccessDeniedHandler;
 import com.zero9platform.common.jwt.JwtAuthenticationEntryPoint;
 import com.zero9platform.common.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;
@@ -31,23 +32,24 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAccessDeniedHandler jwtAccessDeniedHandler) throws Exception {
         return httpSecurity
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .exceptionHandling(ex -> ex.accessDeniedHandler(jwtAccessDeniedHandler))
                 .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("zero9/auth/**").permitAll()
+                        .requestMatchers("/zero9/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/zero9/users").permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/zero9/users",
-                                "zero9/influencers"
+                                "/zero9/influencers"
                         ).hasRole(UserRole.ADMIN.name())
-                        .requestMatchers("zero9/admin/**").hasRole(UserRole.ADMIN.name())
+                        .requestMatchers("/zero9/admin/**").hasRole(UserRole.ADMIN.name())
                         .anyRequest().authenticated()   // 인가 - 위의 도메인 주소가 아니면 통과 x (출입 권한이 있는지 확인, 체크)
                 )
                 .build();
