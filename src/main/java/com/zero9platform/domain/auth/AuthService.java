@@ -7,6 +7,7 @@ import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.jwt.JwtUtil;
 import com.zero9platform.domain.auth.model.request.AuthLoginRequest;
 import com.zero9platform.domain.auth.model.response.AuthLoginResponse;
+import com.zero9platform.domain.influencer.entity.Influencer;
 import com.zero9platform.domain.influencer.repository.InfluencerRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
@@ -51,9 +52,13 @@ public class AuthService {
 
         // 인플루언서 승인 확인
         if (role == UserRole.INFLUENCER) {
-            long count = influencerRepository.countByUserId(user.getId());
+            boolean approved = influencerRepository.findByUserId(user.getId())
+                    .map(Influencer::getInfluencerApprovalStatus)
+                    .orElse(false);
 
-            if (count > 0) {
+            log.info("user status: {}", approved);
+
+            if (!approved) {
                 throw new CustomException(ExceptionCode.INFLUENCER_NOT_APPROVED);
             }
         }
