@@ -6,10 +6,12 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @Entity
 @Table(name = "gpp_favorites")
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GppFavorite {
 
@@ -24,4 +26,5 @@ public class GppFavorite {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gpp_id")
     private GroupPurchasePost groupPurchasePost;
+
 }
