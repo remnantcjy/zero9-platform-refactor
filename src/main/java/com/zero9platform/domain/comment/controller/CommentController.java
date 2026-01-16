@@ -48,6 +48,12 @@ public class CommentController {
         return ResponseEntity.ok(CommonResponse.success("댓글 수정 성공", null));
     }
 
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<CommonResponse<Void>> commentDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long commentId) {
 
+        commentService.commentDelete(authUser, commentId);
 
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(CommonResponse.success("댓글 삭제 성공", null));
+    }
 }

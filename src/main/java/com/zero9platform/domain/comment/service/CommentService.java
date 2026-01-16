@@ -66,6 +66,16 @@ public class CommentService {
         comment.update(request.getContent());
     }
 
+    @Transactional
+    public void commentDelete(AuthUser authUser, Long commentId) {
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_COMMENT));
+
+        validOwner(comment, authUser.getId());
+
+        commentRepository.delete(comment);
+    }
 
     private void validOwner(Comment comment, Long userId) {
 
