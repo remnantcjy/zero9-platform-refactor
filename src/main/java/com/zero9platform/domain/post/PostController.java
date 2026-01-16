@@ -1,16 +1,16 @@
 package com.zero9platform.domain.post;
 
 import com.zero9platform.common.model.CommonResponse;
+import com.zero9platform.domain.post.entity.Post;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.response.PostCreateResponse;
+import com.zero9platform.domain.post.model.response.PostGetDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +27,14 @@ public class PostController {
 
         PostCreateResponse response = postService.postCreate(userId, request);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반게시물 생성 성공", response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("일반게시물 생성 성공", response));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CommonResponse<PostGetDetailResponse>> postGetDetailHandle(@PathVariable Long id) {
+
+        PostGetDetailResponse response = postService.postGetDetail(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 상세조회 성공", response));
     }
 }

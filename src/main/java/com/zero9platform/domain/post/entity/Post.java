@@ -46,4 +46,8 @@ public class Post extends BaseEntity {
         this.viewCount = 0L;
         this.deletedAt = null;
     }
+
+    public void increaseViewCount() {
+        this.viewCount = this.viewCount + 1L;
+    }
 }

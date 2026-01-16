@@ -5,6 +5,7 @@ import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.post.entity.Post;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.response.PostCreateResponse;
+import com.zero9platform.domain.post.model.response.PostGetDetailResponse;
 import com.zero9platform.domain.post.repository.PostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
@@ -25,13 +26,20 @@ public class PostService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
-        //Post post = new Post(user, request.getTitle(), request.getContent(), request.getImage());
+        Post post = new Post(user, request.getTitle(), request.getContent(), request.getImage());
 
-        //Post savedPost = postRepository.save(post);
-
-        Post savedPost = postRepository.save(new Post(user, request.getTitle(), request.getContent(), request.getImage()));
+        Post savedPost = postRepository.save(post);
 
         return PostCreateResponse.from(savedPost);
+    }
 
+    @Transactional(readOnly = true)
+    public PostGetDetailResponse postGetDetail(Long id) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+
+        post.increaseViewCount();
+
+        return PostGetDetailResponse.from(post);
     }
 }
