@@ -20,7 +20,7 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<PostCreateResponse>> postCreateHandle(@RequestBody PostCreateRequest request) {
+    public ResponseEntity<CommonResponse<PostCreateResponse>> postCreateHandler(@RequestBody PostCreateRequest request) {
 
         // 인증/인가 구현 시 수정예정
         Long userId = 1L;
@@ -31,7 +31,7 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommonResponse<PostGetDetailResponse>> postGetDetailHandle(@PathVariable Long id) {
+    public ResponseEntity<CommonResponse<PostGetDetailResponse>> postGetDetailHandler(@PathVariable Long id) {
 
         PostGetDetailResponse response = postService.postGetDetail(id);
 
@@ -45,4 +45,5 @@ public class PostController {
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 목록조회 성공", response));
     }
+
 }
