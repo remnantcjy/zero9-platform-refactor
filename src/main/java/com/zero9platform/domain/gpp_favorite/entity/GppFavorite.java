@@ -3,15 +3,11 @@ package com.zero9platform.domain.gpp_favorite.entity;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 @Getter
 @Entity
 @Table(name = "gpp_favorites")
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GppFavorite {
 
@@ -20,11 +16,16 @@ public class GppFavorite {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gpp_id")
+    @JoinColumn(name = "gpp_id", nullable = false)
     private GroupPurchasePost groupPurchasePost;
 
+    //찜 등록용 생성자 주입
+    public GppFavorite(User user, GroupPurchasePost groupPurchasePost) {
+        this.user = user;
+        this.groupPurchasePost = groupPurchasePost;
+    }
 }
