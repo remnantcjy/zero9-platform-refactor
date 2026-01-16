@@ -1,7 +1,8 @@
-package com.zero9platform.domain.comment;
+package com.zero9platform.domain.comment.controller;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.comment.service.CommentService;
 import com.zero9platform.domain.comment.model.request.CommentCreateRequest;
 import com.zero9platform.domain.comment.model.request.CommentGetListRequest;
 import com.zero9platform.domain.comment.model.response.CommentCreateResponse;

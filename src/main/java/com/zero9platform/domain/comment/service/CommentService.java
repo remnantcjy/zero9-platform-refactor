@@ -1,4 +1,4 @@
-package com.zero9platform.domain.comment;
+package com.zero9platform.domain.comment.service;
 
 
 import com.zero9platform.common.enums.ExceptionCode;
