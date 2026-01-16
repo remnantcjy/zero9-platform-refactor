@@ -25,8 +25,11 @@ public enum ExceptionCode {
 
     // jwt
     TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "토큰을 찾을 수 없습니다."),
-    ;
 
+
+    // 댓글
+    NOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다.")
+    ;
 
     private final HttpStatus status;
     private final String message;

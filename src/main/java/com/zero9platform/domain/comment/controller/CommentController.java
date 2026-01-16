@@ -2,6 +2,8 @@ package com.zero9platform.domain.comment.controller;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.auth.model.AuthUser;
+import com.zero9platform.domain.comment.model.request.CommentUpdateRequest;
 import com.zero9platform.domain.comment.service.CommentService;
 import com.zero9platform.domain.comment.model.request.CommentCreateRequest;
 import com.zero9platform.domain.comment.model.request.CommentGetListRequest;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,12 +24,10 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public ResponseEntity<CommonResponse<CommentCreateResponse>> commentCreateHandler(@RequestBody CommentCreateRequest request) {
+    public ResponseEntity<CommonResponse<CommentCreateResponse>> commentCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody CommentCreateRequest request) {
 
-        // 인증/인가 구현 시 수정예정
-        Long userId = 1L;
 
-        CommentCreateResponse response = commentService.commentCreate(userId, request);
+        CommentCreateResponse response = commentService.commentCreate(authUser, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("댓글 생성 성공", response));
     }
@@ -38,4 +39,15 @@ public class CommentController {
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("댓글 조회 성공", response));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @RequestBody CommentUpdateRequest request) {
+
+        commentService.commentUpdate(authUser, id, request);
+
+        return ResponseEntity.ok(CommonResponse.success("댓글 수정 성공", null));
+    }
+
+
+
 }

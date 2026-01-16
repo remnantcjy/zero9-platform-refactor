@@ -4,9 +4,11 @@ package com.zero9platform.domain.comment.service;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.comment.entity.Comment;
 import com.zero9platform.domain.comment.model.request.CommentCreateRequest;
 import com.zero9platform.domain.comment.model.request.CommentGetListRequest;
+import com.zero9platform.domain.comment.model.request.CommentUpdateRequest;
 import com.zero9platform.domain.comment.model.response.CommentCreateResponse;
 import com.zero9platform.domain.comment.model.response.CommentGetListResponse;
 import com.zero9platform.domain.comment.repository.CommentRepository;
@@ -29,9 +31,9 @@ public class CommentService {
     private final UserRepository userRepository;
 
     @Transactional
-    public CommentCreateResponse commentCreate(Long userId, CommentCreateRequest request) {
+    public CommentCreateResponse commentCreate(AuthUser authUser, CommentCreateRequest request) {
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findById(authUser.getId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(request.getPostId())
@@ -51,7 +53,24 @@ public class CommentService {
         Page<CommentGetListResponse> page = commentRepository.findAllByPostId(request.getPostId(), pageable)
                         .map(CommentGetListResponse::from);
 
-
         return PageResponse.from(page);
+    }
+
+    @Transactional
+    public void commentUpdate(AuthUser authUser, Long id, CommentUpdateRequest request) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_COMMENT));
+
+        validOwner(comment, authUser.getId());
+
+        comment.update(request.getContent());
+    }
+
+
+    private void validOwner(Comment comment, Long userId) {
+
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new CustomException(ExceptionCode.NO_PERMISSION);
+        }
     }
 }
