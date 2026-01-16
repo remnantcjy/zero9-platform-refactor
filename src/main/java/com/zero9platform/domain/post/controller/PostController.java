@@ -1,6 +1,7 @@
-package com.zero9platform.domain.post;
+package com.zero9platform.domain.post.controller;
 
 import com.zero9platform.common.model.CommonResponse;
+import com.zero9platform.domain.post.service.PostService;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.request.PostUpdateRequest;
 import com.zero9platform.domain.post.model.response.PostCreateResponse;

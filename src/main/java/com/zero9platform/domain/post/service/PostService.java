@@ -1,4 +1,4 @@
-package com.zero9platform.domain.post;
+package com.zero9platform.domain.post.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
@@ -9,7 +9,6 @@ import com.zero9platform.domain.post.model.response.*;
 import com.zero9platform.domain.post.repository.PostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
-import jakarta.persistence.PostUpdate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
