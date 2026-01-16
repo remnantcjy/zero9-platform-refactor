@@ -54,7 +54,7 @@ public class UserController {
 
         UserDetailResponse response = userService.userDetail(userId, isAdmin);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("회원정보 조회가 완료 되었습니다.", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("사용자 프로필 조회 성공", response));
     }
 
     /**
@@ -65,7 +65,7 @@ public class UserController {
 
         List<UserDetailResponse> response = userService.userList();
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("회원 목록 조회가 완료되었습니다.", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("사용자 목록 조회 성공", response));
     }
 
     /**
