@@ -36,10 +36,10 @@ public class GroupPurchasePost extends BaseEntity {
     private String image;
 
     @Column(nullable = false)
-    private Long viewCount = 0L;
+    private Long viewCount = 1L;
 
     @Column(nullable = false)
-    private Long price = 0L;
+    private Long price = 1000L;
 
     @Column(nullable = false)
     private String linkUrl;
@@ -62,4 +62,35 @@ public class GroupPurchasePost extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
+    @Column(nullable = false)
+    private Long favoriteCount = 1L;
+
+
+    public GroupPurchasePost(
+            User user,
+            String productName,
+            String content,
+            String image,
+            Long price,
+            String linkUrl,
+            Category category,
+            GppApprovalStatus approvalStatus,
+            GppProgressStatus progressStatus,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+        this.user = user;
+        this.productName = productName;
+        this.content = content;
+        this.image = image;
+        this.price = price;
+        this.linkUrl = linkUrl;
+        this.category = category;
+        this.gppApprovalStatus = approvalStatus;
+        this.gppProgressStatus = progressStatus;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.viewCount = 0L;
+        this.favoriteCount = 0L;
+    }
 }

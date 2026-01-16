@@ -24,4 +24,13 @@ public class UserInfluencer {
 
     @Column
     private LocalDateTime approvalAt;
+
+    protected UserInfluencer() {
+    }
+
+    public UserInfluencer(User user, Boolean influencerApprovalStatus, LocalDateTime approvalAt) {
+        this.user = user;
+        this.influencerApprovalStatus = influencerApprovalStatus;
+        this.approvalAt = approvalAt;
+    }
 }
