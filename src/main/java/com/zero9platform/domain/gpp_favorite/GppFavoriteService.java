@@ -7,7 +7,7 @@ import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePostRepository;
 import com.zero9platform.domain.user.entity.User;
-import com.zero9platform.domain.user.entity.UserRepository;
+import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;;
 

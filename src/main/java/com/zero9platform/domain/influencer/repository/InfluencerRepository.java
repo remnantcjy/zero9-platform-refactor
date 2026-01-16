@@ -1,6 +1,5 @@
 package com.zero9platform.domain.influencer.repository;
 
-import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.domain.influencer.entity.Influencer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
