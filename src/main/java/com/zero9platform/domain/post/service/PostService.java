@@ -26,7 +26,7 @@ public class PostService {
     public PostCreateResponse postCreate(Long userId, PostCreateRequest request) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         Post post = new Post(user, request.getTitle(), request.getContent(), request.getImage());
 
@@ -89,7 +89,7 @@ public class PostService {
         Long ownerId = post.getUser().getId();
 
         if(!ownerId.equals(userId)) {
-            throw new CustomException(ExceptionCode.FORBIDDEN);
+            throw new CustomException(ExceptionCode.NO_PERMISSION);
         }
     }
 }
