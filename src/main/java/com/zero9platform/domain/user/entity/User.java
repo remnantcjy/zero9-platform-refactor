@@ -49,4 +49,16 @@ public class User extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
+    public User(String loginId, String password, String email, String name, UserRole role, String phone, String nickname, String profileImage, String influencerSocialLink) {
+        this.loginId = loginId;
+        this.password = password;
+        this.email = email;
+        this.name = name;
+        this.role = role;
+        this.phone = phone;
+        this.nickname = nickname;
+        this.profileImage = profileImage;
+        this.influencerSocialLink = influencerSocialLink;
+    }
+
 }

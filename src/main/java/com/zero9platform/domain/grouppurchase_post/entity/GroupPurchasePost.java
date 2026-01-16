@@ -62,4 +62,18 @@ public class GroupPurchasePost extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
+    public GroupPurchasePost(String productName, User user, String content, String image, Long viewCount, Long price, String linkUrl, Category category, GppProgressStatus gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
+        this.productName = productName;
+        this.user = user;
+        this.content = content;
+        this.image = image;
+        this.viewCount = viewCount;
+        this.price = price;
+        this.linkUrl = linkUrl;
+        this.category = category;
+        this.gppProgressStatus = gppProgressStatus;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
 }

@@ -38,3 +38,8 @@ out/
 
 ### 환경 변수 ###
 .env
+
+application.yml
+
+### 환경 변수 ###
+.env
