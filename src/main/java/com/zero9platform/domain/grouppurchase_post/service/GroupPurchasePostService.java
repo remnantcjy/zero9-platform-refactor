@@ -70,7 +70,6 @@ public class GroupPurchasePostService {
 
         // 6️. Response 변환
         return GroupPurchasePostDetailResponse.from(savedGpp);
-
     }
 
     /**
@@ -87,7 +86,6 @@ public class GroupPurchasePostService {
 
         // 3. PageResponse 공용 응답 객체로 변환
         return PageResponse.from(responsePage);
-
     }
     
     /**

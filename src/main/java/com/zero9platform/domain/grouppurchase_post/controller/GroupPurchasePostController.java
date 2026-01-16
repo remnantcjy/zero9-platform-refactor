@@ -42,7 +42,6 @@ public class GroupPurchasePostController {
         PageResponse<GroupPurchasePostListResponse> response = gppService.gpPostReadAll(pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 목록 조회 성공", response));
-
     }
     
     /**
@@ -71,7 +70,7 @@ public class GroupPurchasePostController {
      * 공동구매 게시물 삭제
      */
     @DeleteMapping("/gp-posts/{gppId}")
-    public ResponseEntity<CommonResponse<Void>> GPPDeleteHandler(@PathVariable Long gppId, @RequestParam Long userId) { // 추후 @AuthenticationPrincipal
+    public ResponseEntity<CommonResponse<Void>> GPPDeleteHandler(@PathVariable Long gppId, @RequestParam(required = false) Long userId) { // 추후 @AuthenticationPrincipal
 
         gppService.gpPostDelete(gppId, userId);
 
