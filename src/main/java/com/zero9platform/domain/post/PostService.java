@@ -71,6 +71,20 @@ public class PostService {
 
     }
 
+    @Transactional
+    public void postDelete(Long userId, Long id) {
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+
+        validOwnedBy(post, userId);
+
+        post.delete();
+    }
+
+    /**
+     *  작성자 본인인지 검증
+     */
     private void validOwnedBy(Post post, Long userId) {
 
         Long ownerId = post.getUser().getId();

@@ -56,4 +56,8 @@ public class Post extends BaseEntity {
         if(content != null) this.content = content;
         if(image != null) this.image = image;
     }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }

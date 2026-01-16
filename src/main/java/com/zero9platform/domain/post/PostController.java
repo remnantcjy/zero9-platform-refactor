@@ -57,4 +57,14 @@ public class PostController {
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 수정 성공", response));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<CommonResponse<Void>> postDeleteHandler(@PathVariable Long id) {
+        // 인증/인가 구현 시 수정예정
+        Long userId = 1L;
+
+        postService.postDelete(userId, id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 삭제 성공", null));
+    }
 }
