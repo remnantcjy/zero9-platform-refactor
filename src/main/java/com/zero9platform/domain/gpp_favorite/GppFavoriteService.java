@@ -22,7 +22,12 @@ public class GppFavoriteService {
     private final GroupPurchasePostRepository groupPurchasePost;
 
     @Transient
-    public void favoriteCreate(Long gppId, Long userId) {
+    public GppFavoriteCreateResponse favoriteCreate(Long gppId, Long userId) {
+
+        //NPE 방어 코드
+        if (gppId == null || userId == null) {
+            throw new CustomException(ExceptionCode.INVALID_REQUEST);
+        }
 
         //유저 아이디정보 DB에서 추출
         User user = userRepository.findById(userId)
@@ -39,5 +44,7 @@ public class GppFavoriteService {
         //게시물이 있으면 로그인 되있는 유저 아이디를 추가
         GppFavorite gppFavorite = new GppFavorite(user, post);
         gppFavoriteRepository.save(gppFavorite);
+
+        return GppFavoriteCreateResponse.from(gppFavorite);
     }
 }
