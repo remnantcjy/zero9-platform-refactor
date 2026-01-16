@@ -28,6 +28,6 @@ public class InfluencerController {
 
         List<InfluencerDetailResponse> influencerList = influencerService.influencerList(approved);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인플루언서 목록 조회가 완료 되었습니다.", influencerList));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인플루언서 목록 조회 성공", influencerList));
     }
 }
