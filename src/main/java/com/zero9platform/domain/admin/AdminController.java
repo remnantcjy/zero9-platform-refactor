@@ -24,6 +24,6 @@ public class AdminController {
 
         InfluencerApproveResponse response = adminService.influencerApprove(userId, request);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인플루언서 상태가 변경 되었습니다.", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인플루언서 가입 승인 성공", response));
     }
 }
