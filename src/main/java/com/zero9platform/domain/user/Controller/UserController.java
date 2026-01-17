@@ -1,6 +1,8 @@
 package com.zero9platform.domain.user.Controller;
 
+import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.UserRole;
+import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.user.Service.UserService;
@@ -31,6 +33,11 @@ public class UserController {
      */
     @PostMapping("/users")
     public ResponseEntity<CommonResponse<UserCreateResponse>> createUserHandler(@Valid @RequestBody UserCreateRequest request) {
+
+        // 인플루언서는 소셜 링크 필수 입력 검사
+        if (request.getRole().equals(UserRole.INFLUENCER) && (request.getInfluencerSocialLink() == null || request.getInfluencerSocialLink().isEmpty())) {
+            throw new CustomException(ExceptionCode.INFLUENCER_SOCIAL_LINK_REQUIRED);
+        }
 
         UserCreateResponse response = userService.createUser(request);
 
