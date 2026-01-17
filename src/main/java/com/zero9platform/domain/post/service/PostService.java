@@ -35,7 +35,7 @@ public class PostService {
         return PostCreateResponse.from(saved);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostGetDetailResponse postGetDetail(Long id) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
