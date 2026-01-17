@@ -8,7 +8,6 @@ import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.request.PostUpdateRequest;
 import com.zero9platform.domain.post.model.response.PostCreateResponse;
 import com.zero9platform.domain.post.model.response.PostGetDetailResponse;
-import com.zero9platform.domain.post.model.response.PostPageResponse;
 import com.zero9platform.domain.post.model.response.PostUpdateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
