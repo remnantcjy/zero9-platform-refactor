@@ -44,7 +44,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/zero9/auth/**").permitAll()
                         .requestMatchers("/zero9/searches/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/zero9/users").permitAll()
+                        .requestMatchers("/zero9/users").permitAll() // 키워드 통합 검색 제외
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/zero9/users",

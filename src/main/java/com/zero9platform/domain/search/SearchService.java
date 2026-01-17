@@ -33,65 +33,68 @@ public class SearchService {
     @Transactional
     public PageResponse search(String keyword, int page, int size) {
 
-        // NPE 방어
+
+        // 1. 검색어 유효성 검증
         if (keyword == null || keyword.isBlank()) {
             throw new CustomException(ExceptionCode.INVALID_KEYWORD);
         }
 
-        //페이징 준비
+        // 2. 페이징 객체 생성
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<GroupPurchasePost> searchResult;
 
-        //인플루언서 이름 찾기
+        // 3. 인플루언서 닉네임 일치 여부 확인
         Optional<UserInfluencer> influencerInfo =
                 userInfluencerRepository.findByNickname(keyword);
 
         if (influencerInfo.isPresent()) {
-            //인플루언서가 등록한 상품 조회
+            // 3-1인플루언서가 존재하는 경우 → 해당 인플루언서가 등록한 공동구매 상품 조회
             searchResult = groupPurchasePostRepository.findByUser(
                     influencerInfo.get().getUser(),
                     pageRequest
             );
 
-            // 인플루언서는 있는데 상품이 없음
+            // 인플루언서는 있으나 등록된 상품이 없는 경우
             if (searchResult.isEmpty()) {
                 throw new CustomException(ExceptionCode.INFLUENCER_POST_NOT_FOUND);
             }
 
         } else {
-            // 싱품명 검색
+            // 3-2인플루언서가 아닌 경우 → 상품명 기준으로 공동구매 상품 검색
             searchResult = groupPurchasePostRepository.search(keyword, pageRequest);
-            // 상품 검색 결과 없음
+
+            // 상품 검색 결과가 없는 경우
             if (searchResult.isEmpty()) {
                 throw new CustomException(ExceptionCode.PRODUCT_NOT_FOUND);
             }
         }
 
-        //키워드 카운터 1 증가후 저장하기
+        // 4. 검색어 로그 저장 (검색 카운트 증가)
         saveSearchKeyword(keyword);
 
+        // 5. 엔터티 → 응답 DTO 매핑
         Page<SearchItem> mappedPage = searchResult.map(SearchItem::from);
 
-        //응답 객체로 전달
+        // 6. 공통 페이징 응답 객체로 변환
         return PageResponse.from(mappedPage);
     }
 
 
     /**
-     * 검색 키워드 저장
+     * 검색 키워드 로그 저장
      */
     private void saveSearchKeyword(String keyword) {
 
-        // NPE 방어(검색어 로그 저장 안 함)
+        // 검색어가 없으면 로그 저장하지 않음
         if (keyword == null || keyword.isBlank()) {
             return;
         }
 
-        //동일한 키워드가 있으면 엔터티 등록
+        // 기존 검색어가 있으면 조회, 없으면 새로 생성
         Search search = searchRepository.findByKeyword(keyword)
                 .orElseGet(() -> new Search(keyword));
 
-        //해당 검색어에 카운터 1 증가
+        // 검색 횟수 증가
         search.increaseCount();
 
         //DB 저장
