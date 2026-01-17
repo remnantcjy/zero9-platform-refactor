@@ -1,6 +1,8 @@
 package com.zero9platform.domain.post.controller;
 
 import com.zero9platform.common.model.CommonResponse;
+import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.post.model.response.PostGetListResponse;
 import com.zero9platform.domain.post.service.PostService;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.request.PostUpdateRequest;
@@ -42,9 +44,9 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<CommonResponse<PostPageResponse>> postGetListHandler(Pageable pageable){
+    public ResponseEntity<CommonResponse<PageResponse<PostGetListResponse>>> postGetListHandler(Pageable pageable){
 
-        PostPageResponse response = postService.postGetList(pageable);
+        PageResponse<PostGetListResponse> response = postService.postGetList(pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 목록조회 성공", response));
     }

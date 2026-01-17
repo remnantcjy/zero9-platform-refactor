@@ -2,6 +2,7 @@ package com.zero9platform.domain.post.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.post.entity.Post;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.request.PostUpdateRequest;
@@ -46,14 +47,12 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostPageResponse postGetList(Pageable pageable) {
+    public PageResponse<PostGetListResponse> postGetList(Pageable pageable) {
 
-        Page<Post> postPage = postRepository.findAllByDeletedAtIsNull(pageable);
+        Page<PostGetListResponse> page = postRepository.findAllByDeletedAtIsNull(pageable)
+                                                .map(PostGetListResponse::from);
 
-        Page<PostGetListResponse> page =
-                postPage.map(PostGetListResponse::from);
-
-        return  PostPageResponse.from(page);
+        return  PageResponse.from(page);
     }
 
     @Transactional
