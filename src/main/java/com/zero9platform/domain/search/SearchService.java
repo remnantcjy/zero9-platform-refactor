@@ -28,7 +28,7 @@ public class SearchService {
 
 
     /**
-     * 공동구매 검색
+     * 키워드 통합 검색
      */
     @Transactional
     public PageResponse search(String keyword, int page, int size) {

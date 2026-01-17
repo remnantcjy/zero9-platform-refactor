@@ -1,14 +1,14 @@
-package com.zero9platform.global.init;
+package com.zero9platform.global;
 
 import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.common.enums.GppProgressStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
+import com.zero9platform.domain.influencer.entity.Influencer;
+import com.zero9platform.domain.influencer.repository.InfluencerRepository;
 import com.zero9platform.domain.search.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
-import com.zero9platform.domain.user_influencer.entity.UserInfluencer;
-import com.zero9platform.domain.user_influencer.entity.UserInfluencerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -23,7 +23,7 @@ public class DevDataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final GroupPurchasePostRepository gppRepository;
-    private final UserInfluencerRepository userInfluencerRepository;
+    private final InfluencerRepository influencerRepository;
 
     @Override
     @Transactional
@@ -39,52 +39,83 @@ public class DevDataInitializer implements CommandLineRunner {
         ======================= */
         User user1 = userRepository.save(
                 new User(
-                        "user1",
+                        "user01",
                         "password",
-                        "user1@test.com",
+                        "user01@test.com",
                         "홍길동",
                         "USER",
-                        "01011112222",
-                        "엘튼존"
+                        "010-1111-1111",
+                        "길동이"
                 )
         );
 
         User user2 = userRepository.save(
                 new User(
-                        "user2",
+                        "user02",
                         "password",
-                        "user2@test.com",
+                        "user02@test.com",
                         "김철수",
                         "USER",
-                        "01033334444",
-                        "존레논"
+                        "010-2222-2222",
+                        "철수형"
                 )
         );
 
         User user3 = userRepository.save(
                 new User(
-                        "user3",
+                        "user03",
                         "password",
-                        "user3@test.com",
-                        "상만덕",
+                        "user03@test.com",
+                        "이영희",
                         "USER",
-                        "01055556666",
-                        "마산주먹"
+                        "010-3333-3333",
+                        "영희짱"
                 )
         );
 
-        /* =======================
+        User user4 = userRepository.save(
+                new User(
+                        "user04",
+                        "password",
+                        "user04@test.com",
+                        "홍금보",
+                        "USER",
+                        "010-4444-4444",
+                        "금보형"
+                )
+        );
+
+        User admin = userRepository.save(
+                new User(
+                        "admin01",
+                        "password",
+                        "admin@test.com",
+                        "관리자",
+                        "ADMIN",
+                        "010-5555-5555",
+                        "관리자계정"
+                )
+        );
+
+         /* =======================
            Influencer 더미 데이터
         ======================= */
-        userInfluencerRepository.save(
-                new UserInfluencer(user1, true, LocalDateTime.now())
+        Influencer influencer1 = influencerRepository.save(
+                new Influencer(user1)
         );
-        userInfluencerRepository.save(
-                new UserInfluencer(user2, true, LocalDateTime.now())
+
+        Influencer influencer2 = influencerRepository.save(
+                new Influencer(user2)
         );
-        userInfluencerRepository.save(
-                new UserInfluencer(user3, true, LocalDateTime.now())
+
+        Influencer influencer3 = influencerRepository.save(
+                new Influencer(user3)
         );
+
+        // 승인 처리 (테스트용)
+        influencer1.influencerApprove(true);   // 승인 O
+        influencer2.influencerApprove(true);   // 승인 O
+        influencer3.influencerApprove(false);  // 승인 X
 
         /* =======================
            GroupPurchasePost 더미
