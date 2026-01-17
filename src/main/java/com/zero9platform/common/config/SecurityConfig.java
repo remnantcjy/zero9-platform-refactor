@@ -43,6 +43,8 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/zero9/auth/**").permitAll()
+                        .requestMatchers("/zero9/{gppId}/favorites/**").permitAll()
+                        .requestMatchers("/zero9/favorites/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/zero9/users").permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,

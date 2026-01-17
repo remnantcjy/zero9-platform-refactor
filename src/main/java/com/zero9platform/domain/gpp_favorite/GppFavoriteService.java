@@ -2,13 +2,17 @@ package com.zero9platform.domain.gpp_favorite;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_favorite.entity.GppFavorite;
+import com.zero9platform.domain.gpp_favorite.model.GppFavoriteCreateResponse;
 import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
-import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePostRepository;
+import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;;
 
 import java.beans.Transient;
@@ -21,10 +25,13 @@ public class GppFavoriteService {
     private final UserRepository userRepository;
     private final GroupPurchasePostRepository groupPurchasePost;
 
+    /**
+     * 찜 등록
+     */
     @Transient
     public GppFavoriteCreateResponse favoriteCreate(Long gppId, Long userId) {
 
-        //NPE 방어 코드
+        //NPE 방어
         if (gppId == null || userId == null) {
             throw new CustomException(ExceptionCode.INVALID_REQUEST);
         }
@@ -46,5 +53,32 @@ public class GppFavoriteService {
         gppFavoriteRepository.save(gppFavorite);
 
         return GppFavoriteCreateResponse.from(gppFavorite);
+    }
+
+    /**
+     * 찜 목록 조회
+     */
+    @Transient
+    public PageResponse<GppFavoriteGetDto> favoriteList(Long userId, int page, int size) {
+
+        //NPE 방어
+        if(userId == null) {
+            throw new CustomException(ExceptionCode.NOT_FOUND_USER);
+        }
+
+        //페이징 준비
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        //유저 아이디가 디비에서 favorite 한 리스트를 가져온다.
+        Page<GppFavorite> gppFavoritePage = gppFavoriteRepository.findByUserId(userId, pageRequest);
+
+        //없으면 예외처리
+        if(gppFavoritePage.isEmpty()) {throw new CustomException(ExceptionCode.FAVORITE_NOT_FOUND);}
+
+        //있으면 리스트를 리스폰스에 담는다.
+        Page<GppFavoriteGetDto> GppFavoriteGetDtoPage =
+                gppFavoritePage.map(GppFavoriteGetDto::from);
+
+        return PageResponse.from(GppFavoriteGetDtoPage);
     }
 }

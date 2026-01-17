@@ -2,7 +2,6 @@ package com.zero9platform.domain.gpp_comment.entity;
 
 import com.zero9platform.common.entity.BaseEntity;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
-import com.zero9platform.domain.post.entity.Post;
 import com.zero9platform.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
