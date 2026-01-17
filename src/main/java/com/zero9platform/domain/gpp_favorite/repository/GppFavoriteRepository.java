@@ -14,4 +14,6 @@ public interface GppFavoriteRepository extends JpaRepository<GppFavorite, Long> 
     boolean existsByUserAndGroupPurchasePost(User user, GroupPurchasePost groupPurchasePost);
 
     Page<GppFavorite> findByUserId(Long userId, PageRequest pageRequest);
+
+    Optional<GppFavorite> findByUser_IdAndGroupPurchasePost_Id(Long userId, Long gppId);
 }

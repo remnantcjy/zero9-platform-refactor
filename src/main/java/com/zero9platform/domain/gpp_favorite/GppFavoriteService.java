@@ -62,7 +62,7 @@ public class GppFavoriteService {
     public PageResponse<GppFavoriteGetDto> favoriteList(Long userId, int page, int size) {
 
         //NPE 방어
-        if(userId == null) {
+        if (userId == null) {
             throw new CustomException(ExceptionCode.NOT_FOUND_USER);
         }
 
@@ -73,7 +73,9 @@ public class GppFavoriteService {
         Page<GppFavorite> gppFavoritePage = gppFavoriteRepository.findByUserId(userId, pageRequest);
 
         //없으면 예외처리
-        if(gppFavoritePage.isEmpty()) {throw new CustomException(ExceptionCode.FAVORITE_NOT_FOUND);}
+        if (gppFavoritePage.isEmpty()) {
+            throw new CustomException(ExceptionCode.FAVORITE_NOT_FOUND);
+        }
 
         //있으면 리스트를 리스폰스에 담는다.
         Page<GppFavoriteGetDto> GppFavoriteGetDtoPage =
@@ -81,4 +83,31 @@ public class GppFavoriteService {
 
         return PageResponse.from(GppFavoriteGetDtoPage);
     }
+
+    /**
+     * 찜 등록 취소
+     */
+    @Transient
+    public void favoriteCancellation(Long gppId, Long userId) {
+
+        //NPE 방어
+        if (gppId == null) {
+            throw new CustomException(ExceptionCode.INVALID_REQUEST);
+        }
+
+        //유저 아이디정보 DB에서 추출
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
+
+        //게시물 존재 여부 확인
+        GroupPurchasePost post = groupPurchasePost.findById(gppId).orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+
+        // 찜 존재 여부 확인
+        GppFavorite favorite = gppFavoriteRepository.findByUser_IdAndGroupPurchasePost_Id(userId, gppId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_FAVORITE));
+
+        // 삭제
+        gppFavoriteRepository.delete(favorite);
+    }
+
 }

@@ -37,6 +37,8 @@ public enum ExceptionCode {
     INVALID_GPP_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 게시글 ID입니다."),
     INVALID_USER_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "요청 값이 올바르지 않습니다."),
+    NOT_FOUND_FAVORITE(HttpStatus.NOT_FOUND, "이미 찜이 취소되었거나 존재하지 않습니다."),
+
     ;
 
     private final HttpStatus status;

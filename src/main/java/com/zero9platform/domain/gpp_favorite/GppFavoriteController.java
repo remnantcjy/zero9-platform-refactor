@@ -66,7 +66,22 @@ public class GppFavoriteController {
     /**
      * 찜 등록 취소
      */
+    @DeleteMapping("/{gppId}/favorites")
+    public ResponseEntity<CommonResponse<Void>> favoriteCancellationHandler(
+            @PathVariable Long gppId,
+//          @AuthenticationPrincipal AuthUser authUser,
+            @RequestBody Long userId) {
 
+        if (gppId == null || gppId <= 0) {
+            throw new CustomException(ExceptionCode.INVALID_GPP_ID);
+        }
+
+        gppFavoriteService.favoriteCancellation(gppId,userId);
+
+        CommonResponse<Void> commonResponse = new CommonResponse<>(true, "찜 등록취소 성공", null);
+
+        return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
+    }
 
 }
 
