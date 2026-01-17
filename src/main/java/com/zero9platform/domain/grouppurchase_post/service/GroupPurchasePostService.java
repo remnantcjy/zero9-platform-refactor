@@ -6,6 +6,7 @@ import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.common.enums.GppProgressStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostCreateRequest;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostUpdateRequest;
@@ -33,10 +34,11 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 작성
      */
     @Transactional
-    public GroupPurchasePostDetailResponse gpPostCreate(GroupPurchasePostCreateRequest request) {
+    public GroupPurchasePostDetailResponse gpPostCreate(GroupPurchasePostCreateRequest request, AuthUser authUser) {
 
-        // 1️. User 조회 (나중에 토큰에서 userId 가져올거임 - 컨트롤러단에 @AuthenticationPrincipal 추가)
-        User user = userRepository.findById(request.getUserId())
+        Long userId = authUser.getId();
+        // 1️. User 조회 (AuthUser)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         // 2️. 유효성 검증 - 시작일/종료일 타당성
@@ -47,7 +49,7 @@ public class GroupPurchasePostService {
         // 3️. Enum 변환 - 카테고리, 승인상태(작성시점 = 대기중), 진행상태
         Category category = Category.from(request.getCategory());
         GppProgressStatus gppProgressStatus = GppProgressStatus.from(request.getGppProgressStatus());
-        GppApprovalStatus gppApprovalStatus = GppApprovalStatus.PENDING;
+        GppApprovalStatus gppApprovalStatus = GppApprovalStatus.APPROVED; // 테스트 시 approved
 
         // 4️. Entity 생성
         GroupPurchasePost gpp = new GroupPurchasePost(
@@ -77,9 +79,8 @@ public class GroupPurchasePostService {
     @Transactional(readOnly = true)
     public PageResponse<GroupPurchasePostListResponse> gpPostReadAll(Pageable pageable) {
 
-        // 1. 삭제되지 않은 공동구매 게시물 페이징 조회
-        Page<GroupPurchasePost> page = groupPurchasePostRepository.findAllByDeletedAtIsNull(pageable);
-        // 승인된 공동구매 게시물만 조회되도록, 보이도록
+        // 1. 공동구매 게시물 페이징 조회 [삭제처리 제외 + 승인된 공동구매 게시물]
+        Page<GroupPurchasePost> page = groupPurchasePostRepository.findAllByDeletedAtIsNullAndGppApprovalStatus(pageable, GppApprovalStatus.APPROVED);
 
         // 2. Entity -> ListResponse DTO 변환
         Page<GroupPurchasePostListResponse> responsePage = page.map(GroupPurchasePostListResponse::from);
@@ -94,10 +95,9 @@ public class GroupPurchasePostService {
     @Transactional //(readOnly = true) 조회 수 증가 DB반영 안됨
     public GroupPurchasePostDetailResponse gpPostReadDetail(Long gppId) {
 
-        // 1. 공동구매 게시물 조회(삭제처리 제외) + 유효성 검사
-        GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
-        // 승인된 공동구매 게시물만 조회되도록, 보이도록
+        // 1. 공동구매 게시물 조회 [삭제처리 제외 + 유효성 검사 + 승인된 공동구매 게시물]
+        GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNullAndGppApprovalStatus(gppId, GppApprovalStatus.APPROVED)
+                .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND)); //
 
         // 2. 조회수 증가 (아직 동시성 문제 고려 안했음, 추후 고민할 것)
         int updated = groupPurchasePostRepository.increaseViewCount(gppId);
@@ -116,15 +116,16 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 수정
      */
     @Transactional
-    public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request) {
+    public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request, AuthUser authUser) {
 
-        // 1. 공동구매 게시물 조회(삭제처리 제외) + 유효성 검사
-        GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
+        Long userId = authUser.getId();
+
+        // 1. 공동구매 게시물 조회 [삭제처리 제외 + 유효성 검사 + 승인된 공동구매 게시물]
+        GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNullAndGppApprovalStatus(gppId, GppApprovalStatus.APPROVED)
                 .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
-        // 승인상태가 대기중/거부됨 일때는 수정이 안되야함
         
-        // 2. User 조회 (나중에 토큰에서 userId 가져올거임 - 컨트롤러단에 @AuthenticationPrincipal 추가)
-        User user = userRepository.findById(request.getUserId())
+        // 2. User 조회 (AuthUser)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         // 3. 유효성 검증 - 시작일/종료일 타당성 + 작성자 검증
@@ -162,9 +163,11 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 삭제
      */
     @Transactional
-    public void gpPostDelete(Long gppId, Long userId) {
+    public void gpPostDelete(Long gppId, AuthUser authUser) {
 
-        // 1. 공동구매 게시물 게시물 조회 (삭제 제외)
+        Long userId = authUser.getId();
+
+        // 1. 공동구매 게시물 조회(삭제처리 제외) + 유효성 검사
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
 
@@ -174,7 +177,7 @@ public class GroupPurchasePostService {
 
         // 3. 권한 검증 - 본인 or 관리자
         boolean isOwner = gpp.getUser().getId().equals(user.getId());
-        boolean isAdmin = user.getRole() == ADMIN;
+        boolean isAdmin = authUser.getUserRole() == ADMIN;
 
         if (!isOwner && !isAdmin) {
             throw new CustomException(ExceptionCode.GPP_NO_PERMISSION);

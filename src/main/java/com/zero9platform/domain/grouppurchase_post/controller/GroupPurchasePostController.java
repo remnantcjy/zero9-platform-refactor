@@ -14,6 +14,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.zero9platform.domain.auth.model.AuthUser;
 
 @RestController
 @RequestMapping("/zero9")
@@ -26,9 +28,9 @@ public class GroupPurchasePostController {
      * 공동구매 게시물 작성
      */
     @PostMapping("/gp-posts")
-    public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPCreateHandler(@RequestBody @Valid GroupPurchasePostCreateRequest request) {
+    public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPCreateHandler(@RequestBody @Valid GroupPurchasePostCreateRequest request, @AuthenticationPrincipal AuthUser authUser) {
 
-        GroupPurchasePostDetailResponse response = gppService.gpPostCreate(request);
+        GroupPurchasePostDetailResponse response = gppService.gpPostCreate(request, authUser);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 작성 성공", response));
     }
@@ -59,9 +61,9 @@ public class GroupPurchasePostController {
      * 공동구매 게시물 수정
      */
     @PutMapping("/gp-posts/{gppId}")
-    public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPUpdateHandler(@PathVariable Long gppId, @RequestBody @Valid GroupPurchasePostUpdateRequest request) {
+    public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPUpdateHandler(@PathVariable Long gppId, @RequestBody @Valid GroupPurchasePostUpdateRequest request, @AuthenticationPrincipal AuthUser authUser) {
 
-        GroupPurchasePostDetailResponse response = gppService.gpPostUpdate(gppId, request);
+        GroupPurchasePostDetailResponse response = gppService.gpPostUpdate(gppId, request, authUser);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 수정 성공", response));
     }
@@ -70,9 +72,9 @@ public class GroupPurchasePostController {
      * 공동구매 게시물 삭제
      */
     @DeleteMapping("/gp-posts/{gppId}")
-    public ResponseEntity<CommonResponse<Void>> GPPDeleteHandler(@PathVariable Long gppId, @RequestParam(required = false) Long userId) { // 추후 @AuthenticationPrincipal
+    public ResponseEntity<CommonResponse<Void>> GPPDeleteHandler(@PathVariable Long gppId, @AuthenticationPrincipal AuthUser authUser) {
 
-        gppService.gpPostDelete(gppId, userId);
+        gppService.gpPostDelete(gppId, authUser);
 
         return ResponseEntity.ok(CommonResponse.success("공동구매 게시물 삭제 성공", null));
     }

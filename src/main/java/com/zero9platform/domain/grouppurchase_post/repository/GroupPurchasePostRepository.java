@@ -1,5 +1,6 @@
 package com.zero9platform.domain.grouppurchase_post.repository;
 
+import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,11 +13,14 @@ import java.util.Optional;
 
 public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchasePost,Long> {
 
-    // 상세 조회 - 삭제처리된 대상은 제외 <- 이거 근데 좀 이따 확인해야함
+    // 공동구매 게시물 상세 조회 - [삭제처리 제외]
     Optional<GroupPurchasePost> findByIdAndDeletedAtIsNull(Long id);
 
-    // 목록 전체 조회 - 삭제처리된 대상은 제외
-    Page<GroupPurchasePost> findAllByDeletedAtIsNull(Pageable pageable);
+    // 공동구매 게시물 상세 조회 - [삭제처리 제외 + 승인된 공동구매 게시물]
+    Optional<GroupPurchasePost> findByIdAndDeletedAtIsNullAndGppApprovalStatus(Long id, GppApprovalStatus gppApprovalStatus);
+
+    // 공동구매 게시물 페이징 조회 [삭제처리 제외 + 승인된 공동구매 게시물]
+    Page<GroupPurchasePost> findAllByDeletedAtIsNullAndGppApprovalStatus(Pageable pageable, GppApprovalStatus gppApprovalStatus);
 
     // 조회 수 증가 - 삭제처리된 대상은 제외
     // DB에서 직접 증가, 영속성 컨텍스트를 거치지 않음
