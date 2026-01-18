@@ -23,7 +23,7 @@ public class GroupPurchasePost extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false)
@@ -32,7 +32,7 @@ public class GroupPurchasePost extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String image;
 
     @Column(nullable = false)
@@ -46,15 +46,15 @@ public class GroupPurchasePost extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Category category;
+    private Category category = Category.ETC;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private GppApprovalStatus gppApprovalStatus;
+    private GppApprovalStatus gppApprovalStatus = GppApprovalStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private GppProgressStatus gppProgressStatus;
+    private GppProgressStatus gppProgressStatus = GppProgressStatus.READY;
 
     @Column(nullable = false)
     private LocalDateTime startDate;
@@ -66,20 +66,7 @@ public class GroupPurchasePost extends BaseEntity {
     private LocalDateTime deletedAt;
 
 
-    //더미데이터용
-    public GroupPurchasePost(
-            User user,
-            String productName,
-            String content,
-            String image,
-            Long price,
-            String linkUrl,
-            Category category,
-            GppApprovalStatus gppApprovalStatus,
-            GppProgressStatus gppProgressStatus,
-            LocalDateTime startDate,
-            LocalDateTime endDate
-    ) {
+    public GroupPurchasePost(User user, String productName, String content, String image, Long price, String linkUrl, Category category,GppApprovalStatus approvalStatus, GppProgressStatus gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
         this.user = user;
         this.productName = productName;
         this.content = content;
@@ -87,9 +74,36 @@ public class GroupPurchasePost extends BaseEntity {
         this.price = price;
         this.linkUrl = linkUrl;
         this.category = category;
-        this.gppApprovalStatus = gppApprovalStatus;
+        this.gppApprovalStatus = approvalStatus;
+        this.gppProgressStatus = gppProgressStatus;
+        this.viewCount = 0L;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    // 수정
+    public void update(String productName, String content, String image, Long price, String linkUrl, Category category, GppProgressStatus gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
+        this.productName = productName;
+        this.content = content;
+        this.image = image;
+        this.price = price;
+        this.linkUrl = linkUrl;
+        this.category = category;
         this.gppProgressStatus = gppProgressStatus;
         this.startDate = startDate;
         this.endDate = endDate;
     }
+
+    // 삭제
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    // 조회 수 증가 - 영속 엔티티 상태 변경, 영속성 컨텍스트를 거침
+    // 트랜잭션 종료 시 flush
+    // 대량 트래픽에 비효율적
+//    public void increaseViewCount() {
+//        this.viewCount++;
+//    }
+
 }

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 @Getter
-public class PageResponse<T>{
+public class PageResponse<T> {
 
     private final List<T> content;
     private final long totalElements;
