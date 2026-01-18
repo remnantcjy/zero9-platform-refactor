@@ -1,18 +1,17 @@
 package com.zero9platform.common.jwt;
 
-import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.UserRole;
-import com.zero9platform.common.exception.CustomException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.rmi.ServerException;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -55,11 +54,15 @@ public class JwtUtil {
 
     public String substringToken(String tokenValue) {
 
-        if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
-            return tokenValue.substring(7);
+        if (!StringUtils.hasText(tokenValue)) {
+            throw new AuthenticationCredentialsNotFoundException("JWT 토큰이 없습니다.");
         }
 
-        throw new CustomException(ExceptionCode.TOKEN_NOT_FOUND);
+        if (!tokenValue.startsWith(BEARER_PREFIX)) {
+            throw new BadCredentialsException("Bearer 토큰이 아닙니다.");
+        }
+
+        return tokenValue.substring(BEARER_PREFIX.length());
     }
 
     /**
