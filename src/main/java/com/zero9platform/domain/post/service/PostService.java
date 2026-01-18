@@ -47,7 +47,11 @@ public class PostService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
-        post.increaseViewCount();
+        int updated = postRepository.increaseViewCount(id);
+        if (updated == 0) {
+            // 증가가 안 됐다 = 삭제 처리됐거나 대상 없음
+            throw new CustomException(ExceptionCode.NOT_FOUND_POST);
+        }
 
         return PostGetDetailResponse.from(post);
     }

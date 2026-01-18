@@ -47,10 +47,6 @@ public class Post extends BaseEntity {
         this.deletedAt = null;
     }
 
-    public void increaseViewCount() {
-        this.viewCount = this.viewCount + 1L;
-    }
-
     public void update(String title, String content, String image) {
         if(title != null) this.title = title;
         if(content != null) this.content = content;
