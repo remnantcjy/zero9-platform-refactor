@@ -32,7 +32,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,JwtAccessDeniedHandler jwtAccessDeniedHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAccessDeniedHandler jwtAccessDeniedHandler) throws Exception {
         return httpSecurity
                 // CORS 활성화
                 .cors(Customizer.withDefaults())
@@ -44,8 +44,8 @@ public class SecurityConfig {
 
                 // 예외 처리
                 .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedHandler(jwtAccessDeniedHandler)
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패(401)
+                        .accessDeniedHandler(jwtAccessDeniedHandler) // 권한 실패(403)
                 )
 
                 // JWT 필터
@@ -62,5 +62,4 @@ public class SecurityConfig {
                 )
                 .build();
     }
-
 }

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionCode {
 
     // 공통
+    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
     NO_PERMISSION(HttpStatus.FORBIDDEN, "권한이 없습니다."),
 
     // 사용자
@@ -25,7 +26,8 @@ public enum ExceptionCode {
     NOT_FOUND_POST(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
 
     // jwt
-    TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "토큰을 찾을 수 없습니다."),
+    TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "토큰을 찾을 수 없습니다.")
+
     ;
 
 
