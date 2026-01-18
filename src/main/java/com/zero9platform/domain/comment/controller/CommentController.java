@@ -42,7 +42,7 @@ public class CommentController {
     @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<CommentGetListResponse>>> commentGetPageHandler(@RequestBody CommentGetListRequest request, Pageable pageable) {
 
-        PageResponse<CommentGetListResponse> response = commentService.commentGetList(request, pageable);
+        PageResponse<CommentGetListResponse> response = commentService.commentGetPage(request, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("댓글 조회 성공", response));
     }

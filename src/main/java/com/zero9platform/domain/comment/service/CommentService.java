@@ -51,7 +51,7 @@ public class CommentService {
      * 일반 게시물 댓글 전체목록 조회
      */
     @Transactional(readOnly = true)
-    public PageResponse<CommentGetListResponse> commentGetList(CommentGetListRequest request, Pageable pageable) {
+    public PageResponse<CommentGetListResponse> commentGetPage(CommentGetListRequest request, Pageable pageable) {
 
         postRepository.findByIdAndDeletedAtIsNull(request.getPostId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
