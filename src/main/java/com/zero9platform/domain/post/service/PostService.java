@@ -25,9 +25,9 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Transactional
-    public PostCreateResponse postCreate(AuthUser authUser, PostCreateRequest request) {
+    public PostCreateResponse postCreate(Long userid, PostCreateRequest request) {
 
-        User user = userRepository.findById(authUser.getId())
+        User user = userRepository.findById(userid)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         Post saved = postRepository.save(new Post(user, request.getTitle(), request.getContent(), request.getImage()));
@@ -55,12 +55,12 @@ public class PostService {
     }
 
     @Transactional
-    public PostUpdateResponse postUpdate(AuthUser authUser, Long id, PostUpdateRequest request) {
+    public PostUpdateResponse postUpdate(Long userId, Long id, PostUpdateRequest request) {
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
-        validOwner(post, authUser.getId());
+        validOwner(post, userId);
 
         post.update(request.getTitle(), request.getContent(), request.getImage());
 
@@ -69,12 +69,12 @@ public class PostService {
     }
 
     @Transactional
-    public void postDelete(AuthUser authUser, Long id) {
+    public void postDelete(Long userId, Long id) {
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
-        validOwner(post, authUser.getId());
+        validOwner(post, userId);
 
         post.delete();
     }

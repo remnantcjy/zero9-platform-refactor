@@ -28,7 +28,7 @@ public class PostController {
     @PostMapping
     public ResponseEntity<CommonResponse<PostCreateResponse>> postCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody PostCreateRequest request) {
 
-        PostCreateResponse response = postService.postCreate(authUser, request);
+        PostCreateResponse response = postService.postCreate(authUser.getId(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("일반게시물 생성 성공", response));
     }
@@ -52,15 +52,15 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<CommonResponse<PostUpdateResponse>> postUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @RequestBody PostUpdateRequest request) {
 
-        PostUpdateResponse response = postService.postUpdate(authUser, id, request);
+        PostUpdateResponse response = postService.postUpdate(authUser.getId(), id, request);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 수정 성공", response));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CommonResponse<Void>> postDeleteHandler( @AuthenticationPrincipal AuthUser authUser, @PathVariable Long id) {
+    public ResponseEntity<CommonResponse<Void>> postDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id) {
 
-        postService.postDelete(authUser, id);
+        postService.postDelete(authUser.getId(), id);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 삭제 성공", null));
     }
