@@ -30,7 +30,7 @@ public class AuthService {
     /**
      * 로그인
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public AuthLoginResponse login(AuthLoginRequest request) {
 
         User user = userRepository.findByLoginId(request.getLoginId())
