@@ -9,6 +9,7 @@ import com.zero9platform.domain.comment.model.request.CommentCreateRequest;
 import com.zero9platform.domain.comment.model.request.CommentGetListRequest;
 import com.zero9platform.domain.comment.model.response.CommentCreateResponse;
 import com.zero9platform.domain.comment.model.response.CommentGetListResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class CommentController {
      * 일반 게시물 댓글 작성
      */
     @PostMapping
-    public ResponseEntity<CommonResponse<CommentCreateResponse>> commentCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody CommentCreateRequest request) {
+    public ResponseEntity<CommonResponse<CommentCreateResponse>> commentCreateHandler(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody CommentCreateRequest request) {
 
 
         CommentCreateResponse response = commentService.commentCreate(authUser.getId(), request);
@@ -50,7 +51,7 @@ public class CommentController {
      * 일반 게시물 댓글 수정
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @RequestBody CommentUpdateRequest request) {
+    public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @Valid  @RequestBody CommentUpdateRequest request) {
 
         commentService.commentUpdate(authUser.getId(), id, request);
 
