@@ -40,7 +40,7 @@ public class CommentController {
      * 일반 게시물 댓글 전체목록 조회
      */
     @GetMapping
-    public ResponseEntity<CommonResponse<PageResponse<CommentGetListResponse>>> commentGetListHandler(@RequestBody CommentGetListRequest request, Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<CommentGetListResponse>>> commentGetPageHandler(@RequestBody CommentGetListRequest request, Pageable pageable) {
 
         PageResponse<CommentGetListResponse> response = commentService.commentGetList(request, pageable);
 
