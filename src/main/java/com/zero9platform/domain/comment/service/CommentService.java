@@ -31,7 +31,7 @@ public class CommentService {
     private final UserRepository userRepository;
 
     /**
-     *  일반 게시물 댓글 작성
+     * 일반 게시물 댓글 작성
      */
     @Transactional
     public CommentCreateResponse commentCreate(AuthUser authUser, CommentCreateRequest request) {
@@ -48,7 +48,7 @@ public class CommentService {
     }
 
     /**
-     *  일반 게시물 댓글 전체목록 조회
+     * 일반 게시물 댓글 전체목록 조회
      */
     @Transactional(readOnly = true)
     public PageResponse<CommentGetListResponse> commentGetList(CommentGetListRequest request, Pageable pageable) {
@@ -57,13 +57,13 @@ public class CommentService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         Page<CommentGetListResponse> page = commentRepository.findAllByPostId(request.getPostId(), pageable)
-                        .map(CommentGetListResponse::from);
+                .map(CommentGetListResponse::from);
 
         return PageResponse.from(page);
     }
 
     /**
-     *  일반 게시물 댓글 수정
+     * 일반 게시물 댓글 수정
      */
     @Transactional
     public void commentUpdate(AuthUser authUser, Long id, CommentUpdateRequest request) {
@@ -76,7 +76,7 @@ public class CommentService {
     }
 
     /**
-     *  일반 게시물 댓글 삭제
+     * 일반 게시물 댓글 삭제
      */
     @Transactional
     public void commentDelete(AuthUser authUser, Long commentId) {
@@ -90,7 +90,7 @@ public class CommentService {
     }
 
     /**
-     *  댓글 작성자 본인 여부 검증
+     * 댓글 작성자 본인 여부 검증
      */
     private void validOwner(Comment comment, Long userId) {
 

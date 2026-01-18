@@ -24,7 +24,7 @@ public class CommentController {
     private final CommentService commentService;
 
     /**
-     *  일반 게시물 댓글 작성
+     * 일반 게시물 댓글 작성
      */
     @PostMapping
     public ResponseEntity<CommonResponse<CommentCreateResponse>> commentCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody CommentCreateRequest request) {
@@ -36,7 +36,7 @@ public class CommentController {
     }
 
     /**
-     *  일반 게시물 댓글 전체목록 조회
+     * 일반 게시물 댓글 전체목록 조회
      */
     @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<CommentGetListResponse>>> commentGetListHandler(@RequestBody CommentGetListRequest request, Pageable pageable) {
@@ -47,7 +47,7 @@ public class CommentController {
     }
 
     /**
-     *  일반 게시물 댓글 수정
+     * 일반 게시물 댓글 수정
      */
     @PutMapping("/{id}")
     public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @RequestBody CommentUpdateRequest request) {
@@ -58,7 +58,7 @@ public class CommentController {
     }
 
     /**
-     *  일반 게시물 댓글 삭제
+     * 일반 게시물 댓글 삭제
      */
     @DeleteMapping("/{commentId}")
     public ResponseEntity<CommonResponse<Void>> commentDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long commentId) {
