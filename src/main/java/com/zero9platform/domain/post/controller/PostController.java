@@ -10,6 +10,7 @@ import com.zero9platform.domain.post.model.request.PostUpdateRequest;
 import com.zero9platform.domain.post.model.response.PostCreateResponse;
 import com.zero9platform.domain.post.model.response.PostGetDetailResponse;
 import com.zero9platform.domain.post.model.response.PostUpdateResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ public class PostController {
      *  일반 게시물 생성
      */
     @PostMapping
-    public ResponseEntity<CommonResponse<PostCreateResponse>> postCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody PostCreateRequest request) {
+    public ResponseEntity<CommonResponse<PostCreateResponse>> postCreateHandler(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody PostCreateRequest request) {
 
         PostCreateResponse response = postService.postCreate(authUser.getId(), request);
 
@@ -62,7 +63,7 @@ public class PostController {
      *  일반 게시물 수정
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CommonResponse<PostUpdateResponse>> postUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @RequestBody PostUpdateRequest request) {
+    public ResponseEntity<CommonResponse<PostUpdateResponse>> postUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @Valid @RequestBody PostUpdateRequest request) {
 
         PostUpdateResponse response = postService.postUpdate(authUser.getId(), id, request);
 
