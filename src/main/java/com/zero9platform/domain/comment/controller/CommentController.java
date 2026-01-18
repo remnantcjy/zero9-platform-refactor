@@ -23,6 +23,9 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    /**
+     *  일반 게시물 댓글 작성
+     */
     @PostMapping
     public ResponseEntity<CommonResponse<CommentCreateResponse>> commentCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody CommentCreateRequest request) {
 
@@ -32,6 +35,9 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("댓글 생성 성공", response));
     }
 
+    /**
+     *  일반 게시물 댓글 전체목록 조회
+     */
     @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<CommentGetListResponse>>> commentGetListHandler(@RequestBody CommentGetListRequest request, Pageable pageable) {
 
@@ -40,6 +46,9 @@ public class CommentController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("댓글 조회 성공", response));
     }
 
+    /**
+     *  일반 게시물 댓글 수정
+     */
     @PutMapping("/{id}")
     public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @RequestBody CommentUpdateRequest request) {
 
@@ -48,6 +57,9 @@ public class CommentController {
         return ResponseEntity.ok(CommonResponse.success("댓글 수정 성공", null));
     }
 
+    /**
+     *  일반 게시물 댓글 삭제
+     */
     @DeleteMapping("/{commentId}")
     public ResponseEntity<CommonResponse<Void>> commentDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long commentId) {
 

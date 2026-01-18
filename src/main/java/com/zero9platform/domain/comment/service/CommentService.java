@@ -30,6 +30,9 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+    /**
+     *  일반 게시물 댓글 작성
+     */
     @Transactional
     public CommentCreateResponse commentCreate(AuthUser authUser, CommentCreateRequest request) {
 
@@ -44,6 +47,9 @@ public class CommentService {
         return CommentCreateResponse.from(saved);
     }
 
+    /**
+     *  일반 게시물 댓글 전체목록 조회
+     */
     @Transactional(readOnly = true)
     public PageResponse<CommentGetListResponse> commentGetList(CommentGetListRequest request, Pageable pageable) {
 
@@ -56,6 +62,9 @@ public class CommentService {
         return PageResponse.from(page);
     }
 
+    /**
+     *  일반 게시물 댓글 수정
+     */
     @Transactional
     public void commentUpdate(AuthUser authUser, Long id, CommentUpdateRequest request) {
         Comment comment = commentRepository.findById(id)
@@ -66,6 +75,9 @@ public class CommentService {
         comment.update(request.getContent());
     }
 
+    /**
+     *  일반 게시물 댓글 삭제
+     */
     @Transactional
     public void commentDelete(AuthUser authUser, Long commentId) {
 
@@ -77,6 +89,9 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
+    /**
+     *  댓글 작성자 본인 여부 검증
+     */
     private void validOwner(Comment comment, Long userId) {
 
         if (!comment.getUser().getId().equals(userId)) {
