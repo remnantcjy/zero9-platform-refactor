@@ -51,8 +51,7 @@ public class User extends BaseEntity {
     /**
      * User 생성자
      */
-    public User(String loginId, String password, String email, String name, String role, String phone, String nickname) {
-
+    public User(String loginId, String password, String email, String name, String role, String phone, String nickname, String influencerSocialLink) {
         this.loginId = loginId;
         this.password = password;
         this.email = email;
@@ -60,13 +59,13 @@ public class User extends BaseEntity {
         this.role = role;
         this.phone = phone;
         this.nickname = nickname;
+        this.influencerSocialLink = influencerSocialLink;
     }
 
     /**
      * 사용자 프로필 업데이트
      */
     public void userUpdate(String email, String nickname, String phone) {
-
         this.email = email;
         this.nickname = nickname;
         this.phone = phone;
