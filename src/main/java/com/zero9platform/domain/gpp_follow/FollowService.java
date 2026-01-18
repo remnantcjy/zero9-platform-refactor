@@ -2,7 +2,7 @@ package com.zero9platform.domain.gpp_follow;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.common.model.CommonResponse;
+import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_follow.entity.GppFollow;
 import com.zero9platform.domain.gpp_follow.model.response.GppFollowGetDetailResponse;
 import com.zero9platform.domain.gpp_follow.repository.FollowRepository;
@@ -13,13 +13,9 @@ import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -83,29 +79,15 @@ public class FollowService {
      * 공동구매 게시물 일정 팔로우 목록 조회 - 추후 Page 및 stream 변환 작업
      */
     @Transactional(readOnly = true)
-    public Page<GppFollowGetDetailResponse> gppFollowGetPage(Long userId, Pageable pageable) {
+    public PageResponse<GppFollowGetDetailResponse> gppFollowGetPage(Long userId, Pageable pageable) {
 
-        User user = userRepository.findById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         Page<GroupPurchasePost> gpp = gppRepository.findByUserIdAndFollowGpp(userId, pageable);
 
-        return GppFollowGetDetailResponse.from(gpp);
+        Page<GppFollowGetDetailResponse> pageMap = gpp.map(GppFollowGetDetailResponse::from);
 
-
-//        // 사용자가 팔로우한 공동구매 게시물 목록을 조회
-//        List<GroupPurchasePost> gppList = gppRepository.findAll();
-//        List<GroupPurchasePost> dtoList = new ArrayList<>();
-//
-//        for (GroupPurchasePost gpp: gppList) {
-//
-//
-//            // 해당 userId의 gpp만 필요
-////            if (user.getId().equals(gpp.getUser().getId())) {
-//
-//                // userId와 gppId의 일정 팔로우 관계만 있는 목록만 반환
-//                followRepository.findBy
-//                dtoList.add(gpp);
-////            }
+        return PageResponse.from(pageMap);
     }
 }
