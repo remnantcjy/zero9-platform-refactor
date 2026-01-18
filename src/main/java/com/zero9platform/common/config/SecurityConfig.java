@@ -50,7 +50,6 @@ public class SecurityConfig {
                                 "/zero9/influencers"
                         ).hasRole(UserRole.ADMIN.name())
                         .requestMatchers("/zero9/admin/**").hasRole(UserRole.ADMIN.name())
-                        .requestMatchers(HttpMethod.GET, "/zero9/gp-posts/**").permitAll()
                         .anyRequest().authenticated()   // 인가 - 위의 도메인 주소가 아니면 통과 x (출입 권한이 있는지 확인, 체크)
                 )
                 .build();
