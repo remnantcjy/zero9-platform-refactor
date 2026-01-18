@@ -17,6 +17,7 @@ public class UserCreateResponse {
     private final String email;
     private final String phone;
     private final String nickname;
+    private final String influencerSocialLink;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     private final String token;
@@ -30,6 +31,7 @@ public class UserCreateResponse {
                 user.getEmail(),
                 user.getPhone(),
                 user.getNickname(),
+                user.getInfluencerSocialLink(),
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
                 token

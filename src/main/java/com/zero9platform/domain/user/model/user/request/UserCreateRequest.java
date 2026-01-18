@@ -58,4 +58,6 @@ public class UserCreateRequest {
             message = "닉네임은 공백 없이 한글 또는 영문만 사용 가능하며 2자 이상이어야 합니다."
     )
     private String nickname;
+
+    private String influencerSocialLink;
 }
