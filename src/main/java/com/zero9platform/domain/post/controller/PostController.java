@@ -25,6 +25,9 @@ public class PostController {
 
     private final PostService postService;
 
+    /**
+     *  일반 게시물 생성
+     */
     @PostMapping
     public ResponseEntity<CommonResponse<PostCreateResponse>> postCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody PostCreateRequest request) {
 
@@ -33,6 +36,9 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("일반 게시물 생성 성공", response));
     }
 
+    /**
+     *  일반 게시물 상세조회
+     */
     @GetMapping("/{id}")
     public ResponseEntity<CommonResponse<PostGetDetailResponse>> postGetDetailHandler(@PathVariable Long id) {
 
@@ -41,6 +47,9 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 상세조회 성공", response));
     }
 
+    /**
+     *  일반 게시물 전체목록 조회
+     */
     @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<PostGetListResponse>>> postGetListHandler(Pageable pageable){
 
@@ -49,6 +58,9 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 목록조회 성공", response));
     }
 
+    /**
+     *  일반 게시물 수정
+     */
     @PutMapping("/{id}")
     public ResponseEntity<CommonResponse<PostUpdateResponse>> postUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @RequestBody PostUpdateRequest request) {
 
@@ -57,6 +69,9 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 수정 성공", response));
     }
 
+    /**
+     *  일반 게시물 삭제
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<CommonResponse<Void>> postDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id) {
 

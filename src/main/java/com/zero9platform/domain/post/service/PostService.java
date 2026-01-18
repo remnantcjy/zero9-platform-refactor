@@ -24,6 +24,10 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
+
+    /**
+     *  일반 게시물 생성
+     */
     @Transactional
     public PostCreateResponse postCreate(Long userid, PostCreateRequest request) {
 
@@ -35,6 +39,9 @@ public class PostService {
         return PostCreateResponse.from(saved);
     }
 
+    /**
+     *  일반 게시물 상세조회
+     */
     @Transactional
     public PostGetDetailResponse postGetDetail(Long id) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
@@ -45,6 +52,9 @@ public class PostService {
         return PostGetDetailResponse.from(post);
     }
 
+    /**
+     *  일반 게시물 전체목록 조회
+     */
     @Transactional(readOnly = true)
     public PageResponse<PostGetListResponse> postGetList(Pageable pageable) {
 
@@ -54,6 +64,9 @@ public class PostService {
         return  PageResponse.from(page);
     }
 
+    /**
+     *  일반 게시물 수정
+     */
     @Transactional
     public PostUpdateResponse postUpdate(Long userId, Long id, PostUpdateRequest request) {
 
@@ -68,6 +81,9 @@ public class PostService {
 
     }
 
+    /**
+     *  일반 게시물 식제
+     */
     @Transactional
     public void postDelete(Long userId, Long id) {
 
@@ -80,7 +96,7 @@ public class PostService {
     }
 
     /**
-     *  작성자 본인인지 검증
+     *  게시물 작성자 본인 여부 검증
      */
     private void validOwner(Post post, Long userId) {
 
