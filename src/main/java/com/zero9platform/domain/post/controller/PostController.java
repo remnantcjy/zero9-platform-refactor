@@ -30,7 +30,7 @@ public class PostController {
 
         PostCreateResponse response = postService.postCreate(authUser.getId(), request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("일반게시물 생성 성공", response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("일반 게시물 생성 성공", response));
     }
 
     @GetMapping("/{id}")
