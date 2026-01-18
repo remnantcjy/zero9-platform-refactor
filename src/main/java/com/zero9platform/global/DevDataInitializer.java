@@ -11,6 +11,7 @@ import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ public class DevDataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final GroupPurchasePostRepository gppRepository;
     private final InfluencerRepository influencerRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -37,10 +39,23 @@ public class DevDataInitializer implements CommandLineRunner {
          /* =======================
            User 더미 데이터
         ======================= */
+        User user = userRepository.save(
+                new User(
+                        "testid1",
+                        passwordEncoder.encode("awdfth1324"),
+                        "test@email.com",
+                        "곽두철",
+                        "USER",
+                        "010-1112-1112",
+                        "곽두철닉네임",
+                        "https://instagram.com/user"
+                )
+        );
+
         User user1 = userRepository.save(
                 new User(
                         "user01",
-                        "password",
+                        passwordEncoder.encode("user1@1324"),
                         "user01@test.com",
                         "홍길동",
                         "USER",
@@ -53,7 +68,7 @@ public class DevDataInitializer implements CommandLineRunner {
         User user2 = userRepository.save(
                 new User(
                         "user02",
-                        "password",
+                        passwordEncoder.encode("user2@1324"),
                         "user02@test.com",
                         "김철수",
                         "USER",
@@ -66,7 +81,7 @@ public class DevDataInitializer implements CommandLineRunner {
         User user3 = userRepository.save(
                 new User(
                         "user03",
-                        "password",
+                        passwordEncoder.encode("user3@1324"),
                         "user03@test.com",
                         "이영희",
                         "USER",
@@ -79,7 +94,7 @@ public class DevDataInitializer implements CommandLineRunner {
         User user4 = userRepository.save(
                 new User(
                         "user04",
-                        "password",
+                        passwordEncoder.encode("user4@1324"),
                         "user04@test.com",
                         "홍금보",
                         "USER",
@@ -92,7 +107,7 @@ public class DevDataInitializer implements CommandLineRunner {
         User admin = userRepository.save(
                 new User(
                         "admin01",
-                        "password",
+                        passwordEncoder.encode("admin1@1324"),
                         "admin@test.com",
                         "관리자",
                         "ADMIN",
@@ -105,6 +120,10 @@ public class DevDataInitializer implements CommandLineRunner {
          /* =======================
            Influencer 더미 데이터
         ======================= */
+        Influencer influencer = influencerRepository.save(
+                new Influencer(user)
+        );
+
         Influencer influencer1 = influencerRepository.save(
                 new Influencer(user1)
         );
@@ -118,6 +137,7 @@ public class DevDataInitializer implements CommandLineRunner {
         );
 
         // 승인 처리 (테스트용)
+        influencer.influencerApprove(true);   // 승인 O
         influencer1.influencerApprove(true);   // 승인 O
         influencer2.influencerApprove(true);   // 승인 O
         influencer3.influencerApprove(false);  // 승인 X
@@ -125,6 +145,22 @@ public class DevDataInitializer implements CommandLineRunner {
         /* =======================
            GroupPurchasePost 더미
         ======================= */
+        gppRepository.save(
+                new GroupPurchasePost(
+                        user,
+                        "대박곱창",
+                        "곱창 계의 전설, 오늘만 이 가격",
+                        "https://image.test/daebak-gopchang.jpg",
+                        20000L,
+                        "https://buy.test/daebak-gopchang",
+                        Category.ETC,
+                        GppApprovalStatus.PENDING,
+                        GppProgressStatus.DOING,
+                        LocalDateTime.now(),
+                        LocalDateTime.now().plusDays(7)
+                )
+        );
+
         gppRepository.save(
                 new GroupPurchasePost(
                         user1,

@@ -26,6 +26,7 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
     // 조회 수 증가 - 삭제처리된 대상은 제외
     // DB에서 직접 증가, 영속성 컨텍스트를 거치지 않음
     @Modifying(clearAutomatically = true)
+
     //상품 키워드 검색
     @Query("""
                 update GroupPurchasePost g
@@ -33,6 +34,10 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                 where g.id = :gppId and g.deletedAt is null
             """)
     int increaseViewCount(@Param("gppId") Long gppId);
+
+
+    //상품 키워드 검색
+    @Query("""
                 SELECT g
                 FROM GroupPurchasePost g
                 WHERE g.productName LIKE CONCAT('%', :keyword, '%')

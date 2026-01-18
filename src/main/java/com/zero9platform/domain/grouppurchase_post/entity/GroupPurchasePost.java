@@ -65,6 +65,9 @@ public class GroupPurchasePost extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
+    @Column(nullable = true)
+    public Long favoriteCount = 0L; // 찜 등록 수
+
 
     public GroupPurchasePost(User user, String productName, String content, String image, Long price, String linkUrl, Category category,GppApprovalStatus approvalStatus, GppProgressStatus gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
         this.user = user;
@@ -105,4 +108,5 @@ public class GroupPurchasePost extends BaseEntity {
 //    public void increaseViewCount() {
 //        this.viewCount++;
 //    }
+
 }
