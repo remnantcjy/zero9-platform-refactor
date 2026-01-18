@@ -48,7 +48,7 @@ public class UserService {
         // 중복되는 이메일 조회
         checkDuplicate(userRepository.existsByNickname(request.getNickname()), ExceptionCode.NICKNAME_EXIST);
 
-        User user = new User(request.getLoginId(), passwordEncoder.encode(request.getPassword()), request.getEmail(), request.getName(), request.getRole().name(), request.getPhone(), request.getNickname());
+        User user = new User(request.getLoginId(), passwordEncoder.encode(request.getPassword()), request.getEmail(), request.getName(), request.getRole().name(), request.getPhone(), request.getNickname(), request.getInfluencerSocialLink());
 
         User userCreated = userRepository.save(user);
 

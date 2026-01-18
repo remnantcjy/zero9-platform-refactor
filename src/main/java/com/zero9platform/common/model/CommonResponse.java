@@ -29,4 +29,10 @@ public class CommonResponse<T> {
 
         return new CommonResponse<>(false, message, null);
     }
+
+    // 예외 처리 시
+    public static CommonResponse<Void> exception(String errorMessage) {
+
+        return new CommonResponse<>(false, errorMessage, null);
+    }
 }

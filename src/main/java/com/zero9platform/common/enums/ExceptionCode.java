@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionCode {
 
     // 공통
+    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
     NO_PERMISSION(HttpStatus.FORBIDDEN, "권한이 없습니다."),
 
     // 사용자
@@ -14,11 +15,13 @@ public enum ExceptionCode {
     USER_WITHDRAWN(HttpStatus.FORBIDDEN, "탈퇴한 회원입니다."),
     PASSWORD_NOT_MATCH(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
     USER_IS_NOT_INFLUENCER(HttpStatus.FORBIDDEN, "해당 사용자는 인플루언서가 아닙니다."),
+    INFLUENCER_SOCIAL_LINK_REQUIRED(HttpStatus.BAD_REQUEST, "인플루언서 계정은 소셜 링크 입력이 필수입니다."),
     INFLUENCER_NOT_APPROVED(HttpStatus.FORBIDDEN, "승인되지 않은 인플루언서입니다."),
     LOGINID_EXIST(HttpStatus.CONFLICT, "중복되는 아이디가 존재합니다."),
     EMAIL_EXIST(HttpStatus.CONFLICT, "중복되는 이메일이 존재합니다."),
     PHONE_EXIST(HttpStatus.CONFLICT, "중복되는 핸드폰번호가 존재합니다."),
     NICKNAME_EXIST(HttpStatus.CONFLICT, "중복되는 닉네임이 존재합니다."),
+
     // 404
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     NOT_FOUND_POST(HttpStatus.NOT_FOUND, "게시물을 찾을 수 없습니다."),
@@ -28,6 +31,7 @@ public enum ExceptionCode {
 
     // jwt
     TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "토큰을 찾을 수 없습니다."),
+
     // 409
     ALREADY_SUBSCRIBED_GPP(HttpStatus.CONFLICT, "이미 팔로우한 공동구매 게시물입니다.")
     ;
