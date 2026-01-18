@@ -55,9 +55,7 @@ public class JwtFilter extends OncePerRequestFilter {
             log.info("claims = {}", claims);
             String subject = claims.getSubject();
             if (subject == null) {
-                filterChain.doFilter(request, response);
-                return;
-                //throw new BadCredentialsException("JWT에 userId(sub)가 없습니다.");
+                throw new BadCredentialsException("JWT에 userId(sub)가 없습니다.");
             }
 
             Long userId = Long.parseLong(subject);
