@@ -6,7 +6,7 @@ import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.search.entity.Search;
 import com.zero9platform.domain.search.model.SearchItem;
-import com.zero9platform.domain.search.repository.GroupPurchasePostRepository;
+import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.search.repository.SearchRepository;
 import com.zero9platform.domain.user_influencer.entity.UserInfluencer;
 import com.zero9platform.domain.user_influencer.entity.UserInfluencerRepository;

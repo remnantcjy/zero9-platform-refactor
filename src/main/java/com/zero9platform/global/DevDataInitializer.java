@@ -4,9 +4,9 @@ import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.common.enums.GppProgressStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
+import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.influencer.entity.Influencer;
 import com.zero9platform.domain.influencer.repository.InfluencerRepository;
-import com.zero9platform.domain.search.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,8 @@ public class DevDataInitializer implements CommandLineRunner {
                         "홍길동",
                         "USER",
                         "010-1111-1111",
-                        "길동이"
+                        "길동이",
+                        "https://instagram.com/user01"
                 )
         );
 
@@ -57,7 +58,8 @@ public class DevDataInitializer implements CommandLineRunner {
                         "김철수",
                         "USER",
                         "010-2222-2222",
-                        "철수형"
+                        "철수형",
+                        "https://instagram.com/user02"
                 )
         );
 
@@ -69,7 +71,8 @@ public class DevDataInitializer implements CommandLineRunner {
                         "이영희",
                         "USER",
                         "010-3333-3333",
-                        "영희짱"
+                        "영희짱",
+                        "https://instagram.com/user03"
                 )
         );
 
@@ -81,7 +84,8 @@ public class DevDataInitializer implements CommandLineRunner {
                         "홍금보",
                         "USER",
                         "010-4444-4444",
-                        "금보형"
+                        "금보형",
+                        null
                 )
         );
 
@@ -93,7 +97,8 @@ public class DevDataInitializer implements CommandLineRunner {
                         "관리자",
                         "ADMIN",
                         "010-5555-5555",
-                        "관리자계정"
+                        "관리자계정",
+                        null
                 )
         );
 
