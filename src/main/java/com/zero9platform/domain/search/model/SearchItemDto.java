@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @RequiredArgsConstructor
-public class SearchItem {
+public class SearchItemDto {
 
     private final Long gppId;
     private final Long userId;
@@ -21,8 +21,8 @@ public class SearchItem {
     private final LocalDateTime startDate;
     private final LocalDateTime endDate;
 
-    public static SearchItem from(GroupPurchasePost post) {
-        return new SearchItem(
+    public static SearchItemDto from(GroupPurchasePost post) {
+        return new SearchItemDto(
                 post.getId(),
                 post.getUser().getId(),
                 post.getUser().getNickname(),
