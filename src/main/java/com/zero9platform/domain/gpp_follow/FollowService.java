@@ -83,7 +83,7 @@ public class FollowService {
      * 공동구매 게시물 일정 팔로우 목록 조회 - 추후 Page 및 stream 변환 작업
      */
     @Transactional(readOnly = true)
-    public Page<GppFollowGetDetailResponse> gppFollowGetList(Long userId, Pageable pageable) {
+    public Page<GppFollowGetDetailResponse> gppFollowGetPage(Long userId, Pageable pageable) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
@@ -107,7 +107,5 @@ public class FollowService {
 //                followRepository.findBy
 //                dtoList.add(gpp);
 ////            }
-
-
     }
 }

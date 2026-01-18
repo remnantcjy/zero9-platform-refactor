@@ -47,8 +47,9 @@ public class GroupPurchasePost extends BaseEntity {
     @Column(nullable = false)
     private Category category;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private GppApprovalStatus gppApprovalStatus;
+    private GppApprovalStatus gppApprovalStatus = GppApprovalStatus.PENDING;
 
     @Column(nullable = false)
     private GppProgressStatus gppProgressStatus;
