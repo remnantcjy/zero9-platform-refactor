@@ -52,7 +52,7 @@ public class SecurityConfig {
                 // Security 예외 처리
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패 (401)
-                        .accessDeniedHandler(jwtAccessDeniedHandler)             // 권한 실패 (403)
+                        .accessDeniedHandler(jwtAccessDeniedHandler) // 권한 실패 (403)
                 )
 
                 // JWT 인증 필터 등록
@@ -65,7 +65,12 @@ public class SecurityConfig {
                                 "/**"
                         ).permitAll() // CORS Preflight 허용
                         .requestMatchers("/zero9/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/zero9/gp-post/**").permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/zero9/gp-post/**",
+                                "/zero9/post/**",
+                                "/zero9/searches/**"
+                        ).permitAll()
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/zero9/users"
