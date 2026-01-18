@@ -1,5 +1,6 @@
 package com.zero9platform.common.model;
 
+
 import lombok.Getter;
 import org.springframework.data.domain.Page;
 
