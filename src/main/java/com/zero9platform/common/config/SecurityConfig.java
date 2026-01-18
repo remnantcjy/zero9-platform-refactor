@@ -43,8 +43,8 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/zero9/auth/**").permitAll()
-                        .requestMatchers("/zero9/searches/**").permitAll()
-                        .requestMatchers("/zero9/users").permitAll() // 키워드 통합 검색 제외
+                        .requestMatchers("/zero9/searches/**").permitAll() // 키워드 통합 검색 제외
+                        .requestMatchers("/zero9/users").permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/zero9/users",
