@@ -34,9 +34,9 @@ public class CommentService {
      * 일반 게시물 댓글 작성
      */
     @Transactional
-    public CommentCreateResponse commentCreate(AuthUser authUser, CommentCreateRequest request) {
+    public CommentCreateResponse commentCreate(Long userId, CommentCreateRequest request) {
 
-        User user = userRepository.findById(authUser.getId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(request.getPostId())
@@ -66,11 +66,11 @@ public class CommentService {
      * 일반 게시물 댓글 수정
      */
     @Transactional
-    public void commentUpdate(AuthUser authUser, Long id, CommentUpdateRequest request) {
+    public void commentUpdate(Long userId, Long id, CommentUpdateRequest request) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_COMMENT));
 
-        validOwner(comment, authUser.getId());
+        validOwner(comment, userId);
 
         comment.update(request.getContent());
     }
@@ -79,12 +79,12 @@ public class CommentService {
      * 일반 게시물 댓글 삭제
      */
     @Transactional
-    public void commentDelete(AuthUser authUser, Long commentId) {
+    public void commentDelete(Long userId, Long commentId) {
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_COMMENT));
 
-        validOwner(comment, authUser.getId());
+        validOwner(comment, userId);
 
         commentRepository.delete(comment);
     }

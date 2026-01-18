@@ -30,7 +30,7 @@ public class CommentController {
     public ResponseEntity<CommonResponse<CommentCreateResponse>> commentCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestBody CommentCreateRequest request) {
 
 
-        CommentCreateResponse response = commentService.commentCreate(authUser, request);
+        CommentCreateResponse response = commentService.commentCreate(authUser.getId(), request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("댓글 생성 성공", response));
     }
@@ -52,7 +52,7 @@ public class CommentController {
     @PutMapping("/{id}")
     public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @RequestBody CommentUpdateRequest request) {
 
-        commentService.commentUpdate(authUser, id, request);
+        commentService.commentUpdate(authUser.getId(), id, request);
 
         return ResponseEntity.ok(CommonResponse.success("댓글 수정 성공", null));
     }
@@ -63,7 +63,7 @@ public class CommentController {
     @DeleteMapping("/{commentId}")
     public ResponseEntity<CommonResponse<Void>> commentDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long commentId) {
 
-        commentService.commentDelete(authUser, commentId);
+        commentService.commentDelete(authUser.getId(), commentId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(CommonResponse.success("댓글 삭제 성공", null));
