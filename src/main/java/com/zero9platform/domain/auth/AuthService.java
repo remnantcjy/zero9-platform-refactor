@@ -1,6 +1,5 @@
 package com.zero9platform.domain.auth;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
