@@ -53,7 +53,7 @@ public class PostController {
     @GetMapping
     public ResponseEntity<CommonResponse<PageResponse<PostGetListResponse>>> postGetListHandler(Pageable pageable){
 
-        PageResponse<PostGetListResponse> response = postService.postGetList(pageable);
+        PageResponse<PostGetListResponse> response = postService.postGetPage(pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일반 게시물 목록조회 성공", response));
     }
