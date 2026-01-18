@@ -51,7 +51,7 @@ public class CommentController {
      * 일반 게시물 댓글 수정
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @Valid  @RequestBody CommentUpdateRequest request) {
+    public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long id, @Valid @RequestBody CommentUpdateRequest request) {
 
         commentService.commentUpdate(authUser.getId(), id, request);
 
