@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,32 +34,48 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtAccessDeniedHandler jwtAccessDeniedHandler) throws Exception {
+
         return httpSecurity
                 // CORS 활성화
                 .cors(Customizer.withDefaults())
 
-                // CSRF, BASIC, FORM 비활성화
+                // CSRF, BASIC, FORM 로그인 비활성화 (JWT 사용)
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
 
-                // 예외 처리
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패(401)
-                        .accessDeniedHandler(jwtAccessDeniedHandler) // 권한 실패(403)
+                // 세션 설정: STATELESS (JWT 기반 인증)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // JWT 필터
+                // Security 예외 처리
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패 (401)
+                        .accessDeniedHandler(jwtAccessDeniedHandler)             // 권한 실패 (403)
+                )
+
+                // JWT 인증 필터 등록
                 .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
 
-                // 인가 설정
+                // 인가(Authorization) 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS Preflight 허용
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll() // CORS Preflight 허용
                         .requestMatchers("/zero9/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/zero9/users").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/zero9/users", "/zero9/influencers").hasRole(UserRole.ADMIN.name())
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/zero9/users"
+                        ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/zero9/users",
+                                "/zero9/influencers"
+                        ).hasRole(UserRole.ADMIN.name())
                         .requestMatchers("/zero9/admin/**").hasRole(UserRole.ADMIN.name())
-                        .anyRequest().authenticated() // 나머지는 인증 필수
+                        .anyRequest().authenticated() // 그 외 요청은 인증 필수
                 )
                 .build();
     }
