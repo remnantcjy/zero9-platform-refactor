@@ -4,7 +4,8 @@ import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_favorite.entity.GppFavorite;
-import com.zero9platform.domain.gpp_favorite.model.GppFavoriteCreateResponse;
+import com.zero9platform.domain.gpp_favorite.model.response.GppFavoriteCreateResponse;
+import com.zero9platform.domain.gpp_favorite.model.GppFavoriteGetDto;
 import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
@@ -12,10 +13,9 @@ import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;;
-
-import java.beans.Transient;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ public class GppFavoriteService {
     /**
      * 찜 등록
      */
-    @Transient
+    @Transactional
     public GppFavoriteCreateResponse favoriteCreate(Long gppId, Long userId) {
 
         //NPE 방어
@@ -58,19 +58,16 @@ public class GppFavoriteService {
     /**
      * 찜 목록 조회
      */
-    @Transient
-    public PageResponse<GppFavoriteGetDto> favoriteList(Long userId, int page, int size) {
+    @Transactional(readOnly = true)
+    public PageResponse<GppFavoriteGetDto> favoriteList(Long userId, Pageable pageable) {
 
         //NPE 방어
         if (userId == null) {
             throw new CustomException(ExceptionCode.NOT_FOUND_USER);
         }
 
-        //페이징 준비
-        PageRequest pageRequest = PageRequest.of(page, size);
-
         //유저 아이디가 디비에서 favorite 한 리스트를 가져온다.
-        Page<GppFavorite> gppFavoritePage = gppFavoriteRepository.findByUserId(userId, pageRequest);
+        Page<GppFavorite> gppFavoritePage = gppFavoriteRepository.findByUserId(userId, pageable);
 
         //없으면 예외처리
         if (gppFavoritePage.isEmpty()) {
@@ -87,7 +84,7 @@ public class GppFavoriteService {
     /**
      * 찜 등록 취소
      */
-    @Transient
+    @Transactional
     public void favoriteCancellation(Long gppId, Long userId) {
 
         //NPE 방어

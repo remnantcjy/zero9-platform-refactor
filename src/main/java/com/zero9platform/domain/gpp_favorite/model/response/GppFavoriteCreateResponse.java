@@ -1,4 +1,4 @@
-package com.zero9platform.domain.gpp_favorite.model;
+package com.zero9platform.domain.gpp_favorite.model.response;
 
 import com.zero9platform.domain.gpp_favorite.entity.GppFavorite;
 import lombok.Getter;
