@@ -29,7 +29,7 @@ public class GppFavoriteService {
      * 찜 등록
      */
     @Transactional
-    public GppFavoriteCreateResponse favoriteCreate(Long gppId, Long userId) {
+    public GppFavoriteCreateResponse gppFavoriteCreate(Long gppId, Long userId) {
 
         //NPE 방어
         if (gppId == null || userId == null) {
@@ -59,7 +59,7 @@ public class GppFavoriteService {
      * 찜 목록 조회
      */
     @Transactional(readOnly = true)
-    public PageResponse<GppFavoriteGetDto> favoriteList(Long userId, Pageable pageable) {
+    public PageResponse<GppFavoriteGetDto> gppFavoritePage(Long userId, Pageable pageable) {
 
         //NPE 방어
         if (userId == null) {
@@ -85,7 +85,7 @@ public class GppFavoriteService {
      * 찜 등록 취소
      */
     @Transactional
-    public void favoriteCancellation(Long gppId, Long userId) {
+    public void gppFavoriteCancellation(Long gppId, Long userId) {
 
         //NPE 방어
         if (gppId == null) {

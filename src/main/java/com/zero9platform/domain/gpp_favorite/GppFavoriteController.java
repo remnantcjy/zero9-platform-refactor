@@ -25,16 +25,18 @@ public class GppFavoriteController {
      * 찜 등록
      */
     @PostMapping("/{gppId}/favorites")
-    public ResponseEntity<CommonResponse<GppFavoriteCreateResponse>> favoriteCreateHandler(@PathVariable Long gppId, @AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<CommonResponse<GppFavoriteCreateResponse>> gppFavoriteCreateHandler(@PathVariable Long gppId, @AuthenticationPrincipal AuthUser authUser) {
 
-        Long userId = authUser.getId(); // 토큰ID
+        Long userId = authUser.getId(); // Authentication GET ID
 
         if (gppId == null || gppId <= 0) {throw new CustomException(ExceptionCode.INVALID_GPP_ID);}
 
         if (userId == null || userId <= 0) {throw new CustomException(ExceptionCode.INVALID_USER_ID);}
 
-        GppFavoriteCreateResponse createResponse = gppFavoriteService.favoriteCreate(gppId, userId);
+        GppFavoriteCreateResponse createResponse = gppFavoriteService.gppFavoriteCreate(gppId, userId);
+
         CommonResponse<GppFavoriteCreateResponse> commonResponse = new CommonResponse<>(true, "찜 등록 성공", createResponse);
+
         return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
     }
 
@@ -42,13 +44,13 @@ public class GppFavoriteController {
      * 찜 목록 조회
      */
     @GetMapping("/favorites")
-    public ResponseEntity<CommonResponse<PageResponse<GppFavoriteGetDto>>> favoriteListGetPageHandler(@AuthenticationPrincipal AuthUser authUser, Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<GppFavoriteGetDto>>> gppFavoriteGetPageHandler(@AuthenticationPrincipal AuthUser authUser, Pageable pageable) {
 
-        Long userId = authUser.getId(); // 토큰ID
+        Long userId = authUser.getId(); // Authentication GET ID
 
         if (userId == null || userId <= 0) {throw new CustomException(ExceptionCode.INVALID_USER_ID);}
 
-        PageResponse<GppFavoriteGetDto> favoriteList = gppFavoriteService.favoriteList(userId, pageable);
+        PageResponse<GppFavoriteGetDto> favoriteList = gppFavoriteService.gppFavoritePage(userId, pageable);
 
         CommonResponse<PageResponse<GppFavoriteGetDto>> commonResponse = new CommonResponse<>(true, "찜 목록 조회 성공", favoriteList);
 
@@ -59,13 +61,13 @@ public class GppFavoriteController {
      * 찜 등록 취소
      */
     @DeleteMapping("/{gppId}/favorites")
-    public ResponseEntity<CommonResponse<Void>> favoriteCancellationHandler(@PathVariable Long gppId, @AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<CommonResponse<Void>> gppFavoriteCancellationHandler(@PathVariable Long gppId, @AuthenticationPrincipal AuthUser authUser) {
 
-        Long userId = authUser.getId(); // 토큰ID
+        Long userId = authUser.getId(); // Authentication GET ID
 
         if (gppId == null || gppId <= 0) {throw new CustomException(ExceptionCode.INVALID_GPP_ID);}
 
-        gppFavoriteService.favoriteCancellation(gppId, userId);
+        gppFavoriteService.gppFavoriteCancellation(gppId, userId);
 
         CommonResponse<Void> commonResponse = new CommonResponse<>(true, "찜 등록취소 성공", null);
 
