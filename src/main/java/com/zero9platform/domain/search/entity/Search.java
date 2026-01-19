@@ -24,4 +24,9 @@ public class Search {
     public Search(String keyword) {
         this.keyword = keyword;
     }
+
+    public void increaseCount() {
+        this.count++;
+    }
+
 }

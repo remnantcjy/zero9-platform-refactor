@@ -50,7 +50,7 @@ public class GroupPurchasePostService {
         // 3️. Enum 변환 - 카테고리, 승인상태(작성시점 = 대기중), 진행상태
         Category category = Category.from(request.getCategory());
         GppProgressStatus gppProgressStatus = GppProgressStatus.from(request.getGppProgressStatus());
-        GppApprovalStatus gppApprovalStatus = GppApprovalStatus.APPROVED; // 테스트 시 approved
+        //GppApprovalStatus gppApprovalStatus = GppApprovalStatus.APPROVED; // 테스트 시 approved
 
         // 4️. Entity 생성
         GroupPurchasePost gpp = new GroupPurchasePost(
@@ -61,7 +61,7 @@ public class GroupPurchasePostService {
                 request.getPrice(),
                 request.getLinkUrl(),
                 category,
-                gppApprovalStatus,
+                GppApprovalStatus.PENDING,
                 gppProgressStatus,
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atStartOfDay()
