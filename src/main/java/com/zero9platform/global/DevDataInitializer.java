@@ -9,6 +9,8 @@ import com.zero9platform.domain.influencer.entity.Influencer;
 import com.zero9platform.domain.influencer.repository.InfluencerRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
+import com.zero9platform.domain.user_influencer.entity.UserInfluencer;
+import com.zero9platform.domain.user_influencer.entity.UserInfluencerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +28,7 @@ public class DevDataInitializer implements CommandLineRunner {
     private final GroupPurchasePostRepository gppRepository;
     private final InfluencerRepository influencerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserInfluencerRepository userInfluencerRepository;
 
     @Override
     @Transactional
@@ -39,14 +42,27 @@ public class DevDataInitializer implements CommandLineRunner {
          /* =======================
            User 더미 데이터
         ======================= */
+        User testUser = userRepository.save(
+                new User(
+                        "testUserid1",
+                        passwordEncoder.encode("awdfth1324"),
+                        "test0000@email.com",
+                        "대박곱창 사장님",
+                        "INFLUENCER",
+                        "010-1112-1112",
+                        "대박곱창 사장님",
+                        "https://instagram.com/user"
+                )
+        );
+
         User user = userRepository.save(
                 new User(
                         "testid1",
                         passwordEncoder.encode("awdfth1324"),
                         "test@email.com",
                         "곽두철",
-                        "USER",
-                        "010-1112-1112",
+                        "INFLUENCER",
+                        "010-1113-1113",
                         "곽두철닉네임",
                         "https://instagram.com/user"
                 )
@@ -58,7 +74,7 @@ public class DevDataInitializer implements CommandLineRunner {
                         passwordEncoder.encode("user1@1324"),
                         "user01@test.com",
                         "홍길동",
-                        "USER",
+                        "INFLUENCER",
                         "010-1111-1111",
                         "길동이",
                         "https://instagram.com/user01"
@@ -71,7 +87,7 @@ public class DevDataInitializer implements CommandLineRunner {
                         passwordEncoder.encode("user2@1324"),
                         "user02@test.com",
                         "김철수",
-                        "USER",
+                        "INFLUENCER",
                         "010-2222-2222",
                         "철수형",
                         "https://instagram.com/user02"
@@ -84,7 +100,7 @@ public class DevDataInitializer implements CommandLineRunner {
                         passwordEncoder.encode("user3@1324"),
                         "user03@test.com",
                         "이영희",
-                        "USER",
+                        "INFLUENCER",
                         "010-3333-3333",
                         "영희짱",
                         "https://instagram.com/user03"
@@ -117,9 +133,15 @@ public class DevDataInitializer implements CommandLineRunner {
                 )
         );
 
+
+
          /* =======================
            Influencer 더미 데이터
         ======================= */
+        Influencer testInfluencer = influencerRepository.save(
+                new Influencer(testUser)
+        );
+
         Influencer influencer = influencerRepository.save(
                 new Influencer(user)
         );
@@ -137,10 +159,54 @@ public class DevDataInitializer implements CommandLineRunner {
         );
 
         // 승인 처리 (테스트용)
+        testInfluencer.influencerApprove(true); // 승인 O
         influencer.influencerApprove(true);   // 승인 O
         influencer1.influencerApprove(true);   // 승인 O
         influencer2.influencerApprove(true);   // 승인 O
         influencer3.influencerApprove(false);  // 승인 X
+
+        /* =======================
+   UserInfluencer 더미 데이터
+======================= */
+        userInfluencerRepository.save(
+                new UserInfluencer(
+                        testUser,
+                        true,
+                        LocalDateTime.now()
+                )
+        );
+
+        userInfluencerRepository.save(
+                new UserInfluencer(
+                        user,
+                        true,
+                        LocalDateTime.now()
+                )
+        );
+
+        userInfluencerRepository.save(
+                new UserInfluencer(
+                        user1,
+                        true,
+                        LocalDateTime.now()
+                )
+        );
+
+        userInfluencerRepository.save(
+                new UserInfluencer(
+                        user2,
+                        true,
+                        LocalDateTime.now()
+                )
+        );
+
+        userInfluencerRepository.save(
+                new UserInfluencer(
+                        user3,
+                        false, // 승인 안된 인플루언서
+                        null
+                )
+        );
 
         /* =======================
            GroupPurchasePost 더미

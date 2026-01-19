@@ -36,7 +36,7 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
     int increaseViewCount(@Param("gppId") Long gppId);
 
 
-    //상품 키워드 검색
+    //통합 상품 키워드 검색
     @Query("""
                 SELECT g
                 FROM GroupPurchasePost g
