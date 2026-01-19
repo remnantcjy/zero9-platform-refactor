@@ -66,8 +66,8 @@ public class CommentService {
      * 일반 게시물 댓글 수정
      */
     @Transactional
-    public void commentUpdate(Long userId, Long id, CommentUpdateRequest request) {
-        Comment comment = commentRepository.findById(id)
+    public void commentUpdate(Long userId, Long commentId, CommentUpdateRequest request) {
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_COMMENT));
 
         validOwner(comment, userId);
