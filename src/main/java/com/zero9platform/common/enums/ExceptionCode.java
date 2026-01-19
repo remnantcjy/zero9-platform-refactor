@@ -35,6 +35,7 @@ public enum ExceptionCode {
     // 댓글
     NOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
 
+
     // GPP - 400 BAD REQUEST
     GPP_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "종료일은 시작일 이후여야 합니다."),
 
@@ -46,6 +47,19 @@ public enum ExceptionCode {
     GPP_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
     GPP_APPROVAL_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "승인상태를 찾을 수 없습니다."),
     GPP_PROGRESS_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "진행상태를 찾을 수 없습니다."),
+
+    //검색
+    NOT_FOUND_NICKNAME(HttpStatus.NOT_FOUND, "검색한 인플루언서를 찾을 수 없습니다."),
+    INVALID_KEYWORD(HttpStatus.BAD_REQUEST, "검색어가 비어있을 수 없습니다"),
+    INFLUENCER_POST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 인플루언서의 상품이 없습니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "검색된 상품이 없습니다."),
+
+    //찜
+    ALREADY_FAVORITE(HttpStatus.BAD_REQUEST, "이미 찜한 상품입니다."),
+    FAVORITE_NOT_FOUND(HttpStatus.NOT_FOUND, "찜 정보가 없습니다."),
+    INVALID_GPP_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 게시글 ID입니다."),
+    INVALID_USER_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다."),
+    NOT_FOUND_FAVORITE(HttpStatus.NOT_FOUND, "이미 찜이 취소되었거나 존재하지 않습니다."),
 
     // GppComment - 404 NOT FOUND
     GPP_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물 댓글을 찾을 수 없습니다."),

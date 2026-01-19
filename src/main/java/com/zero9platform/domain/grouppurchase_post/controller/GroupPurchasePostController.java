@@ -1,5 +1,6 @@
 package com.zero9platform.domain.grouppurchase_post.controller;
 
+import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostCreateRequest;
@@ -29,6 +30,10 @@ public class GroupPurchasePostController {
      */
     @PostMapping("/gp-posts")
     public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPCreateHandler(@RequestBody @Valid GroupPurchasePostCreateRequest request, @AuthenticationPrincipal AuthUser authUser) {
+
+        if (authUser.getUserRole() != UserRole.INFLUENCER) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonResponse.fail("공동구매 게시물 작성은 인플루언서만 가능"));
+        }
 
         GroupPurchasePostDetailResponse response = gppService.gpPostCreate(request, authUser);
 
@@ -62,6 +67,10 @@ public class GroupPurchasePostController {
      */
     @PutMapping("/gp-posts/{gppId}")
     public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPUpdateHandler(@PathVariable Long gppId, @RequestBody @Valid GroupPurchasePostUpdateRequest request, @AuthenticationPrincipal AuthUser authUser) {
+
+        if (authUser.getUserRole() != UserRole.INFLUENCER) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonResponse.fail("공동구매 게시물 수정은 인플루언서만 가능"));
+        }
 
         GroupPurchasePostDetailResponse response = gppService.gpPostUpdate(gppId, request, authUser);
 
