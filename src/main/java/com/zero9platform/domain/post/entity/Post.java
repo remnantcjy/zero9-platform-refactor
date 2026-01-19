@@ -23,7 +23,7 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -38,4 +38,22 @@ public class Post extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
+    public Post(User user, String title, String content, String image) {
+        this.user = user;
+        this.title = title;
+        this.content = content;
+        this.image = image;
+        this.viewCount = 0L;
+        this.deletedAt = null;
+    }
+
+    public void update(String title, String content, String image) {
+        if(title != null) this.title = title;
+        if(content != null) this.content = content;
+        if(image != null) this.image = image;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }

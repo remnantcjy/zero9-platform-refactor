@@ -2,7 +2,6 @@ package com.zero9platform.domain.gpp_comment.entity;
 
 import com.zero9platform.common.entity.BaseEntity;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
-import com.zero9platform.domain.post.entity.Post;
 import com.zero9platform.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -29,4 +28,17 @@ public class GppComment extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    public GppComment(GroupPurchasePost groupPurchasePost, User user, String content) {
+        this.groupPurchasePost = groupPurchasePost;
+        this.user = user;
+        this.content = content;
+    }
+
+    public void update(String content) {
+        if (content != null) {
+            this.content = content;
+        }
+    }
+
 }
