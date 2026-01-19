@@ -29,6 +29,7 @@ public class GroupPurchasePostService {
 
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final UserRepository userRepository;
+    private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
 
     /**
      * 공동구매 게시물 작성
@@ -49,7 +50,7 @@ public class GroupPurchasePostService {
         // 3️. Enum 변환 - 카테고리, 승인상태(작성시점 = 대기중), 진행상태
         Category category = Category.from(request.getCategory());
         GppProgressStatus gppProgressStatus = GppProgressStatus.from(request.getGppProgressStatus());
-        GppApprovalStatus gppApprovalStatus = GppApprovalStatus.APPROVED; // 테스트 시 approved
+        //GppApprovalStatus gppApprovalStatus = GppApprovalStatus.APPROVED; // 테스트 시 approved
 
         // 4️. Entity 생성
         GroupPurchasePost gpp = new GroupPurchasePost(
@@ -60,7 +61,7 @@ public class GroupPurchasePostService {
                 request.getPrice(),
                 request.getLinkUrl(),
                 category,
-                gppApprovalStatus,
+                GppApprovalStatus.PENDING,
                 gppProgressStatus,
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atStartOfDay()
@@ -97,13 +98,10 @@ public class GroupPurchasePostService {
 
         // 1. 공동구매 게시물 조회 [삭제처리 제외 + 유효성 검사 + 승인된 공동구매 게시물]
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNullAndGppApprovalStatus(gppId, GppApprovalStatus.APPROVED)
-                .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND)); //
+                .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
 
         // 2. 조회수 증가 (아직 동시성 문제 고려 안했음, 추후 고민할 것)
-        int updated = groupPurchasePostRepository.increaseViewCount(gppId);
-        if (updated == 0) { // updated : DB에서 실제로 수정된 행의 개수
-            throw new CustomException(ExceptionCode.GPP_NOT_FOUND); // 조회수가 증가 안됐다 = 삭제처리된 게시물이다
-        }
+        groupPurchasePostViewCountService.increaseViewCount(gppId);
 
         // 3. 저장 (영속 상태라 사실상 생략 가능)
 //        groupPurchasePostRepository.save(gpp);

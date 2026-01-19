@@ -24,12 +24,11 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
 
     // 조회 수 증가 - 삭제처리된 대상은 제외
     // DB에서 직접 증가, 영속성 컨텍스트를 거치지 않음
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
                 update GroupPurchasePost g
                 set g.viewCount = g.viewCount + 1
                 where g.id = :gppId and g.deletedAt is null
             """)
     int increaseViewCount(@Param("gppId") Long gppId);
-
 }

@@ -1,6 +1,6 @@
-package com.zero9platform.domain.influencer.repository;
+package com.zero9platform.domain.admin.repository;
 
-import com.zero9platform.domain.influencer.entity.Influencer;
+import com.zero9platform.domain.admin.entity.Influencer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

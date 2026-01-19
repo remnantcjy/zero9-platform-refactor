@@ -9,6 +9,7 @@ public enum ExceptionCode {
     // 공통
     LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
     NO_PERMISSION(HttpStatus.FORBIDDEN, "권한이 없습니다."),
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
     // 사용자
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
@@ -21,6 +22,12 @@ public enum ExceptionCode {
     EMAIL_EXIST(HttpStatus.CONFLICT, "중복되는 이메일이 존재합니다."),
     PHONE_EXIST(HttpStatus.CONFLICT, "중복되는 핸드폰번호가 존재합니다."),
     NICKNAME_EXIST(HttpStatus.CONFLICT, "중복되는 닉네임이 존재합니다."),
+
+    // 404
+    NOT_FOUND_USER(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    NOT_FOUND_POST(HttpStatus.NOT_FOUND, "게시물을 찾을 수 없습니다."),
+    NOT_FOUND_GPP(HttpStatus.NOT_FOUND, "공동구매 게시물을 찾을 수 없습니다."),
+    NOT_FOUND_GPP_SUBSCRIPTION(HttpStatus.NOT_FOUND, "팔로우한 공동구매 게시물이 없습니다."),
     NOT_FOUND_POST(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
 
     // jwt
@@ -29,11 +36,10 @@ public enum ExceptionCode {
 
     // 댓글
     NOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
-    TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "토큰을 찾을 수 없습니다."),
+
 
     // GPP - 400 BAD REQUEST
     GPP_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "종료일은 시작일 이후여야 합니다."),
-    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
     // GPP - 401 FORBIDDEN
     GPP_NO_PERMISSION(HttpStatus.FORBIDDEN, "공동구매 게시물에 대한 권한이 없습니다."),
@@ -42,6 +48,7 @@ public enum ExceptionCode {
     GPP_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물을 찰을 수 없습니다."),
     GPP_CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
     GPP_APPROVAL_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "승인상태를 찾을 수 없습니다."),
+    GPP_PROGRESS_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "진행상태를 찾을 수 없습니다."),
     GPP_PROGRESS_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "진행상태를 찾을 수 없습니다."),
 
     //검색
@@ -58,6 +65,12 @@ public enum ExceptionCode {
     INVALID_USER_ID(HttpStatus.BAD_REQUEST, "유효하지 않은 사용자 ID입니다."),
     NOT_FOUND_FAVORITE(HttpStatus.NOT_FOUND, "이미 찜이 취소되었거나 존재하지 않습니다."),
 
+    // GppComment - 404 NOT FOUND
+    GPP_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물 댓글을 찾을 수 없습니다."),
+    TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "토큰을 찾을 수 없습니다."),
+
+    // 409
+    ALREADY_SUBSCRIBED_GPP(HttpStatus.CONFLICT, "이미 팔로우한 공동구매 게시물입니다.")
     ;
 
     private final HttpStatus status;
