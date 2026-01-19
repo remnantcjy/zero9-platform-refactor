@@ -2,6 +2,7 @@ package com.zero9platform.domain.grouppurchase_post.repository;
 
 import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
+import com.zero9platform.domain.search.model.SearchItemDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchasePost,Long> {
+public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchasePost, Long> {
 
     // 공동구매 게시물 상세 조회 - [삭제처리 제외]
     Optional<GroupPurchasePost> findByIdAndDeletedAtIsNull(Long id);
@@ -32,4 +33,48 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
             """)
     int increaseViewCount(@Param("gppId") Long gppId);
 
+
+    @Query("""
+                SELECT g
+                FROM GroupPurchasePost g
+                JOIN FETCH g.user u 
+                WHERE g.deletedAt is null
+                  and u.nickname like concat('%', :keyword, '%')
+            """)
+    Page<GroupPurchasePost> findByUserNickname(@Param("keyword") String keyword, Pageable pageable);
+
+    //통합 상품 키워드 검색
+    @Query("""
+                SELECT g
+                FROM GroupPurchasePost g
+                WHERE g.deletedAt is null
+                and g.productName LIKE CONCAT('%', :keyword, '%')
+            """)
+    Page<GroupPurchasePost> findByProductName(@Param("keyword") String keyword, Pageable pageable);
+
+
+    @Query("""
+                SELECT
+                    g.id,
+                    u.id,
+                    u.nickname,
+                    g.image,
+                    g.productName,
+                    g.price,
+                    g.viewCount,
+                    (select count(f.id)
+                        from GppFavorite f
+                        where f.groupPurchasePost.id = g.id
+                    ),
+                    g.startDate,
+                    g.endDate
+                FROM GroupPurchasePost g
+                JOIN FETCH g.user u
+                where g.deletedAt is null
+                  and (
+                        u.nickname like concat('%', :keyword, '%')
+                     or g.productName like concat('%', :keyword, '%')
+                  )
+            """)
+    Page<SearchItemDto> searchWithFavoriteCount(@Param("keyword") String keyword, Pageable pageable);
 }

@@ -25,19 +25,13 @@ public class SearchController {
      * - 인플루언서 활동 닉네임
      */
     @GetMapping("/searches")
-    public ResponseEntity<CommonResponse<PageResponse<SearchItemDto>>> searchGetHandler(@Valid @RequestBody SearchRequest rRequest, Pageable pageable) {
-
-        // 검증된 검색어 키워드 추출
-        String keyword = rRequest.getKeyword();
+    public ResponseEntity<CommonResponse<PageResponse<SearchItemDto>>> searchGetHandler(@Valid @RequestBody SearchRequest request, Pageable pageable) {
 
         // 검색 서비스 호출
-        PageResponse pageResponse = searchService.search(keyword, pageable);
-
-        // 공통응답 객체 사용
-        CommonResponse commonResponse = new CommonResponse(true, "통합 검색 결과 조회 성공", pageResponse);
+        PageResponse<SearchItemDto> pageResponse = searchService.search(request, pageable);
 
         // 공통 응답 포맷으로 반환
-        return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("통합 검색 결과 조회 성공", pageResponse));
     }
 
 }
