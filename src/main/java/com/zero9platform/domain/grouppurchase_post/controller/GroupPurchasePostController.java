@@ -45,7 +45,7 @@ public class GroupPurchasePostController {
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 목록 조회 성공", response));
     }
-    
+
     /**
      * 공동구매 게시물 상세 조회
      */
@@ -78,5 +78,4 @@ public class GroupPurchasePostController {
 
         return ResponseEntity.ok(CommonResponse.success("공동구매 게시물 삭제 성공", null));
     }
-
 }

@@ -25,4 +25,9 @@ public class GppFollow {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gpp_id")
     private GroupPurchasePost groupPurchasePost;
+
+    public GppFollow(User user, GroupPurchasePost groupPurchasePost) {
+        this.user = user;
+        this.groupPurchasePost = groupPurchasePost;
+    }
 }
