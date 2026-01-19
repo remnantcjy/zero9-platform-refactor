@@ -77,8 +77,6 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/zero9/users"
                         ).permitAll()
-                        .requestMatchers("/zero9/{gppId}/favorites/**").permitAll()
-                        .requestMatchers("/zero9/favorites/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/zero9/users").permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,

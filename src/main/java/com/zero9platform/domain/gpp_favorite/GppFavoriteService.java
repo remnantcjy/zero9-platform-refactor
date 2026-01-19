@@ -1,11 +1,12 @@
 package com.zero9platform.domain.gpp_favorite;
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_favorite.entity.GppFavorite;
 import com.zero9platform.domain.gpp_favorite.model.response.GppFavoriteCreateResponse;
-import com.zero9platform.domain.gpp_favorite.model.GppFavoriteGetDto;
+import com.zero9platform.domain.gpp_favorite.model.GppFavoriteGetResponse;
 import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
@@ -17,13 +18,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class GppFavoriteService {
 
     private final GppFavoriteRepository gppFavoriteRepository;
     private final UserRepository userRepository;
-    private final GroupPurchasePostRepository groupPurchasePost;
+    private final GroupPurchasePostRepository groupPurchasePostRepository;
 
     /**
      * 찜 등록
@@ -31,54 +34,27 @@ public class GppFavoriteService {
     @Transactional
     public GppFavoriteCreateResponse gppFavoriteCreate(Long gppId, Long userId) {
 
-        //NPE 방어
-        if (gppId == null || userId == null) {
-            throw new CustomException(ExceptionCode.INVALID_REQUEST);
-        }
-
         //유저 아이디정보 DB에서 추출
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //게시물 존재 여부 확인
-        GroupPurchasePost post = groupPurchasePost.findById(gppId).orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+        GroupPurchasePost gpPost = groupPurchasePostRepository.findByIdAndDeletedAtIsNullAndGppApprovalStatus(gppId,GppApprovalStatus.APPROVED)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         //중복 등록 방지
-        if (gppFavoriteRepository.existsByUserAndGroupPurchasePost(user, post)) {
+        boolean existence = gppFavoriteRepository.existsByUserIdAndGroupPurchasePostId(user.getId(), gpPost.getId());
+
+        if (existence) {
             throw new CustomException(ExceptionCode.ALREADY_FAVORITE);
         }
 
         //게시물이 있으면 로그인 되있는 유저 아이디를 추가
-        GppFavorite gppFavorite = new GppFavorite(user, post);
+        GppFavorite gppFavorite = new GppFavorite(user, gpPost);
+
         gppFavoriteRepository.save(gppFavorite);
 
         return GppFavoriteCreateResponse.from(gppFavorite);
-    }
-
-    /**
-     * 찜 목록 조회
-     */
-    @Transactional(readOnly = true)
-    public PageResponse<GppFavoriteGetDto> gppFavoritePage(Long userId, Pageable pageable) {
-
-        //NPE 방어
-        if (userId == null) {
-            throw new CustomException(ExceptionCode.NOT_FOUND_USER);
-        }
-
-        //유저 아이디가 디비에서 favorite 한 리스트를 가져온다.
-        Page<GppFavorite> gppFavoritePage = gppFavoriteRepository.findByUserId(userId, pageable);
-
-        //없으면 예외처리
-        if (gppFavoritePage.isEmpty()) {
-            throw new CustomException(ExceptionCode.FAVORITE_NOT_FOUND);
-        }
-
-        //있으면 리스트를 리스폰스에 담는다.
-        Page<GppFavoriteGetDto> GppFavoriteGetDtoPage =
-                gppFavoritePage.map(GppFavoriteGetDto::from);
-
-        return PageResponse.from(GppFavoriteGetDtoPage);
     }
 
     /**
@@ -87,24 +63,46 @@ public class GppFavoriteService {
     @Transactional
     public void gppFavoriteCancellation(Long gppId, Long userId) {
 
-        //NPE 방어
-        if (gppId == null) {
-            throw new CustomException(ExceptionCode.INVALID_REQUEST);
-        }
-
-        //유저 아이디정보 DB에서 추출
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //게시물 존재 여부 확인
-        GroupPurchasePost post = groupPurchasePost.findById(gppId).orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+        GroupPurchasePost gpPost = groupPurchasePostRepository.findByIdAndDeletedAtIsNullAndGppApprovalStatus(gppId, GppApprovalStatus.APPROVED)
+                        .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         // 찜 존재 여부 확인
-        GppFavorite favorite = gppFavoriteRepository.findByUser_IdAndGroupPurchasePost_Id(userId, gppId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_FAVORITE));
+        Optional<GppFavorite> gppFavorite = gppFavoriteRepository.findByUserIdAndGroupPurchasePostId(user.getId(), gpPost.getId());
+
+        if (gppFavorite.isEmpty()) {
+            throw new CustomException(ExceptionCode.NOT_FOUND_FAVORITE);
+        }
 
         // 삭제
-        gppFavoriteRepository.delete(favorite);
+        gppFavoriteRepository.deleteById(gppFavorite.get().getId());
+    }
+
+    /**
+     * 찜 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<GppFavoriteGetResponse> gppFavoritePage(Long userId, Pageable pageable) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
+
+        //유저 아이디가 찜 등록한 리스트 조회하기
+        Page<GppFavorite> gppFavoritePage = gppFavoriteRepository.findByUserId(user.getId(),pageable);
+
+        //없으면 예외처리
+        if (gppFavoritePage.isEmpty()) {
+            throw new CustomException(ExceptionCode.FAVORITE_NOT_FOUND);
+        }
+
+        //있으면 리스트를 리스폰스에 담는다.
+        Page<GppFavoriteGetResponse> GppFavoriteGetDtoPage =
+                gppFavoritePage.map(GppFavoriteGetResponse::from);
+
+        return PageResponse.from(GppFavoriteGetDtoPage);
     }
 
 }

@@ -8,15 +8,15 @@ import java.time.LocalDateTime;
 
 @Getter
 @RequiredArgsConstructor
-public class GppFavoriteGetDto {
+public class GppFavoriteGetResponse {
 
     private final Long gppId;
     private final Long userId;
     private final String productName;
     private final LocalDateTime createdAt;
 
-    public static GppFavoriteGetDto from(GppFavorite gppFavorite) {
-        return new GppFavoriteGetDto(
+    public static GppFavoriteGetResponse from(GppFavorite gppFavorite) {
+        return new GppFavoriteGetResponse(
                 gppFavorite.getId(),
                 gppFavorite.getUser().getId(),
                 gppFavorite.getGroupPurchasePost().getProductName(),
