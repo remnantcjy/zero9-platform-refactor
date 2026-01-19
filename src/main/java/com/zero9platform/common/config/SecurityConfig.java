@@ -70,7 +70,8 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/zero9/gp-posts/**",
                                 "/zero9/posts/**",
-                                "/zero9/searches/**"
+                                "/zero9/searches/**",
+                                "/zero9/gpp-comments/**"
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.POST,
