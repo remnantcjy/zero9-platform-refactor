@@ -12,6 +12,7 @@ public enum ExceptionCode {
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
     // 사용자
+    ADMIN_DATA_NOT_ALLOWED(HttpStatus.FORBIDDEN, "관리자 관련 데이터는 사용할 수 없습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     USER_WITHDRAWN(HttpStatus.FORBIDDEN, "탈퇴한 회원입니다."),
     PASSWORD_NOT_MATCH(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
