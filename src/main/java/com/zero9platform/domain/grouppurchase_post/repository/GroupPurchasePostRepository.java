@@ -37,7 +37,7 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
     @Query("""
                 SELECT g
                 FROM GroupPurchasePost g
-                JOIN g.user u
+                JOIN FETCH g.user u
                 WHERE u.nickname LIKE CONCAT('%', :keyword, '%')
             """)
     Page<GroupPurchasePost> findByUserNickname(@Param("keyword") String keyword, Pageable pageable);
