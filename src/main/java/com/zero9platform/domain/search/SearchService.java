@@ -6,9 +6,8 @@ import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.search.entity.Search;
-import com.zero9platform.domain.search.model.SearchItemDto;
+import com.zero9platform.domain.search.model.SearchItemResponse;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
-import com.zero9platform.domain.search.model.request.SearchRequest;
 import com.zero9platform.domain.search.repository.SearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,21 +33,21 @@ public class SearchService {
      * 키워드 통합 검색
      */
     @Transactional
-    public PageResponse<SearchItemDto> search(SearchRequest request, Pageable pageable) {
+    public PageResponse<SearchItemResponse> search(String keyword, Pageable pageable) {
 
         // 검색어 유효성 검증
-        if (request.getKeyword() == null || request.getKeyword().isBlank()) {
+        if (keyword == null || keyword.isBlank()) {
             throw new CustomException(ExceptionCode.INVALID_KEYWORD);
         }
 
         Page<GroupPurchasePost> searchResult;
 
         // 인플루언서가 존재하는 경우 → 해당 인플루언서가 등록한 공동구매 상품 조회
-        searchResult = groupPurchasePostRepository.findByUserNickname(request.getKeyword(), pageable);
+        searchResult = groupPurchasePostRepository.findByUserNickname(keyword, pageable);
 
         // 인플루언서는 있으나 등록된 상품이 없는 경우
         if (searchResult.isEmpty()) {
-            searchResult = groupPurchasePostRepository.findByProductName(request.getKeyword(), pageable);
+            searchResult = groupPurchasePostRepository.findByProductName(keyword, pageable);
         }
 
         // 공동 구매 게시물 상품 명도 없는 경우
@@ -57,7 +56,7 @@ public class SearchService {
         }
 
         // 검색어 로그 저장 (검색 카운트 증가)
-        saveSearchKeyword(request.getKeyword());
+        saveSearchKeyword(keyword);
 
         // searchResult로부터 gppId 추출
         List<Long> gppIdList = new ArrayList<>();
@@ -72,12 +71,12 @@ public class SearchService {
         }
 
         // DTO 변환
-        List<SearchItemDto> dtoList = new ArrayList<>();
+        List<SearchItemResponse> dtoList = new ArrayList<>();
         for (GroupPurchasePost post : searchResult.getContent()) {
-            dtoList.add(SearchItemDto.from(post, favoriteCountMap.getOrDefault(post.getId(), 0L)));
+            dtoList.add(SearchItemResponse.from(post, favoriteCountMap.getOrDefault(post.getId(), 0L)));
         }
 
-        Page<SearchItemDto> mappedPage = new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
+        Page<SearchItemResponse> mappedPage = new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
 
         // 공통 페이징 응답 객체로 변환
         return PageResponse.from(mappedPage);
