@@ -23,7 +23,7 @@ public class SearchController {
      * - 인플루언서 활동 닉네임
      */
     @GetMapping("/searches")
-    public ResponseEntity<CommonResponse<PageResponse<SearchItemResponse>>> searchGetHandler(@RequestParam String keyword, Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<SearchItemResponse>>> searchGetHandler(@RequestParam(required = false) String keyword, Pageable pageable) {
 
         // 검색 서비스 호출
         PageResponse<SearchItemResponse> pageResponse = searchService.search(keyword, pageable);
