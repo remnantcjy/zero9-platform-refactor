@@ -12,9 +12,15 @@ import com.zero9platform.domain.search.model.request.SearchRequest;
 import com.zero9platform.domain.search.repository.SearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -53,8 +59,31 @@ public class SearchService {
         // 검색어 로그 저장 (검색 카운트 증가)
         saveSearchKeyword(request.getKeyword());
 
-        // 엔터티 → 응답 DTO 매핑
-        Page<SearchItemDto> mappedPage = searchResult.map(SearchItemDto::from);
+        // searchResult로부터 gppId 추출
+        List<Long> gppIds = new ArrayList<>();
+        for (GroupPurchasePost post : searchResult) {
+            gppIds.add(post.getId());
+        }
+
+        // 찜 개수 조회 -> Map 변환
+        Map<Long, Long> favoriteCountMap = new HashMap<>();
+        for (Object[] row : gppFavoriteRepository.countByGppIds(gppIds)) {
+            favoriteCountMap.put((Long) row[0], (Long) row[1]);
+        }
+
+        // DTO 변환
+        List<SearchItemDto> dtoList = new ArrayList<>();
+        for (GroupPurchasePost post : searchResult.getContent()) {
+            dtoList.add(
+                    SearchItemDto.from(
+                            post,
+                            favoriteCountMap.getOrDefault(post.getId(), 0L)
+                    )
+            );
+        }
+
+        Page<SearchItemDto> mappedPage =
+                new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
 
         // 공통 페이징 응답 객체로 변환
         return PageResponse.from(mappedPage);

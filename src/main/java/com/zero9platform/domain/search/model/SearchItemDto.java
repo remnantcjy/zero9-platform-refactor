@@ -17,11 +17,11 @@ public class SearchItemDto {
     private final String productName;
     private final Long price;
     private final Long viewCount;
-//    private final Long favoriteCount;
+    private final Long favoriteCount;
     private final LocalDateTime startDate;
     private final LocalDateTime endDate;
 
-    public static SearchItemDto from(GroupPurchasePost post) {
+    public static SearchItemDto from(GroupPurchasePost post, Long favoriteCount) {
         return new SearchItemDto(
                 post.getId(),
                 post.getUser().getId(),
@@ -30,7 +30,7 @@ public class SearchItemDto {
                 post.getProductName(),
                 post.getPrice(),
                 post.getViewCount(),
-//                post.getFavoriteCount(),
+                favoriteCount,
                 post.getStartDate(),
                 post.getEndDate()
         );
