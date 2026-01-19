@@ -1,8 +1,8 @@
 package com.zero9platform.domain.user.Service;
 
-import com.zero9platform.domain.influencer.entity.Influencer;
+import com.zero9platform.domain.admin.entity.Influencer;
 import com.zero9platform.domain.user.model.influencer.InfluencerDetailResponse;
-import com.zero9platform.domain.influencer.repository.InfluencerRepository;
+import com.zero9platform.domain.admin.repository.InfluencerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

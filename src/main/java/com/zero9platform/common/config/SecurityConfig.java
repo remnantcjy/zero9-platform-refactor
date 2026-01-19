@@ -17,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 
 @Configuration
@@ -44,6 +45,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
 
+                // JWT 인증 필터 등록
+                .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
+
                 // 세션 설정: STATELESS (JWT 기반 인증)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -54,9 +58,6 @@ public class SecurityConfig {
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패 (401)
                         .accessDeniedHandler(jwtAccessDeniedHandler) // 권한 실패 (403)
                 )
-
-                // JWT 인증 필터 등록
-                .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
 
                 // 인가(Authorization) 설정
                 .authorizeHttpRequests(auth -> auth

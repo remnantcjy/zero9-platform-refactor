@@ -31,5 +31,4 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                 where g.id = :gppId and g.deletedAt is null
             """)
     int increaseViewCount(@Param("gppId") Long gppId);
-
 }

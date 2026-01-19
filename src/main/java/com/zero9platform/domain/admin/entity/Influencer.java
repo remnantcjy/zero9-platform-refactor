@@ -1,4 +1,4 @@
-package com.zero9platform.domain.influencer.entity;
+package com.zero9platform.domain.admin.entity;
 
 import com.zero9platform.domain.user.entity.User;
 import jakarta.persistence.*;
