@@ -1,8 +1,6 @@
 package com.zero9platform.domain.user.entity;
 
 import com.zero9platform.common.entity.BaseEntity;
-import com.zero9platform.common.enums.UserRole;
-import com.zero9platform.domain.influencer.entity.Influencer;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
