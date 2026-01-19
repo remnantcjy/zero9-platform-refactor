@@ -39,7 +39,7 @@ public class GppFavoriteService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //게시물 존재 여부 확인
-        GroupPurchasePost gpPost = groupPurchasePostRepository.findByIdAndDeletedAtIsNullAndGppApprovalStatus(gppId,GppApprovalStatus.APPROVED)
+        GroupPurchasePost gpPost = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         //중복 등록 방지
@@ -67,7 +67,7 @@ public class GppFavoriteService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //게시물 존재 여부 확인
-        GroupPurchasePost gpPost = groupPurchasePostRepository.findByIdAndDeletedAtIsNullAndGppApprovalStatus(gppId, GppApprovalStatus.APPROVED)
+        GroupPurchasePost gpPost = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                         .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         // 찜 존재 여부 확인
