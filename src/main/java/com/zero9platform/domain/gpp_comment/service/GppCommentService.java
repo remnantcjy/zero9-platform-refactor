@@ -65,6 +65,7 @@ public class GppCommentService {
      */
     @Transactional
     public void gppCommentUpdate(Long userId, Long gppCommentId, GppCommentUpdateRequest request) {
+
         GppComment gppComment = gppCommentRepository.findById(gppCommentId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_COMMENT));
 

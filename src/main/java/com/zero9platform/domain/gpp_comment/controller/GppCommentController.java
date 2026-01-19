@@ -32,7 +32,7 @@ public class GppCommentController {
 
         GppCommentCreateResponse response = gppCommentService.gppCommentCreate(authUser.getId(), request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("댓글 생성 성공", response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("공동구매 게시물 댓글 생성 성공", response));
     }
 
     /**
@@ -43,7 +43,7 @@ public class GppCommentController {
 
         PageResponse<GppCommentGetListResponse> response = gppCommentService.gppCommentGetPage(request, pageable);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("댓글 조회 성공", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 댓글 조회 성공", response));
     }
 
     /**
@@ -54,7 +54,7 @@ public class GppCommentController {
 
         gppCommentService.gppCommentUpdate(authUser.getId(), gppCommentId, request);
 
-        return ResponseEntity.ok(CommonResponse.success("댓글 수정 성공", null));
+        return ResponseEntity.ok(CommonResponse.success("공동구매 게시물 댓글 수정 성공", null));
     }
 
     /**
@@ -65,6 +65,6 @@ public class GppCommentController {
 
         gppCommentService.gppCommentDelete(authUser.getId(), gppCommentId);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("댓글 삭제 성공", null));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 댓글 삭제 성공", null));
     }
 }
