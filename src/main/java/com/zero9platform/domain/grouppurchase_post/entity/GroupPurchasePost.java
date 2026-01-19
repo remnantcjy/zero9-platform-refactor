@@ -111,7 +111,7 @@ public class GroupPurchasePost extends BaseEntity {
 //    }
 
     /**
-     * 공동 게시물 승인 (관리자)
+     * 공동구매 승인 (관리자)
      */
     public void GppApprove(GppApprovalStatus approvalStatus) {
         this.gppApprovalStatus = approvalStatus;

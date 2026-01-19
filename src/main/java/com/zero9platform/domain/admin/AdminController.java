@@ -30,13 +30,13 @@ public class AdminController {
     }
 
     /**
-     * 공동 게시물 상태 변경
+     * 인플루언서 공동구매 게시물 승인
      */
     @PutMapping("/gp-posts/{gppId}/approval")
     public ResponseEntity<CommonResponse<GpPostApproveResponse>> gpPostApproveHandler(@PathVariable Long gppId, @RequestBody GpPostApproveRequest request) {
 
         GpPostApproveResponse response = adminService.gpPostApprove(gppId, request);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동 게시물 상태 변공 성공", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인플루언서 공동구매 게시물 승인 성공", response));
     }
 }
