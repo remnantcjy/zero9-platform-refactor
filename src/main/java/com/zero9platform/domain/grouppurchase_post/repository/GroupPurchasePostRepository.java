@@ -51,30 +51,4 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                 and g.productName LIKE CONCAT('%', :keyword, '%')
             """)
     Page<GroupPurchasePost> findByProductName(@Param("keyword") String keyword, Pageable pageable);
-
-
-    @Query("""
-                SELECT
-                    g.id,
-                    u.id,
-                    u.nickname,
-                    g.image,
-                    g.productName,
-                    g.price,
-                    g.viewCount,
-                    (select count(f.id)
-                        from GppFavorite f
-                        where f.groupPurchasePost.id = g.id
-                    ),
-                    g.startDate,
-                    g.endDate
-                FROM GroupPurchasePost g
-                JOIN FETCH g.user u
-                where g.deletedAt is null
-                  and (
-                        u.nickname like concat('%', :keyword, '%')
-                     or g.productName like concat('%', :keyword, '%')
-                  )
-            """)
-    Page<SearchItemDto> searchWithFavoriteCount(@Param("keyword") String keyword, Pageable pageable);
 }
