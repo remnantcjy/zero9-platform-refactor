@@ -68,8 +68,8 @@ public class SecurityConfig {
                         .requestMatchers("/zero9/auth/**").permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/zero9/gp-post/**",
-                                "/zero9/post/**",
+                                "/zero9/gp-posts/**",
+                                "/zero9/posts/**",
                                 "/zero9/searches/**"
                         ).permitAll()
                         .requestMatchers(
