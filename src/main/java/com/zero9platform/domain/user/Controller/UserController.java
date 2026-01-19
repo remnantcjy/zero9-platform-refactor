@@ -34,6 +34,13 @@ public class UserController {
     @PostMapping("/users")
     public ResponseEntity<CommonResponse<UserCreateResponse>> createUserHandler(@Valid @RequestBody UserCreateRequest request) {
 
+        String admin_kr = "관리자";
+
+        // 관리자 관련 데이터는 전부 예외처리
+        if (request.getRole().equals(UserRole.ADMIN) || "admin".equalsIgnoreCase(request.getLoginId()) || admin_kr.equals(request.getName()) || admin_kr.equals(request.getNickname())) {
+            throw new CustomException(ExceptionCode.ADMIN_DATA_NOT_ALLOWED);
+        }
+
         // 인플루언서는 소셜 링크 필수 입력 검사
         if (request.getRole().equals(UserRole.INFLUENCER) && (request.getInfluencerSocialLink() == null || request.getInfluencerSocialLink().isEmpty())) {
             throw new CustomException(ExceptionCode.INFLUENCER_SOCIAL_LINK_REQUIRED);
@@ -86,6 +93,9 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("사용자 프로필 수정이 완료 되었습니다.", response));
     }
 
+    /**
+     * 회원 삭제 (완전 삭제가 아닌 삭제 날짜 업데이트)
+     */
     @DeleteMapping("/users")
     public ResponseEntity<CommonResponse<Void>> userDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody UserDeleteRequest request) {
 
