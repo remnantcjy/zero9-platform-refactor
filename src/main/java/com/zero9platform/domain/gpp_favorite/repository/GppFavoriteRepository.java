@@ -27,10 +27,10 @@ public interface GppFavoriteRepository extends JpaRepository<GppFavorite, Long> 
     @Query("""
     SELECT gf.groupPurchasePost.id, COUNT(gf)
     FROM GppFavorite gf
-    WHERE gf.groupPurchasePost.id IN :gppIds
+    WHERE gf.groupPurchasePost.id IN :gppIdList
     GROUP BY gf.groupPurchasePost.id
 """)
-    List<Object[]> countByGppIds(@Param("gppIds") List<Long> gppIds);
+    List<Object[]> countByGppIdList(@Param("gppIdList") List<Long> gppIdList);
     // 내부적으로는 아래와 같음
 //    SELECT gpp_id, COUNT(*)
 //    FROM gpp_favorites

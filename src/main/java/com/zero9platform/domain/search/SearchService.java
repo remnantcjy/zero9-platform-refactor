@@ -60,30 +60,24 @@ public class SearchService {
         saveSearchKeyword(request.getKeyword());
 
         // searchResult로부터 gppId 추출
-        List<Long> gppIds = new ArrayList<>();
+        List<Long> gppIdList = new ArrayList<>();
         for (GroupPurchasePost post : searchResult) {
-            gppIds.add(post.getId());
+            gppIdList.add(post.getId());
         }
 
         // 찜 개수 조회 -> Map 변환
         Map<Long, Long> favoriteCountMap = new HashMap<>();
-        for (Object[] row : gppFavoriteRepository.countByGppIds(gppIds)) {
+        for (Object[] row : gppFavoriteRepository.countByGppIdList(gppIdList)) {
             favoriteCountMap.put((Long) row[0], (Long) row[1]);
         }
 
         // DTO 변환
         List<SearchItemDto> dtoList = new ArrayList<>();
         for (GroupPurchasePost post : searchResult.getContent()) {
-            dtoList.add(
-                    SearchItemDto.from(
-                            post,
-                            favoriteCountMap.getOrDefault(post.getId(), 0L)
-                    )
-            );
+            dtoList.add(SearchItemDto.from(post, favoriteCountMap.getOrDefault(post.getId(), 0L)));
         }
 
-        Page<SearchItemDto> mappedPage =
-                new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
+        Page<SearchItemDto> mappedPage = new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
 
         // 공통 페이징 응답 객체로 변환
         return PageResponse.from(mappedPage);
