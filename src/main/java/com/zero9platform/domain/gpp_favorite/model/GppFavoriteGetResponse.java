@@ -3,7 +3,6 @@ package com.zero9platform.domain.gpp_favorite.model;
 import com.zero9platform.domain.gpp_favorite.entity.GppFavorite;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Getter

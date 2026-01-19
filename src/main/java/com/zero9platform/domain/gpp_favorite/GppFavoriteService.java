@@ -1,7 +1,6 @@
 package com.zero9platform.domain.gpp_favorite;
 
 import com.zero9platform.common.enums.ExceptionCode;
-import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_favorite.entity.GppFavorite;
@@ -68,7 +67,7 @@ public class GppFavoriteService {
 
         //게시물 존재 여부 확인
         GroupPurchasePost gpPost = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
-                        .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         // 찜 존재 여부 확인
         Optional<GppFavorite> gppFavorite = gppFavoriteRepository.findByUserIdAndGroupPurchasePostId(user.getId(), gpPost.getId());
@@ -91,7 +90,7 @@ public class GppFavoriteService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //유저 아이디가 찜 등록한 리스트 조회하기
-        Page<GppFavorite> gppFavoritePage = gppFavoriteRepository.findByUserId(user.getId(),pageable);
+        Page<GppFavorite> gppFavoritePage = gppFavoriteRepository.findByUserId(user.getId(), pageable);
 
         //없으면 예외처리
         if (gppFavoritePage.isEmpty()) {
@@ -99,8 +98,7 @@ public class GppFavoriteService {
         }
 
         //있으면 리스트를 리스폰스에 담는다.
-        Page<GppFavoriteGetResponse> GppFavoriteGetDtoPage =
-                gppFavoritePage.map(GppFavoriteGetResponse::from);
+        Page<GppFavoriteGetResponse> GppFavoriteGetDtoPage = gppFavoritePage.map(GppFavoriteGetResponse::from);
 
         return PageResponse.from(GppFavoriteGetDtoPage);
     }

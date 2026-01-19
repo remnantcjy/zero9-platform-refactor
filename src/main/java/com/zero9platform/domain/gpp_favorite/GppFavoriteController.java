@@ -1,7 +1,5 @@
 package com.zero9platform.domain.gpp_favorite;
 
-import com.zero9platform.common.enums.ExceptionCode;
-import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.auth.model.AuthUser;
@@ -31,9 +29,7 @@ public class GppFavoriteController {
 
         GppFavoriteCreateResponse createResponse = gppFavoriteService.gppFavoriteCreate(gppId, userId);
 
-        CommonResponse<GppFavoriteCreateResponse> commonResponse = new CommonResponse<>(true, "찜 등록 성공", createResponse);
-
-        return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 등록 성공", createResponse));
     }
 
     /**
@@ -46,9 +42,7 @@ public class GppFavoriteController {
 
         gppFavoriteService.gppFavoriteCancellation(gppId, userId);
 
-        CommonResponse<Void> commonResponse = new CommonResponse<>(true, "찜 등록취소 성공", null);
-
-        return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 등록취소 성공", null));
     }
 
     /**
@@ -61,9 +55,7 @@ public class GppFavoriteController {
 
         PageResponse<GppFavoriteGetResponse> favoriteList = gppFavoriteService.gppFavoritePage(userId, pageable);
 
-        CommonResponse<PageResponse<GppFavoriteGetResponse>> commonResponse = new CommonResponse<>(true, "찜 목록 조회 성공", favoriteList);
-
-        return ResponseEntity.status(HttpStatus.OK).body(commonResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 목록 조회 성공", favoriteList));
     }
 
 }
