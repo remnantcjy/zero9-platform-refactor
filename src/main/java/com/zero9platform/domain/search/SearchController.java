@@ -1,11 +1,9 @@
 package com.zero9platform.domain.search;
 
-import com.zero9platform.common.enums.ExceptionCode;
-import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.search.model.SearchItemDto;
-import io.micrometer.common.util.StringUtils;
+import com.zero9platform.domain.search.model.request.SearchRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +25,8 @@ public class SearchController {
      * - 인플루언서 활동 닉네임
      */
     @GetMapping("/searches")
-    public ResponseEntity<CommonResponse<PageResponse<SearchItemDto>>> searchGetHandler(
-            @Valid @RequestBody SearchRequest rRequest,
-            Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<SearchItemDto>>> searchGetHandler(@Valid @RequestBody SearchRequest rRequest, Pageable pageable) {
+
         // 검증된 검색어 키워드 추출
         String keyword = rRequest.getKeyword();
 

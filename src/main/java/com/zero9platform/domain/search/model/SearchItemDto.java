@@ -17,7 +17,7 @@ public class SearchItemDto {
     private final String productName;
     private final Long price;
     private final Long viewCount;
-    private final Long favoriteCount;
+//    private final Long favoriteCount;
     private final LocalDateTime startDate;
     private final LocalDateTime endDate;
 
@@ -30,7 +30,7 @@ public class SearchItemDto {
                 post.getProductName(),
                 post.getPrice(),
                 post.getViewCount(),
-                post.getFavoriteCount(),
+//                post.getFavoriteCount(),
                 post.getStartDate(),
                 post.getEndDate()
         );
