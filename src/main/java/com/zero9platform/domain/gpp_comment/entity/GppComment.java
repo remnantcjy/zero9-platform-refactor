@@ -28,4 +28,17 @@ public class GppComment extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    public GppComment(GroupPurchasePost groupPurchasePost, User user, String content) {
+        this.groupPurchasePost = groupPurchasePost;
+        this.user = user;
+        this.content = content;
+    }
+
+    public void update(String content) {
+        if (content != null) {
+            this.content = content;
+        }
+    }
+
 }
