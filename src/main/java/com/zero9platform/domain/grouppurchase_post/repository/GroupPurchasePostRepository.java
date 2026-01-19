@@ -2,7 +2,6 @@ package com.zero9platform.domain.grouppurchase_post.repository;
 
 import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
-import com.zero9platform.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchasePost, Long> {
+public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchasePost,Long> {
 
     // 공동구매 게시물 상세 조회 - [삭제처리 제외]
     Optional<GroupPurchasePost> findByIdAndDeletedAtIsNull(Long id);
@@ -33,21 +32,4 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
             """)
     int increaseViewCount(@Param("gppId") Long gppId);
 
-    //인플루언서가 등록한 상품 검색
-    @Query("""
-                SELECT g
-                FROM GroupPurchasePost g
-                JOIN FETCH g.user u
-                WHERE u.nickname LIKE CONCAT('%', :keyword, '%')
-            """)
-    Page<GroupPurchasePost> findByUserNickname(@Param("keyword") String keyword, Pageable pageable);
-
-
-    //통합 상품 키워드 검색
-    @Query("""
-                        SELECT g
-                        FROM GroupPurchasePost g
-                        WHERE g.productName LIKE CONCAT('%', :keyword, '%')
-            """)
-    Page<GroupPurchasePost> findByProductName(String keyword, Pageable pageable);
 }

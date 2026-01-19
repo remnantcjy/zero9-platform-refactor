@@ -80,7 +80,9 @@ public class GroupPurchasePost extends BaseEntity {
         this.endDate = endDate;
     }
 
-    // 수정
+    /**
+     * gpp 게시물 수정
+     */
     public void update(String productName, String content, String image, Long price, String linkUrl, Category category, GppProgressStatus gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
         this.productName = productName;
         this.content = content;
@@ -93,7 +95,9 @@ public class GroupPurchasePost extends BaseEntity {
         this.endDate = endDate;
     }
 
-    // 삭제
+    /**
+     * gpp 게시물 삭제
+     */
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
@@ -105,4 +109,10 @@ public class GroupPurchasePost extends BaseEntity {
 //        this.viewCount++;
 //    }
 
+    /**
+     * 공동구매 승인 (관리자)
+     */
+    public void GppApprove(GppApprovalStatus approvalStatus) {
+        this.gppApprovalStatus = approvalStatus;
+    }
 }
