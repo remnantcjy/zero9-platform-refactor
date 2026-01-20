@@ -1,9 +1,12 @@
 package com.zero9platform.domain.user.Controller;
 
 import com.zero9platform.common.model.CommonResponse;
+import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.user.Service.InfluencerService;
 import com.zero9platform.domain.user.model.influencer.InfluencerDetailResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,10 +27,12 @@ public class InfluencerController {
      * 인플루언서 목록 조회
      */
     @GetMapping("/influencers")
-    public ResponseEntity<CommonResponse<List<InfluencerDetailResponse>>> InfluencersListHandler(@RequestParam(required = false) Boolean approved)  {
+    public ResponseEntity<CommonResponse<PageResponse<InfluencerDetailResponse>>> InfluencersListHandler(@RequestParam(required = false) Boolean approved, Pageable pageable)  {
 
-        List<InfluencerDetailResponse> influencerList = influencerService.influencerList(approved);
+        Page<InfluencerDetailResponse> page = influencerService.influencerList(approved, pageable);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인플루언서 목록 조회 성공", influencerList));
+        PageResponse<InfluencerDetailResponse> response = PageResponse.from(page);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인플루언서 목록 조회 성공", response));
     }
 }

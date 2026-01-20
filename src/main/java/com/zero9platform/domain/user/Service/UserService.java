@@ -11,6 +11,8 @@ import com.zero9platform.domain.user.model.user.request.*;
 import com.zero9platform.domain.user.model.user.response.*;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -101,13 +103,10 @@ public class UserService {
      * 사용자 목록 조회
      */
     @Transactional(readOnly = true)
-    public List<UserDetailResponse> userList() {
+    public Page<UserDetailResponse> userList(Pageable pageable) {
 
-        List<User> userList = userRepository.findAll();
-
-        return userList.stream()
-                .map(UserDetailResponse::from)
-                .toList();
+        return userRepository.findAll(pageable)
+                .map(UserDetailResponse::from);
     }
 
     /**
