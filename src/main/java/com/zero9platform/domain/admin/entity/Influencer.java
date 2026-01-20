@@ -45,8 +45,4 @@ public class Influencer {
         this.influencerApprovalStatus = approve;
         this.approvalAt = LocalDateTime.now();
     }
-
-    public String getSocialLink() {
-        return influencerSocialLink;
-    }
 }

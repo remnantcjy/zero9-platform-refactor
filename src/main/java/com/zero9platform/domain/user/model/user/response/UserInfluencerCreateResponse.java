@@ -26,10 +26,10 @@ public class UserInfluencerCreateResponse extends UserCreateResponse {
         this.influencerSocialLink = influencerSocialLink;
     }
 
-    public static UserInfluencerCreateResponse from(User user, Influencer influencer) {
+    public static UserInfluencerCreateResponse from(User user, String influencer) {
         return new UserInfluencerCreateResponse(
                 user,
-                influencer.getSocialLink()
+                influencer
         );
     }
 }

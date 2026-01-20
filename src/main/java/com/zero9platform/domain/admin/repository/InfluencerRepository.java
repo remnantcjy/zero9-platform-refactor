@@ -23,4 +23,9 @@ public interface InfluencerRepository extends JpaRepository<Influencer, Long> {
      * 인플루언서 user_id 조회
      */
     Optional<Influencer> findByUserId(Long userId);
+
+    /**
+     * 승인되지 않은 인플루언서 존재 여부 확인
+     */
+    boolean existsByUserIdAndInfluencerApprovalStatusFalse(Long userId);
 }

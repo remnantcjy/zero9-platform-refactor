@@ -56,14 +56,20 @@ public class UserController {
     @GetMapping("/users/{userId}/profile")
     public ResponseEntity<CommonResponse<UserDetailResponse>> userDetailHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long userId) {
 
-        // 권한 확인
-        boolean isAdmin = false;
+        boolean isAdmin = false, // 관리자 권한 확인
+                isMy = false; // 내 자신의 고유 식별자 일때
 
+        // 관리자 권한은 조회 불가능
         if (authUser.getUserRole() == UserRole.ADMIN) {
             isAdmin = true;
         }
+    
+        // 자기 자신일때의 조회 데이터가 다르게 나오는 조건
+        if (authUser.getId().equals(userId)) {
+            isMy = true;
+        }
 
-        UserDetailResponse response = userService.userDetail(userId, isAdmin);
+        UserDetailResponse response = userService.userDetail(userId, isAdmin, isMy);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("사용자 프로필 조회 성공", response));
     }

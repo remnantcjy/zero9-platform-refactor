@@ -8,10 +8,7 @@ import com.zero9platform.domain.admin.entity.Influencer;
 import com.zero9platform.domain.admin.repository.InfluencerRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.model.user.request.*;
-import com.zero9platform.domain.user.model.user.response.UserCreateResponse;
-import com.zero9platform.domain.user.model.user.response.UserDetailResponse;
-import com.zero9platform.domain.user.model.user.response.UserInfluencerCreateResponse;
-import com.zero9platform.domain.user.model.user.response.UserUpdateResponse;
+import com.zero9platform.domain.user.model.user.response.*;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -64,16 +61,17 @@ public class UserService {
         // UserInfluencerCreateRequest형태로 다운 캐스팅
         UserInfluencerCreateRequest influencerRequest = (UserInfluencerCreateRequest) request;
 
-        Influencer influencer = influencerRepository.save(new Influencer(userCreated, influencerRequest.getInfluencerSocialLink()));
+        // 인플루언서 승인 상태 저장
+        influencerRepository.save(new Influencer(userCreated, influencerRequest.getInfluencerSocialLink()));
 
-        return UserInfluencerCreateResponse.from(userCreated, influencer);
+        return UserInfluencerCreateResponse.from(userCreated, influencerRequest.getInfluencerSocialLink());
     }
 
     /**
      * 사용자 프로필 조회
      */
     @Transactional(readOnly = true)
-    public UserDetailResponse userDetail(Long userId, boolean isAdmin) {
+    public UserDetailResponse userDetail(Long userId, boolean isAdmin, boolean isMy) {
 
         User user = findById(userId);
 
@@ -84,7 +82,19 @@ public class UserService {
             }
         }
 
-        return UserDetailResponse.from(user);
+        // 승인되지 않은 인플루언서 예외 처리
+        boolean notProvedInfluencer = influencerRepository.existsByUserIdAndInfluencerApprovalStatusFalse(userId);
+
+        if (notProvedInfluencer) {
+            throw new CustomException(ExceptionCode.INFLUENCER_NOT_APPROVED);
+        }
+
+        // 자기 자신을 조회할때의 데이터는 다르게 나옴
+        if (isMy) {
+            return UserMyDetailResponse.from(user, user.getPhone(), user.getEmail());
+        } else{
+            return UserDetailResponse.from(user);    
+        }
     }
 
     /**
