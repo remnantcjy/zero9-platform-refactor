@@ -7,11 +7,10 @@ import com.zero9platform.common.jwt.JwtUtil;
 import com.zero9platform.domain.admin.entity.Influencer;
 import com.zero9platform.domain.admin.repository.InfluencerRepository;
 import com.zero9platform.domain.user.entity.User;
-import com.zero9platform.domain.user.model.user.request.UserCreateRequest;
-import com.zero9platform.domain.user.model.user.request.UserDeleteRequest;
-import com.zero9platform.domain.user.model.user.request.UserUpdateRequest;
+import com.zero9platform.domain.user.model.user.request.*;
 import com.zero9platform.domain.user.model.user.response.UserCreateResponse;
 import com.zero9platform.domain.user.model.user.response.UserDetailResponse;
+import com.zero9platform.domain.user.model.user.response.UserInfluencerCreateResponse;
 import com.zero9platform.domain.user.model.user.response.UserUpdateResponse;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,38 +29,44 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    private static final String ADMIN_EN = "admin";
+    private static final String ADMIN_KR = "관리자";
+
     /**
      * 회원가입
      */
     @Transactional
-    public UserCreateResponse createUser(UserCreateRequest request) {
+    public UserCreateResponse createUser(UserCreateCommonRequest request) {
 
-        // 중복되는 아이디 조회
+        // 관리자 관련데이터 검증
+        validateNotAdmin(request);
+
+        // 중복검사 아이디
         checkDuplicate(userRepository.existsByLoginId(request.getLoginId()), ExceptionCode.LOGINID_EXIST);
 
-        // 중복되는 이메일 조회
+        // 중복검사 이메일
         checkDuplicate(userRepository.existsByEmail(request.getEmail()), ExceptionCode.EMAIL_EXIST);
 
-        // 중복되는 핸드폰번호 조회
+        // 중복검사 핸드폰
         checkDuplicate(userRepository.existsByPhone(request.getPhone()), ExceptionCode.PHONE_EXIST);
 
-        // 중복되는 이메일 조회
+        // 중복검사 닉네임
         checkDuplicate(userRepository.existsByNickname(request.getNickname()), ExceptionCode.NICKNAME_EXIST);
 
-        User user = new User(request.getLoginId(), passwordEncoder.encode(request.getPassword()), request.getEmail(), request.getName(), request.getRole().name(), request.getPhone(), request.getNickname(), request.getInfluencerSocialLink());
+        User user = new User(request.getLoginId(), passwordEncoder.encode(request.getPassword()), request.getEmail(), request.getName(), request.getRole().name(), request.getPhone(), request.getNickname());
 
         User userCreated = userRepository.save(user);
 
-        String token = "";
-
-        if (request.getRole() == UserRole.INFLUENCER) {
-            influencerRepository.save(new Influencer(userCreated));
-        } else {
-            // 토큰 생성
-            token = jwtUtil.createToken(userCreated.getId(), userCreated.getNickname(), UserRole.valueOf(user.getRole()));
+        if (request.getRole() == UserRole.USER) {
+            return UserCreateResponse.from(userCreated);
         }
 
-        return UserCreateResponse.from(userCreated, token);
+        // UserInfluencerCreateRequest형태로 다운 캐스팅
+        UserInfluencerCreateRequest influencerRequest = (UserInfluencerCreateRequest) request;
+
+        Influencer influencer = influencerRepository.save(new Influencer(userCreated, influencerRequest.getInfluencerSocialLink()));
+
+        return UserInfluencerCreateResponse.from(userCreated, influencer);
     }
 
     /**
@@ -153,5 +158,15 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         return user;
+    }
+
+    /**
+     * 관리자 데이터 검증 메서드
+     */
+    private void validateNotAdmin(UserCreateCommonRequest request) {
+
+        if (ADMIN_EN.equals(request.getLoginId()) || ADMIN_KR.equals(request.getLoginId()) || ADMIN_KR.equals(request.getNickname())) {
+            throw new CustomException(ExceptionCode.ADMIN_DATA_NOT_ALLOWED);
+        }
     }
 }
