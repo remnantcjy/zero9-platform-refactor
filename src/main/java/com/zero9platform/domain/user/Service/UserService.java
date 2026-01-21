@@ -92,11 +92,7 @@ public class UserService {
         }
 
         // 자기 자신을 조회할때의 데이터는 다르게 나옴
-        if (isMy) {
-            return UserMyDetailResponse.from(user, user.getPhone(), user.getEmail());
-        } else{
-            return UserDetailResponse.from(user);    
-        }
+        return isMy ? UserMyDetailResponse.from(user, user.getPhone(), user.getEmail()) : UserDetailResponse.from(user);
     }
 
     /**
