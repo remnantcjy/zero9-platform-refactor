@@ -2,6 +2,7 @@ package com.zero9platform.domain.grouppurchase_post.repository;
 
 import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
+import com.zero9platform.domain.search.model.SearchItemResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,21 +34,19 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
     int increaseViewCount(@Param("gppId") Long gppId);
 
 
-    @Query("""
-                SELECT g
-                FROM GroupPurchasePost g
-                JOIN FETCH g.user u 
-                WHERE g.deletedAt is null
-                  and u.nickname like concat('%', :keyword, '%')
-            """)
-    Page<GroupPurchasePost> findByUserNickname(@Param("keyword") String keyword, Pageable pageable);
 
-    //통합 상품 키워드 검색
     @Query("""
-                SELECT g
-                FROM GroupPurchasePost g
-                WHERE g.deletedAt is null
-                and g.productName LIKE CONCAT('%', :keyword, '%')
+                SELECT gp
+                FROM GroupPurchasePost gp
+                JOIN FETCH gp.user u
+                WHERE gp.deletedAt IS NULL
+                  AND (
+                    (:category = 'product' AND gp.productName LIKE CONCAT('%', :keyword, '%'))
+                    OR
+                    (:category = 'influencer' AND gp.productName LIKE CONCAT('%', :keyword, '%'))
+                    OR
+                    ((:category IS NULL OR :category = '') AND (gp.productName LIKE CONCAT('%', :keyword, '%') OR u.nickname LIKE CONCAT('%', :keyword, '%')))
+                  )
             """)
-    Page<GroupPurchasePost> findByProductName(@Param("keyword") String keyword, Pageable pageable);
+    Page<GroupPurchasePost> searchByKeyword(@Param("keyword") String keyword, @Param("category") String category, Pageable pageable);
 }
