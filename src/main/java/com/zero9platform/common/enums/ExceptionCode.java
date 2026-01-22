@@ -66,6 +66,15 @@ public enum ExceptionCode {
 
     // 409
     ALREADY_SUBSCRIBED_GPP(HttpStatus.CONFLICT, "이미 팔로우한 공동구매 게시물입니다."),
+
+    // FILE
+    FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+    FILE_NOT_FOUND(HttpStatus.BAD_REQUEST,"업로드할 파일이 존재하지 않습니다.")
+
+
+
+
+
     ;
 
     private final HttpStatus status;
