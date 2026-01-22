@@ -77,5 +77,13 @@ public class ProductPostOptionService {
         return ProductPostOptionUpdateResponse.from(option);
     }
 
-}
 
+    @Transactional
+    public void optionDelete(Long productPostId, Long optionId) {
+
+        ProductPostOption option = optionRepository.findByIdAndProductPost_Id(optionId, productPostId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_OPTION_NOT_FOUND));
+
+        optionRepository.delete(option);
+    }
+}

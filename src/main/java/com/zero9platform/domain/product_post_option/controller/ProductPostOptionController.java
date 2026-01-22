@@ -62,4 +62,14 @@ public class ProductPostOptionController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("옵션 수정 성공", response));
     }
 
+    /**
+     * 옵션 삭제
+     * */
+    @DeleteMapping("/{productPostId}/options/{optionId}")
+    public ResponseEntity<CommonResponse<Void>> optionDeleteHandler(@PathVariable Long productPostId, @PathVariable Long optionId) {
+
+        postOptionService.optionDelete(productPostId, optionId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("옵션 삭제 성공", null));
+    }
 }
