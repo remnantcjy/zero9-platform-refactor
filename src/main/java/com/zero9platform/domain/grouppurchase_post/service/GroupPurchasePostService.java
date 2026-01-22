@@ -68,8 +68,8 @@ public class GroupPurchasePostService {
                 request.getImage(),
                 request.getPrice(),
                 request.getLinkUrl(),
-                category,
-                gppProgressStatus,
+                category.name(),
+                gppProgressStatus.name(),
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atStartOfDay()
         );
@@ -85,16 +85,13 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 전체 조회
      */
     @Transactional(readOnly = true)
-    public PageResponse<GroupPurchasePostListResponse> gpPostReadAll(Pageable pageable) {
+    public Page<GroupPurchasePostListResponse> gpPostReadAll(Pageable pageable) {
 
         // 1. 공동구매 게시물 페이징 조회 [삭제처리 제외]
         Page<GroupPurchasePost> page = groupPurchasePostRepository.findAllByDeletedAtIsNull(pageable);
 
-        // 2. Entity -> ListResponse DTO 변환
-        Page<GroupPurchasePostListResponse> responsePage = page.map(GroupPurchasePostListResponse::from);
-
-        // 3. PageResponse 공용 응답 객체로 변환
-        return PageResponse.from(responsePage);
+        // 2. 응답객체 매핑 후 반환
+        return page.map(GroupPurchasePostListResponse::from);
     }
     
     /**
@@ -152,8 +149,8 @@ public class GroupPurchasePostService {
                 request.getImage(),
                 request.getPrice(),
                 request.getLinkUrl(),
-                category,
-                gppProgressStatus,
+                category.name(),
+                gppProgressStatus.name(),
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atStartOfDay()
         );
