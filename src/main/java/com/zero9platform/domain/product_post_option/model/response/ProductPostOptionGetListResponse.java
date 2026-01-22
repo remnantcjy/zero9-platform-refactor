@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class ProductPostOptionCreateResponse {
+public class ProductPostOptionGetListResponse {
 
     private final Long id;
     private final String name;
@@ -17,8 +17,8 @@ public class ProductPostOptionCreateResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    public static ProductPostOptionCreateResponse from(ProductPostOption option) {
-        return new ProductPostOptionCreateResponse(
+    public static ProductPostOptionGetListResponse from(ProductPostOption option) {
+        return new ProductPostOptionGetListResponse(
                 option.getId(),
                 option.getName(),
                 option.getPrice(),

@@ -1,5 +1,6 @@
 package com.zero9platform.domain.product_post_option.entity;
 
+import com.zero9platform.common.entity.BaseEntity;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "product_post_options")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductPostOption {
+public class ProductPostOption  extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
