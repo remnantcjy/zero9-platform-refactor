@@ -74,5 +74,4 @@ public class User extends BaseEntity {
     public void userDelete() {
         this.deletedAt = LocalDateTime.now();
     }
-
 }
