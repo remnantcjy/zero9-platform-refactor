@@ -43,13 +43,11 @@ public class GroupPurchasePost extends BaseEntity {
     @Column(nullable = false)
     private String linkUrl;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Category category = Category.ETC;
+    private String category = Category.ETC.name();
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private GppProgressStatus gppProgressStatus = GppProgressStatus.READY;
+    private String gppProgressStatus = GppProgressStatus.READY.name();
 
     @Column(nullable = false)
     private LocalDateTime startDate;
@@ -60,7 +58,7 @@ public class GroupPurchasePost extends BaseEntity {
     @Column
     private LocalDateTime deletedAt;
 
-    public GroupPurchasePost(User user, String productName, String content, String image, Long price, String linkUrl, Category category, GppProgressStatus gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
+    public GroupPurchasePost(User user, String productName, String content, String image, Long price, String linkUrl, String category, String gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
         this.user = user;
         this.productName = productName;
         this.content = content;
@@ -77,7 +75,7 @@ public class GroupPurchasePost extends BaseEntity {
     /**
      * gpp 게시물 수정
      */
-    public void update(String productName, String content, String image, Long price, String linkUrl, Category category, GppProgressStatus gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
+    public void update(String productName, String content, String image, Long price, String linkUrl, String category, String gppProgressStatus, LocalDateTime startDate, LocalDateTime endDate) {
         this.productName = productName;
         this.content = content;
         this.image = image;

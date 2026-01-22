@@ -57,8 +57,8 @@ public class GroupPurchasePostService {
         }
 
         // 3️. Enum 변환 - 카테고리, 진행상태
-        Category category = Category.from(request.getCategory());
-        GppProgressStatus gppProgressStatus = GppProgressStatus.from(request.getGppProgressStatus());
+        Category category = request.getCategory();
+        GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
 
         // 4️. Entity 생성
         GroupPurchasePost gpp = new GroupPurchasePost(
@@ -68,8 +68,8 @@ public class GroupPurchasePostService {
                 request.getImage(),
                 request.getPrice(),
                 request.getLinkUrl(),
-                category,
-                gppProgressStatus,
+                category.name(),
+                gppProgressStatus.name(),
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atStartOfDay()
         );
@@ -85,16 +85,13 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 전체 조회
      */
     @Transactional(readOnly = true)
-    public PageResponse<GroupPurchasePostListResponse> gpPostReadAll(Pageable pageable) {
+    public Page<GroupPurchasePostListResponse> gpPostReadAll(Pageable pageable) {
 
         // 1. 공동구매 게시물 페이징 조회 [삭제처리 제외]
         Page<GroupPurchasePost> page = groupPurchasePostRepository.findAllByDeletedAtIsNull(pageable);
 
-        // 2. Entity -> ListResponse DTO 변환
-        Page<GroupPurchasePostListResponse> responsePage = page.map(GroupPurchasePostListResponse::from);
-
-        // 3. PageResponse 공용 응답 객체로 변환
-        return PageResponse.from(responsePage);
+        // 2. 응답객체 매핑 후 반환
+        return page.map(GroupPurchasePostListResponse::from);
     }
     
     /**
@@ -141,9 +138,9 @@ public class GroupPurchasePostService {
             throw new CustomException(ExceptionCode.GPP_NO_PERMISSION);
         }
 
-        // 4. Enum 변환 - 카테고리, 승인상태, 진행상태
-        Category category = Category.from(request.getCategory());
-        GppProgressStatus gppProgressStatus = GppProgressStatus.from(request.getGppProgressStatus());
+        // 4. Enum 변환 - 카테고리, 진행상태
+        Category category = request.getCategory();
+        GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
 
         // 5. 엔티티 수정
         gpp.update(
@@ -152,8 +149,8 @@ public class GroupPurchasePostService {
                 request.getImage(),
                 request.getPrice(),
                 request.getLinkUrl(),
-                category,
-                gppProgressStatus,
+                category.name(),
+                gppProgressStatus.name(),
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atStartOfDay()
         );
