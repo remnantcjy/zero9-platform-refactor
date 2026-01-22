@@ -57,8 +57,8 @@ public class GroupPurchasePostService {
         }
 
         // 3️. Enum 변환 - 카테고리, 진행상태
-        Category category = Category.from(request.getCategory());
-        GppProgressStatus gppProgressStatus = GppProgressStatus.from(request.getGppProgressStatus());
+        Category category = request.getCategory();
+        GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
 
         // 4️. Entity 생성
         GroupPurchasePost gpp = new GroupPurchasePost(
@@ -141,9 +141,9 @@ public class GroupPurchasePostService {
             throw new CustomException(ExceptionCode.GPP_NO_PERMISSION);
         }
 
-        // 4. Enum 변환 - 카테고리, 승인상태, 진행상태
-        Category category = Category.from(request.getCategory());
-        GppProgressStatus gppProgressStatus = GppProgressStatus.from(request.getGppProgressStatus());
+        // 4. Enum 변환 - 카테고리, 진행상태
+        Category category = request.getCategory();
+        GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
 
         // 5. 엔티티 수정
         gpp.update(

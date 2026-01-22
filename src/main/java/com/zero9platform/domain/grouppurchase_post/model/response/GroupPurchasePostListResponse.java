@@ -18,6 +18,7 @@ public class GroupPurchasePostListResponse {
     private Long favoriteCount; // 추후 좋아요 기능 연동
     private Long price;
     private String category;
+    private String gppProgressStatus;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private LocalDateTime createdAt;
@@ -32,7 +33,8 @@ public class GroupPurchasePostListResponse {
                 gpp.getViewCount(),
                 0L, // favoriteCount 임시값 (추후 연관관계 추가 시 수정)
                 gpp.getPrice(),
-                gpp.getCategory().name(),
+                gpp.getCategory().getDescription(),
+                gpp.getGppProgressStatus().getDescription(),
                 gpp.getStartDate(),
                 gpp.getEndDate(),
                 gpp.getCreatedAt(),
