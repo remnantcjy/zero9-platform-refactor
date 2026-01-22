@@ -1,6 +1,5 @@
 package com.zero9platform.domain.grouppurchase_post.repository;
 
-//import com.zero9platform.common.enums.GppApprovalStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
