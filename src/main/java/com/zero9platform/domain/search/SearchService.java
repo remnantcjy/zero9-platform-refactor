@@ -35,7 +35,7 @@ public class SearchService {
     @Transactional
     public PageResponse<SearchItemResponse> search(String keyword, String searchCondition, Pageable pageable) {
 
-        if (!"product".equals(searchCondition) && !"influencer".equals(searchCondition)) {
+        if (searchCondition != null && !"product".equals(searchCondition) && !"influencer".equals(searchCondition)) {
             throw new CustomException(ExceptionCode.CATEGORY_FALSE);
         }
 
