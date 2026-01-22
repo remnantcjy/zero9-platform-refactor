@@ -37,23 +37,23 @@ public class ProductPostOptionController {
     }
 
     /**
-     * 옵션 단 건 조회
+     * 옵션 상세 조회
      */
     @GetMapping("/{productPostId}/options/{optionId}")
     public ResponseEntity<CommonResponse<ProductPostOptionGetDetailResponse>> optionGetHandler(@PathVariable Long productPostId, @PathVariable Long optionId) {
         ProductPostOptionGetDetailResponse response = postOptionService.optionGetDetail(productPostId, optionId);
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("옵션 단건 조회 성공", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("옵션 상세 조회 성공", response));
     }
 
     /**
-     *  상품 게시물별 옵션 전체목록 조회
+     *  상품 게시물별 옵션 전체 목록 조회
      */
     @GetMapping("/{productPostId}/options")
     public ResponseEntity<CommonResponse<PageResponse<ProductPostOptionGetListResponse>>> optionGetListHandler(@PathVariable Long productPostId, Pageable pageable) {
 
         PageResponse<ProductPostOptionGetListResponse> response = postOptionService.optionGetPage(productPostId, pageable);
 
-        return ResponseEntity.ok(CommonResponse.success("옵션 목록 조회 성공", response));
+        return ResponseEntity.ok(CommonResponse.success("상품 게시물별 옵션 전체 목록 조회 성공", response));
     }
 
     /**

@@ -48,7 +48,7 @@ public class ProductPostOptionService {
     }
 
     /**
-     * 옵션 단건 조회
+     * 옵션 상세 조회
      */
     @Transactional(readOnly = true)
     public ProductPostOptionGetDetailResponse optionGetDetail(Long productPostId, Long optionId) {
@@ -65,7 +65,7 @@ public class ProductPostOptionService {
     }
 
     /**
-     * 옵션 전체목록 조회
+     *  상품 게시물별 옵션 전체 목록 조회
      */
     @Transactional(readOnly = true)
     public PageResponse<ProductPostOptionGetListResponse> optionGetPage(Long productPostId, Pageable pageable) {
@@ -103,6 +103,9 @@ public class ProductPostOptionService {
         return ProductPostOptionUpdateResponse.from(option);
     }
 
+    /**
+     * 옵션 삭제
+     */
     @Transactional
     public void optionDelete(Long userId, UserRole userRole, Long productPostId, Long optionId) {
 
