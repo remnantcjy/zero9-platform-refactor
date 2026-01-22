@@ -32,4 +32,15 @@ public class SearchController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("통합 검색 결과 조회 성공", pageResponse));
     }
 
+    /**
+     * 인플루언서 활동명 인기검색어 차트 조회 API
+     */
+    public ResponseEntity<CommonResponse<PageResponse<Void>>> search() {
+        return null;
+    }
+
+    /**
+     * 상품명 인기검색어 차트 조회 API
+     */
+
 }
