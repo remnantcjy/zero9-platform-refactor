@@ -19,7 +19,6 @@ public class GroupPurchasePostDetailResponse {
     private Long price;
     private String linkUrl;
     private String category;
-//    private String gppApprovalStatus;
     private String gppProgressStatus;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
@@ -37,7 +36,6 @@ public class GroupPurchasePostDetailResponse {
                 groupPurchasePost.getPrice(),
                 groupPurchasePost.getLinkUrl(),
                 groupPurchasePost.getCategory().name(),
-//                groupPurchasePost.getGppApprovalStatus().name(),
                 groupPurchasePost.getGppProgressStatus().name(),
                 groupPurchasePost.getStartDate(),
                 groupPurchasePost.getEndDate(),
