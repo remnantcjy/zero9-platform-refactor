@@ -17,7 +17,6 @@ public class ProductPostOption  extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_post_id", nullable = false)
     private ProductPost productPost;
@@ -44,4 +43,3 @@ public class ProductPostOption  extends BaseEntity {
         if (capacity != null) this.capacity = capacity;
     }
 }
-

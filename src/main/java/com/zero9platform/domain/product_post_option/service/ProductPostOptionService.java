@@ -103,7 +103,6 @@ public class ProductPostOptionService {
         return ProductPostOptionUpdateResponse.from(option);
     }
 
-
     @Transactional
     public void optionDelete(Long userId, UserRole userRole, Long productPostId, Long optionId) {
 
@@ -140,5 +139,4 @@ public class ProductPostOptionService {
             throw new CustomException(ExceptionCode.NO_PERMISSION);
         }
     }
-
 }
