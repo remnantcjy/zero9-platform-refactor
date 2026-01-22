@@ -41,12 +41,12 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                 JOIN FETCH gp.user u
                 WHERE gp.deletedAt IS NULL
                   AND (
-                    (:category = 'product' AND gp.productName LIKE CONCAT('%', :keyword, '%'))
+                    (:searchCondition = 'product' AND gp.productName LIKE CONCAT('%', :keyword, '%'))
                     OR
-                    (:category = 'influencer' AND gp.productName LIKE CONCAT('%', :keyword, '%'))
+                    (:searchCondition = 'influencer' AND u.nickname LIKE CONCAT('%', :keyword, '%'))
                     OR
-                    ((:category IS NULL OR :category = '') AND (gp.productName LIKE CONCAT('%', :keyword, '%') OR u.nickname LIKE CONCAT('%', :keyword, '%')))
+                    ((:searchCondition IS NULL OR :searchCondition = '') AND (gp.productName LIKE CONCAT('%', :keyword, '%') OR u.nickname LIKE CONCAT('%', :keyword, '%')))
                   )
             """)
-    Page<GroupPurchasePost> searchByKeyword(@Param("keyword") String keyword, @Param("category") String category, Pageable pageable);
+    Page<GroupPurchasePost> searchByKeyword(@Param("keyword") String keyword, @Param("searchCondition") String searchCondition, Pageable pageable);
 }

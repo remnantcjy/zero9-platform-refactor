@@ -33,22 +33,28 @@ public class SearchService {
      * 키워드 통합 검색
      */
     @Transactional
-    public PageResponse<SearchItemResponse> search(String keyword, String category, Pageable pageable) {
+    public PageResponse<SearchItemResponse> search(String keyword, String searchCondition, Pageable pageable) {
+
+        if (!"product".equals(searchCondition) && !"influencer".equals(searchCondition)) {
+            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
+        }
 
         // 검색어 유효성 검증
         if (keyword == null || keyword.isBlank()) {
             throw new CustomException(ExceptionCode.INVALID_KEYWORD);
         }
 
-        Page<GroupPurchasePost> searchResult;
+//        if (searchCondition != null &&
+//                !"product".equals(searchCondition) &&
+//                !"influencer".equals(searchCondition)) {
+//            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
+//        }
 
-        if (category == null || category.isBlank()) {
-            throw new CustomException(ExceptionCode.INVALID_KEYWORD);
-        }
+        Page<GroupPurchasePost> searchResult;
 
         // 통합 검색
         // category가 product면 상품명, influencer면 인플루언서 닉네임, 없으면 둘 다 포함하여 검색
-        searchResult = groupPurchasePostRepository.searchByKeyword(keyword, category, pageable);
+        searchResult = groupPurchasePostRepository.searchByKeyword(keyword, searchCondition, pageable);
 
         // 최종 검색 결과가 없는 경우 예외 처리
         if (searchResult.isEmpty()) {
