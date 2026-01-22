@@ -9,9 +9,11 @@ import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
+import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionUpdateRequest;
 import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionCreateResponse;
 import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionGetDetailResponse;
 import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionGetListResponse;
+import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionUpdateResponse;
 import com.zero9platform.domain.product_post_option.repository.ProductPostOptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -64,6 +66,16 @@ public class ProductPostOptionService {
         return PageResponse.from(page);
     }
 
+    @Transactional
+    public ProductPostOptionUpdateResponse optionUpdate(Long productPostId, Long optionId, ProductPostOptionUpdateRequest request) {
+
+        ProductPostOption option = optionRepository.findByIdAndProductPost_Id(optionId, productPostId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_OPTION_NOT_FOUND));
+
+        option.update(request.getName(), request.getPrice(), request.getCapacity());
+
+        return ProductPostOptionUpdateResponse.from(option);
+    }
 
 }
 

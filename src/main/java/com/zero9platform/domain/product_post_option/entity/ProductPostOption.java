@@ -38,4 +38,10 @@ public class ProductPostOption  extends BaseEntity {
         this.capacity = capacity;
     }
 
+    public void update(String name, Long price, Integer capacity) {
+        if (name != null) this.name = name;
+        if (price != null) this.price = price;
+        if (capacity != null) this.capacity = capacity;
+    }
 }
+

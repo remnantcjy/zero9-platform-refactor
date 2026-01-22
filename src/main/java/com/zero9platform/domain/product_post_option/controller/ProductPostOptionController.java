@@ -3,9 +3,11 @@ package com.zero9platform.domain.product_post_option.controller;
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
+import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionUpdateRequest;
 import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionCreateResponse;
 import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionGetDetailResponse;
 import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionGetListResponse;
+import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionUpdateResponse;
 import com.zero9platform.domain.product_post_option.service.ProductPostOptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,4 +50,16 @@ public class ProductPostOptionController {
 
         return ResponseEntity.ok(CommonResponse.success("옵션 목록 조회 성공", response));
     }
+
+    /**
+     * 옵션 수정
+     */
+    @PutMapping("/{productPostId}/options/{optionId}")
+    public ResponseEntity<CommonResponse<ProductPostOptionUpdateResponse>> optionUpdateHandler(@PathVariable Long productPostId, @PathVariable Long optionId, @Valid @RequestBody ProductPostOptionUpdateRequest request) {
+
+        ProductPostOptionUpdateResponse response = postOptionService.optionUpdate(productPostId, optionId, request);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("옵션 수정 성공", response));
+    }
+
 }
