@@ -2,8 +2,8 @@ package com.zero9platform.domain.product_post_option.service;
 
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
@@ -28,34 +28,49 @@ public class ProductPostOptionService {
     private final ProductPostOptionRepository optionRepository;
     private final ProductPostRepository productPostRepository;
 
+    /**
+     * 옵션 생성
+     */
     @Transactional
-    public ProductPostOptionCreateResponse optionCreate(Long productPostId, ProductPostOptionCreateRequest req) {
-        // 판매게시물이 먼저라면 판매게시물이 존재하는지 검증 추가 예정
-        ProductPost productPost = productPostRepository.findById(productPostId)
+    public ProductPostOptionCreateResponse optionCreate(Long userId, UserRole userRole, Long productPostId, ProductPostOptionCreateRequest request) {
+
+        // 상품 게시물 존재여부 검증
+        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
+        // 관리자이거나 인플루언서 본인인지 확인
+        validInfluencerOwnerOrAdmin(productPost, userId, userRole);
 
-        ProductPostOption option = new ProductPostOption(productPost, req.getName(), req.getPrice(), req.getCapacity());
+        ProductPostOption option = new ProductPostOption(productPost, request.getName(), request.getPrice(), request.getCapacity());
 
-        optionRepository.save(option);
-        return ProductPostOptionCreateResponse.from(option);
+        ProductPostOption saved = optionRepository.save(option);
+        return ProductPostOptionCreateResponse.from(saved);
     }
 
+    /**
+     * 옵션 단건 조회
+     */
     @Transactional(readOnly = true)
     public ProductPostOptionGetDetailResponse optionGetDetail(Long productPostId, Long optionId) {
 
+        // 상품 게시물 존재여부 검증
         productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
+        // 해당하는 상품게시물에 속한 옵션인지 확인
         ProductPostOption option = optionRepository.findByIdAndProductPost_Id(optionId, productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_OPTION_NOT_FOUND));
 
         return ProductPostOptionGetDetailResponse.from(option);
     }
 
+    /**
+     * 옵션 전체목록 조회
+     */
     @Transactional(readOnly = true)
     public PageResponse<ProductPostOptionGetListResponse> optionGetPage(Long productPostId, Pageable pageable) {
 
+        // 상품 게시물 존재여부 검증
         productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
@@ -66,9 +81,20 @@ public class ProductPostOptionService {
         return PageResponse.from(page);
     }
 
+    /**
+     * 옵션 수정
+     */
     @Transactional
-    public ProductPostOptionUpdateResponse optionUpdate(Long productPostId, Long optionId, ProductPostOptionUpdateRequest request) {
+    public ProductPostOptionUpdateResponse optionUpdate(Long userId, UserRole userRole, Long productPostId, Long optionId, ProductPostOptionUpdateRequest request) {
 
+        // 상품 게시물 존재여부 검증
+        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
+
+        // 관리자이거나 인플루언서 본인인지 확인
+        validInfluencerOwnerOrAdmin(productPost, userId, userRole);
+
+        // 해당하는 상품게시물에 속한 옵션인지 확인
         ProductPostOption option = optionRepository.findByIdAndProductPost_Id(optionId, productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_OPTION_NOT_FOUND));
 
@@ -79,11 +105,40 @@ public class ProductPostOptionService {
 
 
     @Transactional
-    public void optionDelete(Long productPostId, Long optionId) {
+    public void optionDelete(Long userId, UserRole userRole, Long productPostId, Long optionId) {
 
+        // 상품 게시물 존재여부 검증
+        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
+
+        // 관리자이거나 인플루언서 본인인지 확인
+        validInfluencerOwnerOrAdmin(productPost, userId, userRole);
+
+        // 해당하는 상품게시물에 속한 옵션인지 확인
         ProductPostOption option = optionRepository.findByIdAndProductPost_Id(optionId, productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_OPTION_NOT_FOUND));
 
         optionRepository.delete(option);
     }
+
+    /**
+     * 인플루언서 본인여부 검증 및 관리자인지 검증
+     */
+    private void validInfluencerOwnerOrAdmin(ProductPost productPost, Long userId, UserRole userRole) {
+
+        Long ownerId = productPost.getUser().getId();
+
+        if (userRole == UserRole.ADMIN) {
+            return;
+        }
+
+        if (userRole != UserRole.INFLUENCER) {
+            throw new CustomException(ExceptionCode.NO_PERMISSION);
+        }
+
+        if (!ownerId.equals(userId)) {
+            throw new CustomException(ExceptionCode.NO_PERMISSION);
+        }
+    }
+
 }
