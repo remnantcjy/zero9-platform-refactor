@@ -46,7 +46,7 @@ public class ProductPostOptionController {
     }
 
     /**
-     * 옵션 전체목록 조회
+     *  상품 게시물별 옵션 전체목록 조회
      */
     @GetMapping("/{productPostId}/options")
     public ResponseEntity<CommonResponse<PageResponse<ProductPostOptionGetListResponse>>> optionGetListHandler(@PathVariable Long productPostId, Pageable pageable) {
