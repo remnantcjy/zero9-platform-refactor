@@ -35,20 +35,15 @@ public class SearchService {
     @Transactional
     public PageResponse<SearchItemResponse> search(String keyword, String searchCondition, Pageable pageable) {
 
-        if (searchCondition != null && !"product".equals(searchCondition) && !"influencer".equals(searchCondition)) {
-            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
-        }
-
-        // 검색어 유효성 검증
+        // 검색어 예외 처리
         if (keyword == null || keyword.isBlank()) {
             throw new CustomException(ExceptionCode.INVALID_KEYWORD);
         }
 
-//        if (searchCondition != null &&
-//                !"product".equals(searchCondition) &&
-//                !"influencer".equals(searchCondition)) {
-//            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
-//        }
+        // searchCondition 예외 처리
+        if (searchCondition != null && !"product".equals(searchCondition) && !"influencer".equals(searchCondition)) {
+            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
+        }
 
         Page<GroupPurchasePost> searchResult;
 
