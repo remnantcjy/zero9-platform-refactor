@@ -1,14 +1,14 @@
-package com.zero9platform.domain.search;
+package com.zero9platform.domain.searchLog;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
-import com.zero9platform.domain.search.entity.Search;
-import com.zero9platform.domain.search.model.SearchItemResponse;
+import com.zero9platform.domain.searchLog.entity.SearchLog;
+import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
-import com.zero9platform.domain.search.repository.SearchRepository;
+import com.zero9platform.domain.searchLog.repository.SearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class SearchService {
+public class SearchLogService {
 
     private final SearchRepository searchRepository;
     private final GroupPurchasePostRepository groupPurchasePostRepository;
@@ -33,7 +33,7 @@ public class SearchService {
      * 키워드 통합 검색
      */
     @Transactional
-    public PageResponse<SearchItemResponse> search(String keyword, String searchCondition, Pageable pageable) {
+    public PageResponse<SearchLogItemResponse> search(String keyword, String searchCondition, Pageable pageable) {
 
         // 검색어 예외 처리
         if (keyword == null || keyword.isBlank()) {
@@ -45,11 +45,9 @@ public class SearchService {
             throw new CustomException(ExceptionCode.CATEGORY_FALSE);
         }
 
-        Page<GroupPurchasePost> searchResult;
-
         // 통합 검색
         // category가 product면 상품명, influencer면 인플루언서 닉네임, 없으면 둘 다 포함하여 검색
-        searchResult = groupPurchasePostRepository.searchByKeyword(keyword, searchCondition, pageable);
+        Page<GroupPurchasePost> searchResult = groupPurchasePostRepository.searchByKeyword(keyword, searchCondition, pageable);
 
         // 최종 검색 결과가 없는 경우 예외 처리
         if (searchResult.isEmpty()) {
@@ -72,12 +70,12 @@ public class SearchService {
         }
 
         // DTO 변환
-        List<SearchItemResponse> dtoList = new ArrayList<>();
+        List<SearchLogItemResponse> dtoList = new ArrayList<>();
         for (GroupPurchasePost post : searchResult.getContent()) {
-            dtoList.add(SearchItemResponse.from(post, favoriteCountMap.getOrDefault(post.getId(), 0L)));
+            dtoList.add(SearchLogItemResponse.from(post, favoriteCountMap.getOrDefault(post.getId(), 0L)));
         }
 
-        Page<SearchItemResponse> mappedPage = new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
+        Page<SearchLogItemResponse> mappedPage = new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
 
         // 공통 페이징 응답 객체로 변환
         return PageResponse.from(mappedPage);
@@ -94,13 +92,13 @@ public class SearchService {
         }
 
         // 기존 검색어가 있으면 조회, 없으면 새로 생성
-        Search search = searchRepository.findByKeyword(keyword)
-                .orElseGet(() -> new Search(keyword));
+        SearchLog searchLog = searchRepository.findByKeyword(keyword)
+                .orElseGet(() -> new SearchLog(keyword));
 
         // 검색 횟수 증가
-        search.increaseCount();
+        searchLog.increaseCount();
 
         //DB 저장
-        searchRepository.save(search);
+        searchRepository.save(searchLog);
     }
 }
