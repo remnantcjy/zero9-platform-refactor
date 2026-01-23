@@ -59,8 +59,6 @@ public enum ExceptionCode {
     CATEGORY_FALSE(HttpStatus.NOT_FOUND, "category는 product 또는 influencer 둘 중 하나여야 합니다."),
     INFLUENCER_POST_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 인플루언서의 상품이 없습니다."),
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "검색된 상품이 없습니다."),
-    PRODUCT_POST_NOT_FOUND(HttpStatus.NOT_FOUND, "상품 게시물이 없습니다."),
-
 
     //찜
     ALREADY_FAVORITE(HttpStatus.BAD_REQUEST, "이미 찜한 상품입니다."),
@@ -72,9 +70,7 @@ public enum ExceptionCode {
     GPP_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물 댓글을 찾을 수 없습니다."),
 
     // 409
-    ALREADY_SUBSCRIBED_GPP(HttpStatus.CONFLICT, "이미 팔로우한 공동구매 게시물입니다."),
-
-    PP_PROGRESS_STATUS_NOT_FOUND(HttpStatus.BAD_REQUEST, "유효하지 않은 진행 상태입니다."),
+    ALREADY_SUBSCRIBED_GPP(HttpStatus.CONFLICT, "이미 팔로우한 공동구매 게시물입니다.")
     ;
 
     private final HttpStatus status;

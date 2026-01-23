@@ -1,8 +1,6 @@
 package com.zero9platform.domain.product_post.service;
 
-import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.ExceptionCode;
-import com.zero9platform.common.enums.ProductPostProgressStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
@@ -15,6 +13,9 @@ import com.zero9platform.domain.product_post.model.response.ProductPostCreateRes
 import com.zero9platform.domain.product_post.model.response.ProductPostGetDetailResponse;
 import com.zero9platform.domain.product_post.model.response.ProductPostUpdateResponse;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
+import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
+import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
+import com.zero9platform.domain.product_post_option.repository.ProductPostOptionRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class ProductPostService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ProductPostRepository productPostRepository;
+    private final ProductPostOptionRepository productPostOptionRepository;
 
     /**
      * 상품 판매 게시물 생성
@@ -45,24 +47,22 @@ public class ProductPostService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_NOT_FOUND));
 
-        // 판매 시작일
-        if (request.getStartDate().isBefore(LocalDateTime.now())) {
-            throw new CustomException(ExceptionCode.PP_INVALID_DATE_RANGE);
-        }
-
-        // 판매 종료일
-        if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new CustomException(ExceptionCode.PP_INVALID_DATE_RANGE);
-        }
-
-        Category category = Category.from(request.getCategory());
-        ProductPostProgressStatus productPostProgressStatus = ProductPostProgressStatus.from(request.getProductPostProgressStatus());
+        // 판매일 검증
+        validProductPostSaleDate(request.getStartDate(), request.getEndDate());
 
         // 상품의 정가 (원가 x, 이건 도매가 느낌이라)
         // + 옵션의 가격 (=할인가, 추후 리팩토링) -> 옵션을 여러 개 생성해서 new Option() -> option을 상품 게시물에 포함 -> (선택한 옵션의 가격 * 수량 = 주문 가격 / 금액 ?) "주문 상품 생성"
         // 제목, 내용, 재고, 이미지, 카테고리, 판매 진행 상태, 진행 시작일, 진행 마감일
 
-        ProductPost productPost = new ProductPost(user, product, request.getTitle(), request.getContent(), request.getStock(), request.getImage(), category, productPostProgressStatus, request.getStartDate(), request.getEndDate());
+        // 상품의 정가 및 옵션가 추가
+
+        ProductPost productPost = new ProductPost(user, product, request.getTitle(), request.getContent(), request.getStock(), request.getImage(), request.getCategory().name(), request.getProductPostProgressStatus().name(), request.getStartDate(), request.getEndDate());
+
+        // 옵션 생성
+        for (ProductPostOptionCreateRequest optionRequest: request.getOptionList()) {
+            ProductPostOption option = new ProductPostOption(productPost, optionRequest.getName(), optionRequest.getPrice(), optionRequest.getCapacity());
+            productPost.addOption(option);
+        }
 
         ProductPost savedProductPost = productPostRepository.save(productPost);
 
@@ -109,23 +109,11 @@ public class ProductPostService {
         // 본인만 수정 가능
         validProductPostOwner(user, productPost);
 
-        // 날짜 검증
-        // 시작일
-        if (request.getStartDate().isBefore(LocalDateTime.now())) {
-            throw new CustomException(ExceptionCode.PP_INVALID_DATE_RANGE);
-        }
+        // 판매일 검증
+        validProductPostSaleDate(request.getStartDate(), request.getEndDate());
 
-        // 종료일
-        if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new CustomException(ExceptionCode.PP_INVALID_DATE_RANGE);
-        }
+        productPost.update(request.getTitle(), request.getContent(), request.getStock(), request.getImage(), request.getCategory().name(), request.getProductPostProgressStatus().name(), request.getStartDate(), request.getEndDate());
 
-        Category category = Category.from(request.getCategory());
-        ProductPostProgressStatus productPostProgressStatus = ProductPostProgressStatus.from(request.getProductPostProgressStatus());
-
-        productPost.update(request.getTitle(), request.getContent(), request.getStock(), request.getImage(), category, productPostProgressStatus, request.getStartDate(), request.getEndDate());
-
-        System.out.println("Asdf");
         return ProductPostUpdateResponse.from(productPost);
     }
 
@@ -170,5 +158,21 @@ public class ProductPostService {
         }
 
         return user;
+    }
+
+    /**
+     * 판매일 검증
+     */
+    private static void validProductPostSaleDate(LocalDateTime startDate, LocalDateTime endDate) {
+
+        // 판매 시작일
+        if (startDate.isBefore(LocalDateTime.now())) {
+            throw new CustomException(ExceptionCode.PP_INVALID_DATE_RANGE);
+        }
+
+        // 판매 종료일
+        if (endDate.isBefore(startDate)) {
+            throw new CustomException(ExceptionCode.PP_INVALID_DATE_RANGE);
+        }
     }
 }

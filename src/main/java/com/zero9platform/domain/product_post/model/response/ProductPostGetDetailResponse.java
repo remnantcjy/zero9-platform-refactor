@@ -2,11 +2,13 @@ package com.zero9platform.domain.product_post.model.response;
 
 import com.zero9platform.domain.product.entity.Product;
 import com.zero9platform.domain.product_post.entity.ProductPost;
+import com.zero9platform.domain.product_post_option.model.response.ProductPostOptionCreateResponse;
 import com.zero9platform.domain.user.entity.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class ProductPostGetDetailResponse {
     private final String title;
     private final String content;
     private final Long stock;
+    private final List<ProductPostOptionCreateResponse> optionList;
     private final String image;
     private final String category;
     private final String productPostProgressStatus;
@@ -28,6 +31,11 @@ public class ProductPostGetDetailResponse {
 
     public static ProductPostGetDetailResponse from(ProductPost productPost) {
 
+        List<ProductPostOptionCreateResponse> optionList = productPost.getProductPostOptionList().stream()
+                .map(ProductPostOptionCreateResponse::from)
+                .toList();
+
+
         return new ProductPostGetDetailResponse(
                 productPost.getId(),
                 productPost.getUser().getId(),
@@ -35,9 +43,10 @@ public class ProductPostGetDetailResponse {
                 productPost.getTitle(),
                 productPost.getContent(),
                 productPost.getStock(),
+                optionList,
                 productPost.getImage(),
-                productPost.getCategory().name(),
-                productPost.getProductPostProgressStatus().name(),
+                productPost.getCategory(),
+                productPost.getProductPostProgressStatus(),
                 productPost.getStartDate(),
                 productPost.getEndDate(),
                 productPost.getCreatedAt(),

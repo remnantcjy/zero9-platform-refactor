@@ -1,5 +1,7 @@
 package com.zero9platform.domain.product_post.model.request;
 
+import com.zero9platform.common.enums.Category;
+import com.zero9platform.common.enums.ProductPostProgressStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,8 +15,8 @@ public class ProductPostUpdateRequest {
     private String content;
     private Long stock;
     private String image;
-    private String category;
-    private String productPostProgressStatus;
+    private Category category;
+    private ProductPostProgressStatus productPostProgressStatus;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 }

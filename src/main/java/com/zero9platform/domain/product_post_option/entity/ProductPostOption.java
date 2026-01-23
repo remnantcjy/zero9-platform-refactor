@@ -42,4 +42,8 @@ public class ProductPostOption  extends BaseEntity {
         if (price != null) this.price = price;
         if (capacity != null) this.capacity = capacity;
     }
+
+    public void setProductPost(ProductPost productPost) {
+        this.productPost = productPost;
+    }
 }

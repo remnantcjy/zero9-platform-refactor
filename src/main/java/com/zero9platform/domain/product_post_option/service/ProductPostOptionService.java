@@ -29,7 +29,7 @@ public class ProductPostOptionService {
     private final ProductPostRepository productPostRepository;
 
     /**
-     * 옵션 생성
+     * 옵션 추가 생성
      */
     @Transactional
     public ProductPostOptionCreateResponse optionCreate(Long userId, UserRole userRole, Long productPostId, ProductPostOptionCreateRequest request) {
