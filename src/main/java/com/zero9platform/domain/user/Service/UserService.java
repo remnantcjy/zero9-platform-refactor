@@ -140,7 +140,7 @@ public class UserService {
 
         User user = findById(userId);
 
-        boolean passwordMatches = passwordEncoder.matches(request.getCurrentPassword(), user.getPassword());
+        boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
         if (!passwordMatches) {
             throw new CustomException(ExceptionCode.PASSWORD_NOT_MATCH);
