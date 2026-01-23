@@ -19,6 +19,7 @@ public enum ExceptionCode {
     USER_IS_NOT_INFLUENCER(HttpStatus.FORBIDDEN, "해당 사용자는 인플루언서가 아닙니다."),
     INFLUENCER_SOCIAL_LINK_REQUIRED(HttpStatus.BAD_REQUEST, "인플루언서 계정은 소셜 링크 입력이 필수입니다."),
     INFLUENCER_NOT_APPROVED(HttpStatus.FORBIDDEN, "승인되지 않은 인플루언서입니다."),
+    INFLUENCER_ALREADY_APPROVED(HttpStatus.CONFLICT, "이미 승인된 인플루언서입니다."),
     LOGINID_EXIST(HttpStatus.CONFLICT, "중복되는 아이디가 존재합니다."),
     EMAIL_EXIST(HttpStatus.CONFLICT, "중복되는 이메일이 존재합니다."),
     PHONE_EXIST(HttpStatus.CONFLICT, "중복되는 핸드폰번호가 존재합니다."),
