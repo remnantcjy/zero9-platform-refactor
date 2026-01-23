@@ -1,7 +1,6 @@
 package com.zero9platform.domain.product.model.response;
 
 import com.zero9platform.domain.product.entity.Product;
-import com.zero9platform.domain.product.model.request.ProductUpdateRequest;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -12,7 +11,7 @@ public class ProductUpdateResponse {
     private final Long id;
     private final String name;
     private final String description;
-    private final Long price;
+    private final Long productPrice;
 
     public static ProductUpdateResponse from(Product product) {
 
@@ -20,7 +19,7 @@ public class ProductUpdateResponse {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getPrice()
+                product.getProductPrice()
         );
     }
 }

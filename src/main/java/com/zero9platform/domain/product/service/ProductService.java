@@ -37,14 +37,12 @@ public class ProductService {
         validPermission(userId);
 
         // 상품 생성
-        Product product = new Product(request.getName(), request.getDescription(), request.getPrice());
+        Product product = new Product(request.getName(), request.getDescription(), request.getProductPrice());
 
         productRepository.save(product);
 
         return ProductCreateResponse.from(product);
     }
-
-
 
     /**
      * 상품 상세 조회
@@ -85,11 +83,10 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_NOT_FOUND));
 
-        product.update(request.getName(), request.getDescription(), request.getPrice());
+        product.update(request.getName(), request.getDescription(), request.getProductPrice());
 
         return ProductUpdateResponse.from(product);
     }
-
 
     /**
      * 상품 삭제
@@ -114,6 +111,4 @@ public class ProductService {
             throw new CustomException(ExceptionCode.NO_PERMISSION);
         }
     }
-
-
 }

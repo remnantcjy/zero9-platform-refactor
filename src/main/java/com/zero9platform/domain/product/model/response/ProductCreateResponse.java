@@ -11,7 +11,7 @@ public class ProductCreateResponse {
     private final Long id;
     private final String name;
     private final String description;
-    private final Long price;
+    private final Long productPrice;
 
     public static ProductCreateResponse from(Product product) {
 
@@ -19,7 +19,7 @@ public class ProductCreateResponse {
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
-                product.getPrice()
+                product.getProductPrice()
         );
     }
 }

@@ -50,21 +50,20 @@ public class ProductPostService {
         // 판매일 검증
         validProductPostSaleDate(request.getStartDate(), request.getEndDate());
 
-        // 상품의 정가 (원가 x, 이건 도매가 느낌이라)
         // + 옵션의 가격 (=할인가, 추후 리팩토링) -> 옵션을 여러 개 생성해서 new Option() -> option을 상품 게시물에 포함 -> (선택한 옵션의 가격 * 수량 = 주문 가격 / 금액 ?) "주문 상품 생성"
         // 제목, 내용, 재고, 이미지, 카테고리, 판매 진행 상태, 진행 시작일, 진행 마감일
-
-        // 상품의 정가 및 옵션가 추가
 
         ProductPost productPost = new ProductPost(user, product, request.getTitle(), request.getContent(), request.getStock(), request.getImage(), request.getCategory().name(), request.getProductPostProgressStatus().name(), request.getStartDate(), request.getEndDate());
 
         // 옵션 생성
         for (ProductPostOptionCreateRequest optionRequest: request.getOptionList()) {
-            ProductPostOption option = new ProductPostOption(productPost, optionRequest.getName(), optionRequest.getPrice(), optionRequest.getCapacity());
+            ProductPostOption option = new ProductPostOption(productPost, optionRequest.getName(), optionRequest.getOptionPrice(), optionRequest.getCapacity());
             productPost.addOption(option);
         }
 
         ProductPost savedProductPost = productPostRepository.save(productPost);
+
+        // 응답 DTO에 상품의 정가 및 옵션가 추가
 
         return ProductPostCreateResponse.from(user, product, savedProductPost);
     }

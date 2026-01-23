@@ -20,6 +20,7 @@ public class ProductPostCreateResponse {
     private final Long productId;
     private final String title;
     private final String content;
+    private final Long productPrice;
     private final Long stock;
     private final List<ProductPostOptionCreateResponse> optionList;
     private final String image;
@@ -42,6 +43,7 @@ public class ProductPostCreateResponse {
                 product.getId(),
                 productPost.getTitle(),
                 productPost.getContent(),
+                product.getProductPrice(),
                 productPost.getStock(),
                 optionList,
                 productPost.getImage(),
