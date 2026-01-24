@@ -15,7 +15,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +48,7 @@ public class SearchLogService {
         // category가 product면 상품명, influencer면 인플루언서 닉네임, 없으면 둘 다 포함하여 검색
         Page<GroupPurchasePost> searchResult = groupPurchasePostRepository.searchByKeyword(keyword, searchCondition, pageable);
 
-        // 최종 검색 결과가 없는 경우 예외 처리
+        // 검색 결과가 없는 경우 예외 처리
         if (searchResult.isEmpty()) {
             throw new CustomException(ExceptionCode.PRODUCT_NOT_FOUND);
         }

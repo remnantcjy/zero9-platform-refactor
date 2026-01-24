@@ -22,7 +22,7 @@ public class SearchLogController {
      * - 공동구매 상품명
      * - 인플루언서 활동 닉네임
      */
-    @GetMapping("/searches")
+    @GetMapping("/searchLog")
     public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String searchCondition, Pageable pageable) {
 
         // 검색 서비스 호출

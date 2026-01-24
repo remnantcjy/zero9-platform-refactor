@@ -73,7 +73,7 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/zero9/gp-posts/**",
                                 "/zero9/posts/**",
-                                "/zero9/searches/**",
+                                "/zero9/searchLog/**",
                                 "/zero9/gpp-comments/**",
                                 "/zero9/comments",
                                 "/zero9/influencers/*/follows"
