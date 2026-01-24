@@ -2,6 +2,7 @@ package com.zero9platform.domain.searchLog;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.searchLog.model.SearchLogChartResponse;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -31,5 +32,14 @@ public class SearchLogController {
         // 공통 응답 포맷으로 반환
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("통합 검색 결과 조회 성공", pageResponse));
     }
+
+    /**
+     * 인기 검색어 차트(공동구매 상품명)
+     */
+    @GetMapping("/searchLog/chart")
+    public ResponseEntity<CommonResponse<PageResponse<SearchLogChartResponse>>> searchLogGetChartHandler(@RequestParam(required = false) String searchCondition) {
+
+        // 검색 서비스 호출
+        PageResponse<SearchLogChartResponse> pageResponse = searchLogService.searchChart(searchCondition);
 
 }

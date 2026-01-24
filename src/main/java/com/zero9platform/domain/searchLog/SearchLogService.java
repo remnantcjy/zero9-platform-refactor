@@ -6,6 +6,7 @@ import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
+import com.zero9platform.domain.searchLog.model.SearchLogChartResponse;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.searchLog.repository.SearchRepository;
@@ -99,5 +100,11 @@ public class SearchLogService {
 
         //DB 저장
         searchRepository.save(searchLog);
+    }
+
+    public PageResponse<SearchLogChartResponse> searchChart(String searchCondition) {
+
+
+        return null;
     }
 }
