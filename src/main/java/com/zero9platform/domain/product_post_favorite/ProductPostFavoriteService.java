@@ -10,8 +10,6 @@ import com.zero9platform.domain.product_post_favorite.entity.ProductPostFavorite
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteCreateResponse;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteGetResponse;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
-import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
-import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +26,6 @@ public class ProductPostFavoriteService {
 
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
     private final UserRepository userRepository;
-    private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final ProductPostRepository productPostRepository;
 
     /**
@@ -41,12 +38,17 @@ public class ProductPostFavoriteService {
         User user = userRepository.findById(authUser.getId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
+        // 인플루언서,일반 유저인지 권한 체크
+        if(user.getRole().equals("ADMIN")) {
+            throw new CustomException(ExceptionCode.NO_PERMISSION);
+        }
+
         //게시물 존재 여부 확인
         ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         //중복 등록 방지
-        boolean existence = productPostFavoriteRepository.existsByUserIdAndGroupPurchasePostId(user.getId(), productPost.getId());
+        boolean existence = productPostFavoriteRepository.existsByUser_IdAndProductPost_Id(user.getId(), productPost.getId());
         if (existence) {
             throw new CustomException(ExceptionCode.ALREADY_FAVORITE);
         }
@@ -64,18 +66,23 @@ public class ProductPostFavoriteService {
      * 찜 등록 취소
      */
     @Transactional
-    public void gppFavoriteCancellation(Long gppId, AuthUser authUser) {
+    public void favoriteCancellation(Long productPostId, AuthUser authUser) {
 
         //유저 아이디정보 추출
         User user = userRepository.findById(authUser.getId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
+        // 인플루언서,일반 유저인지 권한 체크
+        if(user.getRole().equals("ADMIN")) {
+            throw new CustomException(ExceptionCode.NO_PERMISSION);
+        }
+
         //게시물 존재 여부 확인
-        GroupPurchasePost gpPost = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
+        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
-        // 찜 존재 여부 확인
-        Optional<ProductPostFavorite> gppFavorite = productPostFavoriteRepository.findByUserIdAndGroupPurchasePostId(user.getId(), gpPost.getId());
+        // 찜 등록 확인
+        Optional<ProductPostFavorite> gppFavorite = productPostFavoriteRepository.findByUserAndProductPost(user, productPost);
 
         if (gppFavorite.isEmpty()) {
             throw new CustomException(ExceptionCode.NOT_FOUND_FAVORITE);
@@ -89,16 +96,21 @@ public class ProductPostFavoriteService {
      * 찜 목록 조회
      */
     @Transactional(readOnly = true)
-    public PageResponse<ProductPostFavoriteGetResponse> gppFavoritePage(AuthUser authUser, Pageable pageable) {
+    public PageResponse<ProductPostFavoriteGetResponse> favoriteGetPage(AuthUser authUser, Pageable pageable) {
 
         //유저 아이디정보 추출
         User user = userRepository.findById(authUser.getId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
-        //유저 아이디가 찜 등록한 리스트 조회하기
-        Page<ProductPostFavorite> gppFavoritePage = productPostFavoriteRepository.findByUserId(user.getId(), pageable);
+        // 권한 체크(인플루언서, 일반 유저)
+        if(user.getRole().equals("ADMIN")) {
+            throw new CustomException(ExceptionCode.NO_PERMISSION);
+        }
 
-        //있으면 리스트를 리스폰스에 담는다.
+        //본인 찜 등록 리스트 조회하기
+        Page<ProductPostFavorite> gppFavoritePage = productPostFavoriteRepository.findByUser_Id(user.getId(), pageable);
+
+        // ProductPostFavorite Page -> ProductPostFavoriteGetResponse Page 변환
         Page<ProductPostFavoriteGetResponse> GppFavoriteGetDtoPage = gppFavoritePage.map(ProductPostFavoriteGetResponse::from);
 
         return PageResponse.from(GppFavoriteGetDtoPage);

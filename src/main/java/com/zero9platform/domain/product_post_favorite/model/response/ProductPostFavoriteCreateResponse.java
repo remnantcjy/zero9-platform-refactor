@@ -10,13 +10,13 @@ public class ProductPostFavoriteCreateResponse {
 
     private final Long userId;
     private final String nickname;
-    private final Long gppId;
+    private final Long productPostId;
 
     public static ProductPostFavoriteCreateResponse from(ProductPostFavorite productPostFavorite) {
         return new ProductPostFavoriteCreateResponse(
                 productPostFavorite.getUser().getId(),
                 productPostFavorite.getUser().getNickname(),
-                productPostFavorite.getGroupPurchasePost().getId()
+                productPostFavorite.getProductPost().getId()
         );
     }
 }

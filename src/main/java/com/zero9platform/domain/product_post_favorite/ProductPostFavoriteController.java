@@ -27,18 +27,18 @@ public class ProductPostFavoriteController {
 
         ProductPostFavoriteCreateResponse createResponse = productPostFavoriteService.favoriteCreate(productPostId, authUser);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 등록 성공", createResponse));
+        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("찜 등록 성공", createResponse));
     }
 
     /**
      * 찜 등록 취소
      */
-    @DeleteMapping("/gp-posts/{gppId}/favorites")
-    public ResponseEntity<CommonResponse<Void>> favoriteCancellationHandler(@PathVariable Long gppId, @AuthenticationPrincipal AuthUser authUser) {
+    @DeleteMapping("/product-posts/{productPostId}/favorites")
+    public ResponseEntity<CommonResponse<Void>> favoriteCancellationHandler(@PathVariable Long productPostId, @AuthenticationPrincipal AuthUser authUser) {
 
-        productPostFavoriteService.gppFavoriteCancellation(gppId, authUser);
+        productPostFavoriteService.favoriteCancellation(productPostId, authUser);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 취소 성공", null));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(CommonResponse.success("찜 취소 성공", null));
     }
 
     /**
@@ -47,7 +47,7 @@ public class ProductPostFavoriteController {
     @GetMapping("/favorites")
     public ResponseEntity<CommonResponse<PageResponse<ProductPostFavoriteGetResponse>>> favoriteGetPageHandler(@AuthenticationPrincipal AuthUser authUser, Pageable pageable) {
 
-        PageResponse<ProductPostFavoriteGetResponse> favoriteList = productPostFavoriteService.gppFavoritePage(authUser, pageable);
+        PageResponse<ProductPostFavoriteGetResponse> favoriteList = productPostFavoriteService.favoriteGetPage(authUser, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 목록 조회 성공", favoriteList));
     }
