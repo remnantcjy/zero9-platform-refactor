@@ -1,6 +1,7 @@
 package com.zero9platform.domain.searchLog.model;
 
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
+import com.zero9platform.domain.product_post.entity.ProductPost;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -16,23 +17,21 @@ public class SearchLogItemResponse {
     private final String image;
     private final String productName;
     private final Long price;
-    private final Long viewCount;
     private final Long favoriteCount;
     private final LocalDateTime startDate;
     private final LocalDateTime endDate;
 
-    public static SearchLogItemResponse from(GroupPurchasePost groupPurchasePost, Long favoriteCount) {
+    public static SearchLogItemResponse from(ProductPost productPost, Long favoriteCount) {
         return new SearchLogItemResponse(
-                groupPurchasePost.getId(),
-                groupPurchasePost.getUser().getId(),
-                groupPurchasePost.getUser().getNickname(),
-                groupPurchasePost.getImage(),
-                groupPurchasePost.getProductName(),
-                groupPurchasePost.getPrice(),
-                groupPurchasePost.getViewCount(),
+                productPost.getId(),
+                productPost.getUser().getId(),
+                productPost.getUser().getNickname(),
+                productPost.getImage(),
+                productPost.getTitle(),
+                productPost.getProduct().getProductPrice(),
                 favoriteCount,
-                groupPurchasePost.getStartDate(),
-                groupPurchasePost.getEndDate()
+                productPost.getStartDate(),
+                productPost.getEndDate()
         );
     }
 
