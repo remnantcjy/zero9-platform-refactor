@@ -24,6 +24,7 @@ public enum ExceptionCode {
     EMAIL_EXIST(HttpStatus.CONFLICT, "중복되는 이메일이 존재합니다."),
     PHONE_EXIST(HttpStatus.CONFLICT, "중복되는 핸드폰번호가 존재합니다."),
     NICKNAME_EXIST(HttpStatus.CONFLICT, "중복되는 닉네임이 존재합니다."),
+    INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "재고가 부족합니다. 남은 수량: %d"),
 
     // 404
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
@@ -52,6 +53,8 @@ public enum ExceptionCode {
     GPP_APPROVAL_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "승인상태를 찾을 수 없습니다."),
     GPP_PROGRESS_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "진행상태를 찾을 수 없습니다."),
     PP_PROGRESS_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "진행상태를 찾을 수 없습니다."),
+    ORDER_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "주문 진행상태를 찾을 수 없습니다."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
 
     //검색
     INVALID_KEYWORD(HttpStatus.BAD_REQUEST, "검색어가 비어있을 수 없습니다"),
@@ -64,6 +67,9 @@ public enum ExceptionCode {
 
     // GppComment - 404 NOT FOUND
     GPP_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물 댓글을 찾을 수 없습니다."),
+    OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 옵션을 찾을 수 없습니다."),
+    ORDERITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문 상품을 찾을 수 없습니다."),
+    ALREADY_ORDERED(HttpStatus.BAD_REQUEST, "이미 주문이 완료된 상품입니다."),
 
     // 409
     ALREADY_SUBSCRIBED_GPP(HttpStatus.CONFLICT, "이미 팔로우한 공동구매 게시물입니다."),
