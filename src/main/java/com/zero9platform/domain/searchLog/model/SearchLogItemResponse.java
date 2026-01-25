@@ -1,6 +1,5 @@
 package com.zero9platform.domain.searchLog.model;
 
-import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +10,12 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class SearchLogItemResponse {
 
-    private final Long gppId;
+    private final Long productPostId;
     private final Long userId;
     private final String nickname;
     private final String image;
-    private final String productName;
-    private final Long price;
+    private final String productPostTitle;
+    private final Long productPrice;
     private final Long favoriteCount;
     private final LocalDateTime startDate;
     private final LocalDateTime endDate;

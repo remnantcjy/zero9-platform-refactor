@@ -7,11 +7,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SearchLogListResponse {
 
+    private final Long rank;
     private final String keyword;
     private final Long count;
 
-    public static SearchLogListResponse from(String keyword , Long count) {
-        return new SearchLogListResponse(keyword, count);
+    public static SearchLogListResponse from(Long rank, String keyword , Long count) {
+        return new SearchLogListResponse(rank, keyword, count);
 
     }
 }

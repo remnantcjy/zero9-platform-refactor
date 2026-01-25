@@ -5,11 +5,9 @@ import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
-import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
 import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
-import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,16 +40,16 @@ public class SearchLogService {
         }
 
         // searchCondition 예외 처리
-        if (searchCondition != null && !"product".equals(searchCondition) && !"influencer".equals(searchCondition)) {
+        if (searchCondition != null && !"product_title".equals(searchCondition) && !"product_name".equals(searchCondition) && !"influencer".equals(searchCondition)) {
             throw new CustomException(ExceptionCode.CATEGORY_FALSE);
         }
 
         // 통합 검색
-        // category가 product면 상품명, influencer면 인플루언서 닉네임, 없으면 둘 다 포함하여 검색
+        // category(product_title, product_name, influencer), 없으면 셋 다 포함하여 검색
         Page<ProductPost> searchResult = productPostRepository.searchByKeyword(keyword, searchCondition, pageable);
 
         // 검색어 로그 저장 (검색 카운트 증가)
-        saveSearchKeyword(keyword);
+        searchKeywordSave(keyword);
 
         // searchResult로부터 gppId 추출
         List<Long> gppIdList = new ArrayList<>();
@@ -79,14 +77,14 @@ public class SearchLogService {
      */
     @Transactional(readOnly = true)
     public List<SearchLogListResponse> searchLogProductNameList() {
-        return searchLogRepository.findTopProductKeywords(PageRequest.of(0, 10) );
+        return searchLogRepository.findTopKeywords(PageRequest.of(0, 10) );
     }
 
 
     /**
      * 검색 키워드 로그 저장
      */
-    private void saveSearchKeyword(String keyword) {
+    private void searchKeywordSave(String keyword) {
 
         // 검색어가 없으면 로그 저장하지 않음
         if (keyword == null || keyword.isBlank()) {

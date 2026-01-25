@@ -22,11 +22,13 @@ public interface ProductPostRepository extends JpaRepository<ProductPost, Long> 
                 JOIN FETCH pp.user u
                 WHERE pp.deletedAt IS NULL
                   AND (
-                    (:searchCondition = 'product' AND pp.product.name LIKE CONCAT('%', :keyword, '%'))
+                    (:searchCondition = 'product_title' AND pp.title LIKE CONCAT('%', :keyword, '%'))
+                    OR
+                    (:searchCondition = 'product_name' AND pp.product.name LIKE CONCAT('%', :keyword, '%'))
                     OR
                     (:searchCondition = 'influencer' AND u.nickname LIKE CONCAT('%', :keyword, '%'))
                     OR
-                    ((:searchCondition IS NULL OR :searchCondition = '') AND (pp.product.name LIKE CONCAT('%', :keyword, '%') OR u.nickname LIKE CONCAT('%', :keyword, '%')))
+                    ((:searchCondition IS NULL OR :searchCondition = '') AND (pp.title LIKE CONCAT('%', :keyword, '%') OR pp.product.name LIKE CONCAT('%', :keyword, '%') OR u.nickname LIKE CONCAT('%', :keyword, '%')))
                   )
             """)
     Page<ProductPost> searchByKeyword(@Param("keyword") String keyword, @Param("searchCondition") String searchCondition, Pageable pageable);

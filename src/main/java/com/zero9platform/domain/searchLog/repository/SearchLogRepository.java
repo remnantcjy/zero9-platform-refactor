@@ -17,13 +17,13 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long> {
     // 인기검색어 차트(상품명)
     @Query("""
                 SELECT new com.zero9platform.domain.searchLog.model.SearchLogListResponse(
+                    ROW_NUMBER() OVER (ORDER BY s.count DESC) AS rank,
                     s.keyword,
-                         s.count
-                     )
+                    s.count
+                )
                 FROM SearchLog s
-                WHERE s.keyword = 'PRODUCT'
                 ORDER BY s.count DESC
             """)
-    List<SearchLogListResponse> findTopProductKeywords(Pageable pageable);
+    List<SearchLogListResponse> findTopKeywords(Pageable pageable);
 
 }
