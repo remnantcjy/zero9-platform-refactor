@@ -33,12 +33,7 @@ public class SearchLogService {
      * 키워드 통합 검색
      */
     @Transactional
-    public PageResponse<SearchLogItemResponse> search(String keyword, String searchCondition, Pageable pageable) {
-
-        // 검색어 예외 처리
-        if (keyword == null || keyword.isBlank()) {
-            throw new CustomException(ExceptionCode.INVALID_KEYWORD);
-        }
+    public Page<SearchLogItemResponse> searchLog(String keyword, String searchCondition, Pageable pageable) {
 
         // searchCondition 예외 처리
         if (searchCondition != null && !"product".equals(searchCondition) && !"influencer".equals(searchCondition)) {
@@ -75,10 +70,9 @@ public class SearchLogService {
             dtoList.add(SearchLogItemResponse.from(post, favoriteCountMap.getOrDefault(post.getId(), 0L)));
         }
 
-        Page<SearchLogItemResponse> mappedPage = new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
+//        Page<SearchLogItemResponse> mappedPage = new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
 
-        // 공통 페이징 응답 객체로 변환
-        return PageResponse.from(mappedPage);
+        return new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
     }
 
     /**
