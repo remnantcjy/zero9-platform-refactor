@@ -6,6 +6,7 @@ import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteCreateResponse;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteGetResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class ProductPostFavoriteController {
 
         ProductPostFavoriteCreateResponse createResponse = productPostFavoriteService.favoriteCreate(productPostId, authUser);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("찜 등록 성공", createResponse));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 등록 성공", createResponse));
     }
 
     /**
@@ -38,7 +39,7 @@ public class ProductPostFavoriteController {
 
         productPostFavoriteService.favoriteCancellation(productPostId, authUser);
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(CommonResponse.success("찜 취소 성공", null));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 취소 성공", null));
     }
 
     /**
@@ -47,9 +48,11 @@ public class ProductPostFavoriteController {
     @GetMapping("/favorites")
     public ResponseEntity<CommonResponse<PageResponse<ProductPostFavoriteGetResponse>>> favoriteGetPageHandler(@AuthenticationPrincipal AuthUser authUser, Pageable pageable) {
 
-        PageResponse<ProductPostFavoriteGetResponse> favoriteList = productPostFavoriteService.favoriteGetPage(authUser, pageable);
+        Page<ProductPostFavoriteGetResponse> favoriteList = productPostFavoriteService.favoriteGetPage(authUser, pageable);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 목록 조회 성공", favoriteList));
+        PageResponse<ProductPostFavoriteGetResponse> pageResponse = PageResponse.from(favoriteList);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("찜 목록 조회 성공", pageResponse));
     }
 
 }
