@@ -2,7 +2,6 @@ package com.zero9platform.domain.searchLog;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
@@ -32,7 +31,7 @@ public class SearchLogService {
      * 키워드 통합 검색
      */
     @Transactional
-    public PageResponse<SearchLogItemResponse> search(String keyword, String searchCondition, Pageable pageable) {
+    public Page<SearchLogItemResponse> searchLog(String keyword, String searchCondition, Pageable pageable) {
 
         // 검색어 예외 처리
         if (keyword == null || keyword.isBlank()) {
@@ -47,11 +46,6 @@ public class SearchLogService {
         // 통합 검색
         // category가 product면 상품명, influencer면 인플루언서 닉네임, 없으면 둘 다 포함하여 검색
         Page<GroupPurchasePost> searchResult = groupPurchasePostRepository.searchByKeyword(keyword, searchCondition, pageable);
-
-        // 검색 결과가 없는 경우 예외 처리
-        if (searchResult.isEmpty()) {
-            throw new CustomException(ExceptionCode.PRODUCT_NOT_FOUND);
-        }
 
         // 검색어 로그 저장 (검색 카운트 증가)
         saveSearchKeyword(keyword);
@@ -74,10 +68,7 @@ public class SearchLogService {
             dtoList.add(SearchLogItemResponse.from(post, favoriteCountMap.getOrDefault(post.getId(), 0L)));
         }
 
-        Page<SearchLogItemResponse> mappedPage = new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
-
-        // 공통 페이징 응답 객체로 변환
-        return PageResponse.from(mappedPage);
+        return new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
     }
 
     /**
