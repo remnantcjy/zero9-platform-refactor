@@ -3,12 +3,18 @@ package com.zero9platform.domain.searchLog;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.clickLog.ProductPostSearchResponse;
+import com.zero9platform.domain.clickLog.SearchContext;
+import com.zero9platform.domain.clickLog.SearchContextRepository;
+import com.zero9platform.domain.product_post.entity.ProductPost;
+import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.searchLog.repository.SearchRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,6 +33,8 @@ public class SearchLogService {
     private final SearchRepository searchRepository;
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
+    private final SearchContextRepository searchContextRepository;
+    private final ProductPostRepository productPostRepository;
 
     /**
      * 키워드 통합 검색
@@ -50,6 +58,13 @@ public class SearchLogService {
 
         // 검색어 로그 저장 (검색 카운트 증가)
         saveSearchKeyword(keyword);
+
+        // 임시 컨텍스트 저장
+        searchResult.getContent().forEach(post ->
+                searchContextRepository.save(
+                        new SearchContext(keyword, post.getId())
+                )
+        );
 
         // searchResult로부터 gppId 추출
         List<Long> gppIdList = new ArrayList<>();
