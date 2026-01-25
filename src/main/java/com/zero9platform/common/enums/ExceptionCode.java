@@ -39,7 +39,6 @@ public enum ExceptionCode {
     // 댓글
     NOT_FOUND_COMMENT(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
 
-
     // GPP - 400 BAD REQUEST
     GPP_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "종료일은 시작일 이후여야 하며, 시작일은 오늘 이전일 수 없습니다."),
     PP_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "시작일은 오늘 이전일 수 없으며, 종료일은 시작일 이후여야 합니다."),
@@ -61,9 +60,7 @@ public enum ExceptionCode {
 
     //찜
     ALREADY_FAVORITE(HttpStatus.BAD_REQUEST, "이미 찜한 상품입니다."),
-    FAVORITE_NOT_FOUND(HttpStatus.NOT_FOUND, "게시물이 없거나 찜 등록이 없습니다."),
     NOT_FOUND_FAVORITE(HttpStatus.NOT_FOUND, "이미 찜이 취소되었거나 존재하지 않습니다."),
-    CANNOT_FAVORITE_OWN_POST(HttpStatus.FORBIDDEN, "해당 작업을 수행할 권한이 없습니다."),
 
     // GppComment - 404 NOT FOUND
     GPP_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물 댓글을 찾을 수 없습니다."),

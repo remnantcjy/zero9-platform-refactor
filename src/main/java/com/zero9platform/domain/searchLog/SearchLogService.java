@@ -2,7 +2,8 @@ package com.zero9platform.domain.searchLog;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.domain.gpp_favorite.repository.GppFavoriteRepository;
+import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
@@ -25,7 +26,7 @@ public class SearchLogService {
 
     private final SearchRepository searchRepository;
     private final GroupPurchasePostRepository groupPurchasePostRepository;
-    private final GppFavoriteRepository gppFavoriteRepository;
+    private final ProductPostFavoriteRepository productPostFavoriteRepository;
 
     /**
      * 키워드 통합 검색
@@ -58,7 +59,7 @@ public class SearchLogService {
 
         // 찜 개수 조회 -> Map 변환
         Map<Long, Long> favoriteCountMap = new HashMap<>();
-        for (Object[] row : gppFavoriteRepository.countByGppIdList(gppIdList)) {
+        for (Object[] row : productPostFavoriteRepository.countByGppIdList(gppIdList)) {
             favoriteCountMap.put((Long) row[0], (Long) row[1]);
         }
 
