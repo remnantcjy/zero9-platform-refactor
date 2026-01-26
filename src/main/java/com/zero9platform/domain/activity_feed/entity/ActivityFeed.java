@@ -25,9 +25,14 @@ public class ActivityFeed extends BaseEntity {
     @Column(nullable = false)
     private Long productPostId;
 
-    public ActivityFeed(String type, String message, Long productPostId) {
+    // 개인별 피드(추후 확장 가능성을 위헤 추가)
+    @Column(nullable = true)
+    private Long userId;
+
+    public ActivityFeed(String type, String message, Long productPostId, Long userId) {
         this.type = type;
         this.message = message;
         this.productPostId = productPostId;
+        this.userId = userId;
     }
 }

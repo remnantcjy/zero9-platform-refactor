@@ -17,6 +17,9 @@ public class ActivityFeedService {
 
     private final ActivityFeedRepository feedRepository;
 
+    /**
+     * 피드 생성
+     */
     @Transactional
     public void feedCreate(String type, Long productPostId, String productName) {
 
@@ -36,11 +39,14 @@ public class ActivityFeedService {
             message = "[" + productName + "] 상품이 곧 공개될 예정입니다.";
         }
 
-        // 유저 생성할 때처럼 아무 변환 없이 그대로 생성자에 전달
-        ActivityFeed feed = new ActivityFeed(type, message, productPostId);
+        // 유저id 필드 null이면 전체피드 (현재 개인별 X)
+        ActivityFeed feed = new ActivityFeed(type, message, productPostId, null);
         feedRepository.save(feed);
     }
 
+    /**
+     * 피드 목록 조회
+     */
     @Transactional(readOnly = true)
     public List<ActivityFeedResponse> feedsGetList() {
         // 조회
