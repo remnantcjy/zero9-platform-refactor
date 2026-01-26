@@ -20,7 +20,9 @@ public class ActivityFeedController {
 
     @GetMapping
     public ResponseEntity<CommonResponse<List<ActivityFeedResponse>>> feedsGetListHandler() {
+
         List<ActivityFeedResponse> feeds = feedService.feedsGetList();
+
         return ResponseEntity.ok(CommonResponse.success("액티비티 피드 조회 성공", feeds));
     }
 }

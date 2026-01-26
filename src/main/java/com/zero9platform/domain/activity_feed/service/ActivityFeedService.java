@@ -24,7 +24,9 @@ public class ActivityFeedService {
     public void feedCreate(String type, Long productPostId, String productName) {
 
         // 중복 방지(이미 있으면 패스)
-        if (feedRepository.existsByTypeAndProductPostId(type, productPostId)) return;
+        if (feedRepository.existsByTypeAndProductPostId(type, productPostId)) {
+            return;
+        }
 
         String message = "";
         if (type.equals(FeedType.POPULAR.name())) {
