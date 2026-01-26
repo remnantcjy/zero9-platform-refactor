@@ -1,6 +1,5 @@
 package com.zero9platform.domain.searchLog.entity;
 
-import com.zero9platform.domain.product_post.entity.ProductPost;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
