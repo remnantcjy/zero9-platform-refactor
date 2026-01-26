@@ -4,6 +4,7 @@ import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.OrderStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
+import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.order.model.response.OrderCancelResponse;
 import com.zero9platform.domain.order.model.response.OrderCreateResponse;
@@ -33,6 +34,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductPostOptionRepository productPostOptionRepository;
+    private final ActivityFeedService activityFeedService;
 
     /**
      * 주문 생성
@@ -83,6 +85,9 @@ public class OrderService {
         Order order = new Order(orderItem, orderNo, totalAmount, orderStatus);
 
         Order savedOrder = orderRepository.save(order);
+
+        // 피드 생성
+        activityFeedService.feedCreate("PAYMENT", savedOrder.getOrderItem().getProductPost().getId(), savedOrder.getOrderItem().getProductPost().getTitle());
 
         return OrderCreateResponse.from(savedOrder);
     }
