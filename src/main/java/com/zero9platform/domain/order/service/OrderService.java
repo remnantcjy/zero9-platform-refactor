@@ -94,7 +94,7 @@ public class OrderService {
     public OrderGetDetailResponse orderGetDetail(Long userId, Long orderId) {
 
         // 주문 권한 체크
-        Order order = checkOrderPermission(orderRepository.findByIdAndCanceledAtIsNull(orderId), userId);
+        Order order = checkOrderPermission(orderRepository.findById(orderId), userId);
 
         return OrderGetDetailResponse.from(order);
     }
@@ -106,7 +106,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public Page<OrderGetDetailResponse> orderGetList(Long userId, Pageable pageable) {
 
-        Page<Order> orderPage = orderRepository.findByOrderItem_User_IdAndCanceledAtIsNull(userId, pageable);
+        Page<Order> orderPage = orderRepository.findByOrderItem_User_Id(userId, pageable);
 
         Page<OrderGetDetailResponse> OrderGetDetailResponsePage = orderPage.map(OrderGetDetailResponse::from);
 
