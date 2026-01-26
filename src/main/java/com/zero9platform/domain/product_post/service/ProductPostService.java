@@ -4,7 +4,6 @@ import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
-import com.zero9platform.domain.activity_feed.repository.ActivityFeedRepository;
 import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.product.entity.Product;
 import com.zero9platform.domain.product.repository.ProductRepository;
