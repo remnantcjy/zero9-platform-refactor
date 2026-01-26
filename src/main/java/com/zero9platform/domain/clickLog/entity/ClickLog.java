@@ -1,4 +1,4 @@
-package com.zero9platform.domain.clickLog;
+package com.zero9platform.domain.clickLog.entity;
 
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import jakarta.persistence.*;

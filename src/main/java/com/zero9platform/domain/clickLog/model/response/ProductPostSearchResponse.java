@@ -1,4 +1,4 @@
-package com.zero9platform.domain.clickLog;
+package com.zero9platform.domain.clickLog.model.response;
 
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import lombok.Getter;

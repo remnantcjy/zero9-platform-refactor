@@ -1,6 +1,7 @@
 package com.zero9platform.domain.clickLog;
 
 import com.zero9platform.common.model.CommonResponse;
+import com.zero9platform.domain.clickLog.model.response.ClickLogProductPostDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

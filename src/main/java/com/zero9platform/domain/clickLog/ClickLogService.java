@@ -2,8 +2,12 @@ package com.zero9platform.domain.clickLog;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.domain.clickLog.entity.ClickLog;
+import com.zero9platform.domain.clickLog.model.response.ClickLogProductPostDetailResponse;
+import com.zero9platform.domain.clickLog.repository.ClickLogRepository;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
+import com.zero9platform.domain.searchLog.repository.SearchContextRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
