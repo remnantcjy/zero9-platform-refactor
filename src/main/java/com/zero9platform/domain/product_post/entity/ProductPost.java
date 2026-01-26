@@ -131,6 +131,9 @@ public class ProductPost extends BaseEntity {
                 return false;
             }
         }
+
+        this.productPostStatus = ProductPostStatus.INACTIVE.name();
+
         return true;
     }
 }

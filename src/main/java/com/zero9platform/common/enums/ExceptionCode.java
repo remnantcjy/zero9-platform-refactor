@@ -80,9 +80,13 @@ public enum ExceptionCode {
     FILE_NOT_FOUND(HttpStatus.BAD_REQUEST,"업로드할 파일이 존재하지 않습니다."),
 
     // 옵션
-    OPTION_IS_DISABLED(HttpStatus.BAD_REQUEST, "옵션이 비활성화 상태입니다.")
+    OPTION_IS_DISABLED(HttpStatus.BAD_REQUEST, "옵션이 비활성화 상태입니다."),
 
+    // 주문 상품
+    CANNOT_CREATE_AN_ORDERITEM(HttpStatus.NOT_FOUND, "상품 게시물이 비활성화 상태라 주문 상품을 생성할 수 없습니다."),
 
+    // 주문
+    ALREADY_ORDERED_ORDERITEM(HttpStatus.CONFLICT, "이미 주문된 주문 상품입니다."),
 
     ;
 

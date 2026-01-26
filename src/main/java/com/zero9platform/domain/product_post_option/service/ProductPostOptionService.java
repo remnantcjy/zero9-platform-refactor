@@ -126,6 +126,9 @@ public class ProductPostOptionService {
         // 옵션 비활성화
         option.optionInactive();
 
+        // 한 상품 게시물의 옵션 리스트가 Empty일 때, 해당 상품 게시물 productPostStatus를 INACTIVE로 변경
+        productPost.allOptionsInactive();
+
         return ProductPostOptionDeleteResponse.from(option);
     }
 
