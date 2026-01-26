@@ -1,5 +1,6 @@
 package com.zero9platform.domain.grouppurchase_post.service;
 
+import com.zero9platform.common.aws.s3.S3Service;
 import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.GppProgressStatus;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -31,12 +33,13 @@ public class GroupPurchasePostService {
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final UserRepository userRepository;
     private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
+    private final S3Service s3Service;
 
     /**
      * 공동구매 게시물 작성
      */
     @Transactional
-    public GroupPurchasePostDetailResponse gpPostCreate(GroupPurchasePostCreateRequest request, AuthUser authUser) {
+    public GroupPurchasePostDetailResponse gpPostCreate(GroupPurchasePostCreateRequest request, AuthUser authUser, MultipartFile file) {
 
         Long userId = authUser.getId();
         // 1️. User 조회 (AuthUser)
@@ -60,12 +63,18 @@ public class GroupPurchasePostService {
         Category category = request.getCategory();
         GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
 
-        // 4️. Entity 생성
+        // 4. 이미지 파일 업로드 S3 서비스 호출
+        String contentImage = "";
+        if (file != null && !file.isEmpty()) {
+            contentImage = s3Service.upload(file);
+        }
+
+        // 5. Entity 생성
         GroupPurchasePost gpp = new GroupPurchasePost(
                 user,
                 request.getProductName(),
                 request.getContent(),
-                request.getImage(),
+                contentImage,
                 request.getPrice(),
                 request.getLinkUrl(),
                 category.name(),
@@ -118,7 +127,7 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 수정
      */
     @Transactional
-    public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request, AuthUser authUser) {
+    public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request, AuthUser authUser, MultipartFile file) {
 
         Long userId = authUser.getId();
 
@@ -138,15 +147,21 @@ public class GroupPurchasePostService {
             throw new CustomException(ExceptionCode.GPP_NO_PERMISSION);
         }
 
-        // 4. Enum 변환 - 카테고리, 진행상태
+        // 4. 이미지 파일 업로드 S3 서비스 호출
+        String contentImage = "";
+        if (file != null && !file.isEmpty()) {
+            contentImage = s3Service.upload(file);
+        }
+
+        // 5. Enum 변환 - 카테고리, 진행상태
         Category category = request.getCategory();
         GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
 
-        // 5. 엔티티 수정
+        // 6. 엔티티 수정
         gpp.update(
                 request.getProductName(),
                 request.getContent(),
-                request.getImage(),
+                contentImage,
                 request.getPrice(),
                 request.getLinkUrl(),
                 category.name(),
