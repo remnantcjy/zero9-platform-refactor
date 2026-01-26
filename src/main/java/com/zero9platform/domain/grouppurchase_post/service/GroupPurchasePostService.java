@@ -5,8 +5,6 @@ import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.GppProgressStatus;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.common.model.PageResponse;
-import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostCreateRequest;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostUpdateRequest;
@@ -24,8 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
-import static com.zero9platform.common.enums.UserRole.ADMIN;
-
 @Service
 @RequiredArgsConstructor
 public class GroupPurchasePostService {
@@ -39,9 +35,8 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 작성
      */
     @Transactional
-    public GroupPurchasePostDetailResponse gpPostCreate(GroupPurchasePostCreateRequest request, AuthUser authUser, MultipartFile file) {
+    public GroupPurchasePostDetailResponse gpPostCreate(GroupPurchasePostCreateRequest request, Long userId, MultipartFile file) {
 
-        Long userId = authUser.getId();
         // 1️. User 조회 (AuthUser)
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
@@ -127,9 +122,7 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 수정
      */
     @Transactional
-    public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request, AuthUser authUser, MultipartFile file) {
-
-        Long userId = authUser.getId();
+    public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request, Long userId, MultipartFile file) {
 
         // 1. 공동구매 게시물 조회 [삭제처리 제외 + 유효성 검사]
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
@@ -179,9 +172,9 @@ public class GroupPurchasePostService {
      * 공동구매 게시물 삭제
      */
     @Transactional
-    public void gpPostDelete(Long gppId, AuthUser authUser) {
+    public void gpPostDelete(Long gppId, Long userId, boolean isAdmin) {
 
-        Long userId = authUser.getId();
+//        Long userId = authUser.getId();
 
         // 1. 공동구매 게시물 조회(삭제처리 제외) + 유효성 검사
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
@@ -193,7 +186,6 @@ public class GroupPurchasePostService {
 
         // 3. 권한 검증 - 본인 or 관리자
         boolean isOwner = gpp.getUser().getId().equals(user.getId());
-        boolean isAdmin = authUser.getUserRole() == ADMIN;
 
         if (!isOwner && !isAdmin) {
             throw new CustomException(ExceptionCode.GPP_NO_PERMISSION);
