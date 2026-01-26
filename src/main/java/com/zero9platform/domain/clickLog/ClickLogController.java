@@ -28,4 +28,5 @@ public class ClickLogController {
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 상세 조회 성공", response));
     }
+
 }
