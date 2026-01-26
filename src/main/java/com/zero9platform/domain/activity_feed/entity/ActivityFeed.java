@@ -16,12 +16,13 @@ public class ActivityFeed extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String type;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String message;
 
+    // 개인별 피드로 확장시 true로 변경예정
     @Column(nullable = false)
     private Long productPostId;
 
