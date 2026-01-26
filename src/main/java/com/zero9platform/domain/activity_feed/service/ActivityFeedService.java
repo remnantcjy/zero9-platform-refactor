@@ -35,7 +35,9 @@ public class ActivityFeedService {
             message = "[" + productName + "] 상품의 모집 마감이 임박하였습니다.";
         } else if (type.equals(FeedType.LOW_STOCK.name())) {
             message = "[" + productName + "] 상품의 재고가 소진될 예정입니다.";
-        } else if (type.equals(FeedType.SOON.name())) {
+        }else if (type.equals(FeedType.SOLD_OUT.name())) {
+            message = "[" + productName + "] 상품이 성황리에 품절되었습니다!";
+        }else if (type.equals(FeedType.SOON.name())) {
             message = "[" + productName + "] 상품이 곧 공개될 예정입니다.";
         }
 

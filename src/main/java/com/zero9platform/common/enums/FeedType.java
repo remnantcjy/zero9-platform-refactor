@@ -5,5 +5,6 @@ public enum FeedType {
     PAYMENT,    // 결제
     DEADLINE,   // 마감
     LOW_STOCK,  // 재고
-    SOON    // 예정
+    SOON,    // 예정
+    SOLD_OUT // 품절
 }
