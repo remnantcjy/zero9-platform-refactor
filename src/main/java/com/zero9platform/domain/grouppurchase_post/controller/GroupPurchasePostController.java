@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.zero9platform.domain.auth.model.AuthUser;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/zero9")
@@ -30,13 +31,13 @@ public class GroupPurchasePostController {
      * 공동구매 게시물 작성
      */
     @PostMapping("/gp-posts")
-    public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPCreateHandler(@RequestBody @Valid GroupPurchasePostCreateRequest request, @AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPCreateHandler(@RequestPart("gppCreateRequest") @Valid GroupPurchasePostCreateRequest request, @AuthenticationPrincipal AuthUser authUser, @RequestPart(value = "contentImage", required = false) MultipartFile file) {
 
         if (authUser.getUserRole() != UserRole.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonResponse.fail("공동구매 게시물 작성은 인플루언서만 가능"));
         }
 
-        GroupPurchasePostDetailResponse response = gppService.gpPostCreate(request, authUser);
+        GroupPurchasePostDetailResponse response = gppService.gpPostCreate(request, authUser, file);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 작성 성공", response));
     }
@@ -67,13 +68,13 @@ public class GroupPurchasePostController {
      * 공동구매 게시물 수정
      */
     @PutMapping("/gp-posts/{gppId}")
-    public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPUpdateHandler(@PathVariable Long gppId, @RequestBody @Valid GroupPurchasePostUpdateRequest request, @AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<CommonResponse<GroupPurchasePostDetailResponse>> GPPUpdateHandler(@PathVariable Long gppId, @RequestPart("gppUpdateRequest") @Valid GroupPurchasePostUpdateRequest request, @AuthenticationPrincipal AuthUser authUser, @RequestPart(value = "contentImage", required = false) MultipartFile file) {
 
         if (authUser.getUserRole() != UserRole.INFLUENCER) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(CommonResponse.fail("공동구매 게시물 수정은 인플루언서, 본인만 가능"));
         }
 
-        GroupPurchasePostDetailResponse response = gppService.gpPostUpdate(gppId, request, authUser);
+        GroupPurchasePostDetailResponse response = gppService.gpPostUpdate(gppId, request, authUser, file);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 수정 성공", response));
     }
