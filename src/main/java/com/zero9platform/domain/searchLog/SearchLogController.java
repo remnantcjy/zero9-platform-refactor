@@ -22,15 +22,13 @@ public class SearchLogController {
 
     /**
      * 통합 검색 API
-     * 검색 대상
-     * - 공동구매 상품명
-     * - 인플루언서 활동 닉네임
+     * 검색 대상 - 공동구매 상품명, 인플루언서 활동 닉네임
      */
     @GetMapping("/searchLog")
     public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String searchCondition, Pageable pageable) {
 
         // 검색 서비스 호출
-        Page<SearchLogItemResponse> page = searchLogService.searchLog(keyword, searchCondition, pageable);
+        Page<SearchLogItemResponse> page = searchLogService.searchLog(keyword.trim(), searchCondition, pageable);
 
         // PageResponse로 변환
         PageResponse<SearchLogItemResponse> pageResponse = PageResponse.from(page);

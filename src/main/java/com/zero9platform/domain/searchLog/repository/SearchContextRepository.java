@@ -1,6 +1,6 @@
 package com.zero9platform.domain.searchLog.repository;
 
-import com.zero9platform.domain.searchLog.SearchContext;
+import com.zero9platform.domain.searchLog.entity.SearchContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

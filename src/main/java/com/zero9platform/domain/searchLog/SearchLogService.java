@@ -2,6 +2,7 @@ package com.zero9platform.domain.searchLog;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.domain.searchLog.entity.SearchContext;
 import com.zero9platform.domain.searchLog.repository.SearchContextRepository;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
@@ -17,10 +18,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,21 +32,21 @@ public class SearchLogService {
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
     private final ProductPostRepository productPostRepository;
     private final SearchContextRepository searchContextRepository;
+
     /**
-     * 키워드 통합 검색
+     * 통합 검색 API
+     * 검색 대상 - 공동구매 상품명, 인플루언서 활동 닉네임
      */
     @Transactional
     public Page<SearchLogItemResponse> searchLog(String keyword, String searchCondition, Pageable pageable) {
 
-        // 검색어 예외 처리
-        if (keyword == null || keyword.isBlank()) {
-            throw new CustomException(ExceptionCode.INVALID_KEYWORD);
-        }
+        // searchCondition 검증
+        validateSearchCondition(searchCondition);
 
-        // searchCondition 예외 처리
-        if (searchCondition != null && !"product_title".equals(searchCondition) && !"product_name".equals(searchCondition) && !"influencer".equals(searchCondition)) {
-            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
-        }
+//        // searchCondition 예외 처리
+//        if (searchCondition != null && !"product_title".equals(searchCondition) && !"product_name".equals(searchCondition) && !"influencer".equals(searchCondition)) {
+//            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
+//        }
 
         // 통합 검색
         // category(product_title, product_name, influencer), 없으면 셋 다 포함하여 검색
@@ -53,24 +55,24 @@ public class SearchLogService {
         // 검색어 로그 저장 (검색 카운트 증가)
         searchKeywordSave(keyword);
 
-        // 임시 컨텍스트 저장
-        searchResult.getContent().forEach(post ->
-                searchContextRepository.save(
-                        new SearchContext(keyword, post.getId())
-                )
-        );
+        // 검색 컨텍스트 저장 (반환 데이터 기록)
+        saveSearchContext(keyword, searchResult.getContent());
 
-        // searchResult로부터 gppId 추출
-        List<Long> gppIdList = new ArrayList<>();
-        for (ProductPost post : searchResult) {
-            gppIdList.add(post.getId());
-        }
+        // 4. 찜 개수 조회
+        Map<Long, Long> favoriteCountMap =
+                getFavoriteCountMap(searchResult.getContent());
 
-        // 찜 개수 조회 -> Map 변환
-        Map<Long, Long> favoriteCountMap = new HashMap<>();
-        for (Object[] row : productPostFavoriteRepository.countByGppIdList(gppIdList)) {
-            favoriteCountMap.put((Long) row[0], (Long) row[1]);
-        }
+//        // searchResult로부터 gppId 추출
+//        List<Long> gppIdList = new ArrayList<>();
+//        for (ProductPost post : searchResult) {
+//            gppIdList.add(post.getId());
+//        }
+
+//        // 찜 개수 조회 -> Map 변환
+//        Map<Long, Long> favoriteCountMap = new HashMap<>();
+//        for (Object[] row : productPostFavoriteRepository.countByGppIdList(gppIdList)) {
+//            favoriteCountMap.put((Long) row[0], (Long) row[1]);
+//        }
 
         // DTO 변환
         List<SearchLogItemResponse> dtoList = new ArrayList<>();
@@ -86,9 +88,49 @@ public class SearchLogService {
      */
     @Transactional(readOnly = true)
     public List<SearchLogListResponse> searchLogProductNameList() {
-        return searchLogRepository.findTopKeywords(PageRequest.of(0, 10) );
+        return searchLogRepository.findTopKeywords(PageRequest.of(0, 10));
     }
 
+
+    /**
+     * searchCondition 검증기
+     */
+    private void validateSearchCondition(String condition) {
+        if (condition == null) {
+            return;
+        }
+
+        if (!"product_title".equals(condition) && !"product_name".equals(condition) && !"influencer".equals(condition)) {
+            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
+        }
+    }
+
+    /**
+     * 검색 컨텍스트 저장 (SearchContext)
+     */
+    private void saveSearchContext(String keyword, List<ProductPost> posts) {
+        posts.forEach(post ->
+                searchContextRepository.save(
+                        new SearchContext(keyword, post.getId())
+                )
+        );
+    }
+
+    /**
+     * 찜 개수 조회
+     */
+    private Map<Long, Long> getFavoriteCountMap(List<ProductPost> posts) {
+        List<Long> ids = posts.stream()
+                .map(ProductPost::getId)
+                .toList();
+
+        return productPostFavoriteRepository.countByGppIdList(ids)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+    }
 
     /**
      * 검색 키워드 로그 저장

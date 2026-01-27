@@ -1,4 +1,4 @@
-package com.zero9platform.domain.searchLog;
+package com.zero9platform.domain.searchLog.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
