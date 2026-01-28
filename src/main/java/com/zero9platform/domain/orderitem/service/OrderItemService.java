@@ -5,7 +5,7 @@ import com.zero9platform.common.enums.OrderStatus;
 import com.zero9platform.common.enums.ProductPostStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.domain.admin.repository.InfluencerRepository;
+import com.zero9platform.domain.user.repository.InfluencerRepository;
 import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.orderitem.entity.OrderItem;
 import com.zero9platform.domain.orderitem.model.request.OrderItemCreateRequest;
