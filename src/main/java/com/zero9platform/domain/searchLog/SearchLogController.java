@@ -2,6 +2,7 @@ package com.zero9platform.domain.searchLog;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,10 +27,10 @@ public class SearchLogController {
      * 검색 대상 - 공동구매 상품명, 인플루언서 활동 닉네임
      */
     @GetMapping("/searchLog")
-    public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String searchCondition, Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String searchCondition, Pageable pageable, @AuthenticationPrincipal AuthUser authUser) {
 
         // 검색 서비스 호출
-        Page<SearchLogItemResponse> page = searchLogService.searchLog(keyword.trim(), searchCondition, pageable);
+        Page<SearchLogItemResponse> page = searchLogService.searchLog(keyword.trim(), searchCondition, pageable, authUser);
 
         // PageResponse로 변환
         PageResponse<SearchLogItemResponse> pageResponse = PageResponse.from(page);
@@ -50,3 +52,5 @@ public class SearchLogController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인기 검색어 차트 조회 성공", searchLogListResponses));
     }
 }
+
+

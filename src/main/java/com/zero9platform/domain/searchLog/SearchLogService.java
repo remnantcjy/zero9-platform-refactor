@@ -2,14 +2,15 @@ package com.zero9platform.domain.searchLog;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.domain.searchLog.entity.SearchContext;
-import com.zero9platform.domain.searchLog.repository.SearchContextRepository;
+import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
+import com.zero9platform.domain.searchLog.entity.SearchContext;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
-import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
+import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
+import com.zero9platform.domain.searchLog.repository.SearchContextRepository;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,45 +29,42 @@ import java.util.stream.Collectors;
 public class SearchLogService {
 
     private final SearchLogRepository searchLogRepository;
-    private final ProductPostFavoriteRepository productPostFavoriteRepository;
-    private final ProductPostRepository productPostRepository;
     private final SearchContextRepository searchContextRepository;
+    private final ProductPostRepository productPostRepository;
+    private final ProductPostFavoriteRepository productPostFavoriteRepository;
 
     /**
      * 통합 검색 API
      * 검색 대상 - 공동구매 상품명, 인플루언서 활동 닉네임
      */
     @Transactional
-    public Page<SearchLogItemResponse> searchLog(String keyword, String searchCondition, Pageable pageable) {
+    public Page<SearchLogItemResponse> searchLog(String keyword, String searchCondition, Pageable pageable, AuthUser authUser) {
 
         // searchCondition 검증
         validateSearchCondition(searchCondition);
 
-//        // searchCondition 예외 처리
-//        if (searchCondition != null && !"product_title".equals(searchCondition) && !"product_name".equals(searchCondition) && !"influencer".equals(searchCondition)) {
-//            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
-//        }
+        // 검색어 로그 저장 (검색 카운트 증가)
+        searchKeywordSave(keyword);
 
         // 통합 검색
         // category(product_title, product_name, influencer), 없으면 셋 다 포함하여 검색
         Page<ProductPost> searchResult = productPostRepository.searchByKeyword(keyword, searchCondition, pageable);
 
-        // 검색어 로그 저장 (검색 카운트 증가)
-        searchKeywordSave(keyword);
 
-        // 검색 컨텍스트 저장 (반환 데이터 기록)
-        saveSearchContext(keyword, searchResult.getContent());
+        // 컨텍스트 저장
+        if (authUser != null) {
+            saveSearchContext(keyword, searchResult.getContent(), authUser.getId());
+        }
 
         // 4. 찜 개수 조회
-        Map<Long, Long> favoriteCountMap =
-                getFavoriteCountMap(searchResult.getContent());
+        Map<Long, Long> favoriteCountMap = getFavoriteCountMap(searchResult.getContent());
 
 //        // searchResult로부터 gppId 추출
 //        List<Long> gppIdList = new ArrayList<>();
 //        for (ProductPost post : searchResult) {
 //            gppIdList.add(post.getId());
 //        }
-
+//
 //        // 찜 개수 조회 -> Map 변환
 //        Map<Long, Long> favoriteCountMap = new HashMap<>();
 //        for (Object[] row : productPostFavoriteRepository.countByGppIdList(gppIdList)) {
@@ -96,7 +93,7 @@ public class SearchLogService {
      * searchCondition 검증기
      */
     private void validateSearchCondition(String condition) {
-        if (condition == null) {
+        if (condition == null || condition.isBlank()) {
             return;
         }
 
@@ -106,14 +103,37 @@ public class SearchLogService {
     }
 
     /**
+     * 검색 키워드 로그 저장
+     */
+    private void searchKeywordSave(String keyword) {
+
+        // 검색어가 없으면 로그 저장하지 않음
+        if (keyword == null || keyword.isBlank()) {
+//            log.log();
+            return;
+        }
+
+        // 기존 검색어가 있으면 조회, 없으면 새로 생성
+        SearchLog searchLog = searchLogRepository.findByKeyword(keyword)
+                .orElseGet(() -> new SearchLog(keyword));
+
+        searchLog.increaseCount();
+
+        searchLogRepository.save(searchLog);
+    }
+
+
+    /**
      * 검색 컨텍스트 저장 (SearchContext)
      */
-    private void saveSearchContext(String keyword, List<ProductPost> posts) {
-        posts.forEach(post ->
-                searchContextRepository.save(
-                        new SearchContext(keyword, post.getId())
-                )
-        );
+    private void saveSearchContext(String keyword, List<ProductPost> posts, Long userId) {
+
+        List<SearchContext> contexts = posts
+                .stream()
+                .map(post -> new SearchContext(keyword, post.getId(), userId))
+                .toList();
+
+        searchContextRepository.saveAll(contexts);
     }
 
     /**
@@ -130,26 +150,5 @@ public class SearchLogService {
                         row -> (Long) row[0],
                         row -> (Long) row[1]
                 ));
-    }
-
-    /**
-     * 검색 키워드 로그 저장
-     */
-    private void searchKeywordSave(String keyword) {
-
-        // 검색어가 없으면 로그 저장하지 않음
-        if (keyword == null || keyword.isBlank()) {
-            return;
-        }
-
-        // 기존 검색어가 있으면 조회, 없으면 새로 생성
-        SearchLog searchLog = searchLogRepository.findByKeyword(keyword)
-                .orElseGet(() -> new SearchLog(keyword));
-
-        // 검색 횟수 증가
-        searchLog.increaseCount();
-
-        //DB 저장
-        searchLogRepository.save(searchLog);
     }
 }

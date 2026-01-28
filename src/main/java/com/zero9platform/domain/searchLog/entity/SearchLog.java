@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "search_log")
+@Table(name = "search_logs")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SearchLog {
 
@@ -15,7 +15,7 @@ public class SearchLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String keyword;
 
     @Column(nullable = false)

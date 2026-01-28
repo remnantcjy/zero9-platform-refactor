@@ -1,16 +1,14 @@
 package com.zero9platform.domain.clickLog.entity;
 
-import com.zero9platform.domain.product_post.entity.ProductPost;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "click_log")
+@Table(name = "click_logs")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ClickLog {
 
@@ -18,18 +16,21 @@ public class ClickLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_post_id")
-    private ProductPost productPost;
+    @Column(nullable = false)
+    private Long userId;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
+    private Long productPostId;
+
+    @Column(nullable = false)
     private String keyword;
 
-    private LocalDateTime clickedAt;
+    @Column(nullable = false)
+    private LocalDateTime clickedAt = LocalDateTime.now();
 
-    public ClickLog(ProductPost productPost, String keyword) {
-        this.productPost = productPost;
+    public ClickLog(Long userId, Long productPostId, String keyword) {
+        this.userId = userId;
+        this.productPostId = productPostId;
         this.keyword = keyword;
-        this.clickedAt = LocalDateTime.now();
     }
 }

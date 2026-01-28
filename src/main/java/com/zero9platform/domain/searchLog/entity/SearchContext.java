@@ -6,8 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
-@Entity(name = "search_Context")
+@Entity
 @Getter
+@Table(name = "search_contexts")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SearchContext {
 
@@ -18,14 +19,18 @@ public class SearchContext {
     @Column(nullable = false)
     private Long productPostId;
 
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String keyword;
 
-    private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private Long userId;
 
-    public SearchContext(String keyword, Long productPostId) {
-        this.keyword = keyword;
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    public SearchContext(String keyword, Long productPostId, Long userId) {
         this.productPostId = productPostId;
-        this.createdAt = LocalDateTime.now();
+        this.keyword = keyword;
+        this.userId = userId;
     }
 }
