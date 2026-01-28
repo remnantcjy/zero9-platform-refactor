@@ -1,6 +1,7 @@
 package com.zero9platform.domain.order.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.common.enums.OrderStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
@@ -80,10 +81,10 @@ public class OrderService {
 
         if (productPost.getStock() == 0) {
             // 품절 = 재고가 0개
-            activityFeedService.feedCreate("SOLD_OUT", productPost.getId(), productPost.getTitle());
+            activityFeedService.feedCreate(FeedType.SOLD_OUT, productPost.getId(), productPost.getTitle());
         } else if (productPost.getStock() <= 10) {
             // 재고가 10개 이하
-            activityFeedService.feedCreate("LOW_STOCK", productPost.getId(), productPost.getTitle());
+            activityFeedService.feedCreate(FeedType.LOW_STOCK, productPost.getId(), productPost.getTitle());
         }
 
         // 주문 고유번호 생성
@@ -95,7 +96,8 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // 피드 생성
-        activityFeedService.feedCreate("PAYMENT", savedOrder.getOrderItem().getProductPost().getId(), savedOrder.getOrderItem().getProductPost().getTitle());
+        ProductPost orderFeed = savedOrder.getOrderItem().getProductPost();
+        activityFeedService.feedCreate(FeedType.PAYMENT, orderFeed.getId(), orderFeed.getTitle());
 
         return OrderCreateResponse.from(savedOrder);
     }

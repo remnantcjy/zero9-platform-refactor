@@ -4,6 +4,7 @@ import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.domain.activity_feed.entity.ActivityFeed;
 import com.zero9platform.domain.activity_feed.model.response.ActivityFeedResponse;
 import com.zero9platform.domain.activity_feed.repository.ActivityFeedRepository;
+import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import java.util.List;
 public class ActivityFeedService {
 
     private final ActivityFeedRepository feedRepository;
+    private final ProductPostFavoriteRepository favoriteRepository;
 
     /**
      * 피드 생성
@@ -39,7 +41,7 @@ public class ActivityFeedService {
     }
 
     /**
-     * 피드 목록 조회
+     * 피드 전체목록 조회
      */
     @Transactional(readOnly = true)
     public Page<ActivityFeedResponse> feedsGetList(Pageable pageable) {
@@ -49,4 +51,24 @@ public class ActivityFeedService {
         // DTO 변환
         return  page.map(ActivityFeedResponse::from);
     }
+
+    /**
+     * 로그인한 사용자의 피드 전체목록 조회
+     */
+    @Transactional(readOnly = true)
+    public Page<ActivityFeedResponse> myFeedsGetList(Long userId, Pageable pageable) {
+
+        // 유저가 찜한 상품 리스트 가져오기
+        List<Long> favoriteList = favoriteRepository.findProductPostIdsByUserId(userId);
+
+        // 찜한 상품이 없다면 전체피드 조회
+        if (favoriteList.isEmpty()) {
+            return feedsGetList(pageable);
+        }
+
+        // 찜한 상품 + 전체 피드 합쳐서 조회
+        return feedRepository.findFeedsByInterest(favoriteList, pageable)
+                .map(ActivityFeedResponse::from);
+    }
+
 }
