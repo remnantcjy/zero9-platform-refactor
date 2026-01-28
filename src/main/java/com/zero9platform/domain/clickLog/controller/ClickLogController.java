@@ -1,7 +1,8 @@
-package com.zero9platform.domain.clickLog;
+package com.zero9platform.domain.clickLog.controller;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.domain.auth.model.AuthUser;
+import com.zero9platform.domain.clickLog.service.ClickLogService;
 import com.zero9platform.domain.clickLog.model.ClickLogProductPostDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

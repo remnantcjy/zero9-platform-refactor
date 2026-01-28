@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,16 +17,16 @@ public class SearchContext {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "product_post_id", nullable = false)
     private Long productPostId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String keyword;
 
     @Column(nullable = false)
     private Long userId;
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = true)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public SearchContext(String keyword, Long productPostId, Long userId) {

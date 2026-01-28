@@ -3,6 +3,7 @@
 //import com.zero9platform.common.enums.Category;
 //import com.zero9platform.common.enums.GppProgressStatus;
 //import com.zero9platform.common.enums.ProductPostProgressStatus;
+//import com.zero9platform.common.enums.ProductPostStatus;
 //import com.zero9platform.domain.admin.entity.Influencer;
 //import com.zero9platform.domain.admin.repository.InfluencerRepository;
 //import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
@@ -176,18 +177,21 @@
 //         /* =======================
 //           ProductPost 더미
 //        ======================= */
-//        ProductPost productPost = productPostRepository.save(new ProductPost(
-//                user,
-//                product1,
-//                "대박곱창 밀키트 공구",
-//                "집에서 먹는 대박곱창 밀키트 공동구매",
-//                100L,
-//                "https://image.test/daebak-gopchang.jpg",
-//                Category.ETC.name(),
-//                ProductPostProgressStatus.DOING.name(),
-//                LocalDateTime.now(),
-//                LocalDateTime.now().plusDays(7)
-//        ));
+//        ProductPost productPost = productPostRepository.save(
+//                new ProductPost(
+//                        user,
+//                        product1,
+//                        "대박곱창 밀키트 공구",
+//                        "집에서 먹는 대박곱창 밀키트 공동구매",
+//                        100,
+//                        "https://image.test/daebak-gopchang.jpg",
+//                        Category.ETC.toString(),
+//                        ProductPostProgressStatus.DOING.toString(),
+//                        ProductPostStatus.ACTIVE.toString(),
+//                        LocalDateTime.now(),
+//                        LocalDateTime.now().plusDays(9)
+//                )
+//        );
 //
 //
 //        /* ====================

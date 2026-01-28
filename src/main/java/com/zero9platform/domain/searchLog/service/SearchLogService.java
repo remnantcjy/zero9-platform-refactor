@@ -1,4 +1,4 @@
-package com.zero9platform.domain.searchLog;
+package com.zero9platform.domain.searchLog.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;

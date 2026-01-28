@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @Table(name = "search_logs")
@@ -15,11 +17,14 @@ public class SearchLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, length = 255)
     private String keyword;
 
     @Column(nullable = false)
     private Long count = 0L;
+
+    @Column(name = "created_at", nullable = true)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public SearchLog(String keyword) {
         this.keyword = keyword;

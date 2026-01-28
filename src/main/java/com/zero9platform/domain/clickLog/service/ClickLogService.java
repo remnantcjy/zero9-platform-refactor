@@ -1,4 +1,4 @@
-package com.zero9platform.domain.clickLog;
+package com.zero9platform.domain.clickLog.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;

@@ -16,17 +16,17 @@ public class ClickLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(nullable = false)
     private Long productPostId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String keyword;
 
-    @Column(nullable = false)
-    private LocalDateTime clickedAt = LocalDateTime.now();
+    @Column(name = "created_at", nullable = true)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public ClickLog(Long userId, Long productPostId, String keyword) {
         this.userId = userId;

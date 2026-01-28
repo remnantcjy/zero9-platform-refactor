@@ -1,8 +1,9 @@
-package com.zero9platform.domain.searchLog;
+package com.zero9platform.domain.searchLog.controller;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.auth.model.AuthUser;
+import com.zero9platform.domain.searchLog.service.SearchLogService;
 import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
 import lombok.RequiredArgsConstructor;
