@@ -3,11 +3,11 @@ package com.zero9platform.domain.admin;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.admin.model.response.user.UserDetailResponse;
-import com.zero9platform.domain.admin.repository.InfluencerRepository;
+import com.zero9platform.domain.user.repository.InfluencerRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.admin.model.response.influencer.InfluencerDetailResponse;
 import com.zero9platform.domain.user.repository.UserRepository;
-import com.zero9platform.domain.admin.entity.Influencer;
+import com.zero9platform.domain.user.entity.Influencer;
 import com.zero9platform.domain.admin.model.request.influencer.InfluencerApproveRequest;
 import com.zero9platform.domain.admin.model.response.influencer.InfluencerApproveResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,9 +27,9 @@ public class AdminService {
      * 인플루언서 목록 조회
      */
     @Transactional(readOnly = true)
-    public Page<InfluencerDetailResponse> influencerList(Boolean status, Pageable pageable) {
+    public Page<InfluencerDetailResponse> influencerList(Boolean status, String nickname, Pageable pageable) {
 
-        return influencerRepository.findByApprovalStatusAndUser(status, pageable)
+        return influencerRepository.findByApprovalStatusAndUser(status, nickname, pageable)
                 .map(InfluencerDetailResponse::from);
 
     }
@@ -62,9 +60,9 @@ public class AdminService {
      * 사용자 목록 조회
      */
     @Transactional(readOnly = true)
-    public Page<UserDetailResponse> userList(Pageable pageable) {
+    public Page<UserDetailResponse> userList(String nickname, Pageable pageable) {
 
-        return userRepository.findAll(pageable)
+        return userRepository.findAllUser(nickname, pageable)
                 .map(UserDetailResponse::from);
     }
 }

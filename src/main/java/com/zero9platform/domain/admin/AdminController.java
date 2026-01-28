@@ -24,9 +24,9 @@ public class AdminController {
      * 인플루언서 목록 조회
      */
     @GetMapping("/influencers")
-    public ResponseEntity<CommonResponse<PageResponse<InfluencerDetailResponse>>> InfluencersListHandler(@RequestParam(required = false) Boolean approved, Pageable pageable)  {
+    public ResponseEntity<CommonResponse<PageResponse<InfluencerDetailResponse>>> InfluencersListHandler(@RequestParam(required = false) Boolean approved, @RequestParam(required = false) String nickname, Pageable pageable)  {
 
-        PageResponse<InfluencerDetailResponse> response = PageResponse.from(adminService.influencerList(approved, pageable));
+        PageResponse<InfluencerDetailResponse> response = PageResponse.from(adminService.influencerList(approved, nickname, pageable));
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인플루언서 목록 조회 성공", response));
     }
@@ -48,9 +48,9 @@ public class AdminController {
      * 사용자 목록 조회
      */
     @GetMapping("/users")
-    public ResponseEntity<CommonResponse<PageResponse<UserDetailResponse>>> userListHandler(Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<UserDetailResponse>>> userListHandler(@RequestParam(required = false) String nickname, Pageable pageable) {
 
-        PageResponse<UserDetailResponse> response = PageResponse.from(adminService.userList(pageable));
+        PageResponse<UserDetailResponse> response = PageResponse.from(adminService.userList(nickname, pageable));
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("사용자 목록 조회 성공", response));
     }
