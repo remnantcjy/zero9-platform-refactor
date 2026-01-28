@@ -101,4 +101,11 @@ public class GroupPurchasePost extends BaseEntity {
 //        this.viewCount++;
 //    }
 
+
+
+
+
+    public void setViewCount(long viewCount) {
+        this.viewCount = viewCount;
+    }
 }
