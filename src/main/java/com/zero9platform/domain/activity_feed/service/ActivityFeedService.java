@@ -54,7 +54,7 @@ public class ActivityFeedService {
     @Transactional(readOnly = true)
     public List<ActivityFeedResponse> feedsGetList() {
         // 조회
-        List<ActivityFeed> feeds = feedRepository.findAll();
+        List<ActivityFeed> feeds = feedRepository.findAllByOrderByCreatedAtDesc();
 
         // 빈 리스트 생성
         List<ActivityFeedResponse> responses = new ArrayList<>();
