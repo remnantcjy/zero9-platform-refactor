@@ -5,6 +5,8 @@ import com.zero9platform.domain.activity_feed.entity.ActivityFeed;
 import com.zero9platform.domain.activity_feed.model.response.ActivityFeedResponse;
 import com.zero9platform.domain.activity_feed.repository.ActivityFeedRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,18 +54,11 @@ public class ActivityFeedService {
      * 피드 목록 조회
      */
     @Transactional(readOnly = true)
-    public List<ActivityFeedResponse> feedsGetList() {
+    public Page<ActivityFeedResponse> feedsGetList(Pageable pageable) {
         // 조회
-        List<ActivityFeed> feeds = feedRepository.findAllByOrderByCreatedAtDesc();
+        Page<ActivityFeed> page = feedRepository.findAll(pageable);
 
-        // 빈 리스트 생성
-        List<ActivityFeedResponse> responses = new ArrayList<>();
-
-        // 향상된 for문으로 하나씩 DTO 변환 후 추가
-        for (ActivityFeed feed : feeds) {
-            responses.add(ActivityFeedResponse.from(feed));
-        }
-
-        return responses;
+        // DTO 변환
+        return  page.map(ActivityFeedResponse::from);
     }
 }
