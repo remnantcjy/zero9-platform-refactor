@@ -7,12 +7,13 @@ import com.zero9platform.common.aws.s3.S3Service;
 import com.zero9platform.domain.admin.entity.Influencer;
 import com.zero9platform.domain.admin.repository.InfluencerRepository;
 import com.zero9platform.domain.user.entity.User;
-import com.zero9platform.domain.user.model.user.request.*;
-import com.zero9platform.domain.user.model.user.response.*;
+import com.zero9platform.domain.user.model.request.UserCreateCommonRequest;
+import com.zero9platform.domain.user.model.request.UserDeleteRequest;
+import com.zero9platform.domain.user.model.request.UserInfluencerCreateRequest;
+import com.zero9platform.domain.user.model.request.UserUpdateRequest;
+import com.zero9platform.domain.user.model.response.*;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,16 +93,6 @@ public class UserService {
 
         // 자기 자신을 조회할때의 데이터는 다르게 나옴
         return isMy ? UserMyDetailResponse.from(user, user.getPhone(), user.getEmail()) : UserDetailResponse.from(user);
-    }
-
-    /**
-     * 사용자 목록 조회
-     */
-    @Transactional(readOnly = true)
-    public Page<UserDetailResponse> userList(Pageable pageable) {
-
-        return userRepository.findAll(pageable)
-                .map(UserDetailResponse::from);
     }
 
     /**

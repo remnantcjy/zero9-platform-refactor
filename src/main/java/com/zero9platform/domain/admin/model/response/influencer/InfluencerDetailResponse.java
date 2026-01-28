@@ -1,4 +1,4 @@
-package com.zero9platform.domain.user.model.influencer;
+package com.zero9platform.domain.admin.model.response.influencer;
 
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.admin.entity.Influencer;

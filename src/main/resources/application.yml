@@ -12,6 +12,7 @@ spring:
     password: ${DB_PASSWORD}
 
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: update
     properties:

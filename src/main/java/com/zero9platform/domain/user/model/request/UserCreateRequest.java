@@ -1,4 +1,4 @@
-package com.zero9platform.domain.user.model.user.request;
+package com.zero9platform.domain.user.model.request;
 
 import com.zero9platform.common.enums.UserRole;
 import jakarta.validation.constraints.Email;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserInfluencerCreateRequest implements UserCreateCommonRequest {
+public class UserCreateRequest implements UserCreateCommonRequest {
 
     @NotBlank(message = "아이디는 필수 입력값입니다.")
     @Size(min = 4, max = 20, message = "아이디는 4자 이상 20자 이하로 입력해주세요.")
@@ -57,11 +57,8 @@ public class UserInfluencerCreateRequest implements UserCreateCommonRequest {
     )
     private String nickname;
 
-    @NotBlank(message = "소셜 링크는 필수 입력값입니다. (인플루언서 확인을 위한 정보입니다.)")
-    private String influencerSocialLink;
-
     @Override
     public UserRole getRole() {
-        return UserRole.INFLUENCER;
+        return UserRole.USER;
     }
 }

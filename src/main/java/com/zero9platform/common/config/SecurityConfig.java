@@ -87,11 +87,6 @@ public class SecurityConfig {
                                 "/zero9/users/normal",
                                 "/zero9/users/influencer"
                         ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/zero9/users",
-                                "/zero9/influencers"
-                        ).hasRole(UserRole.ADMIN.name())
                         .requestMatchers("/zero9/admin/**").hasRole(UserRole.ADMIN.name())
                         .anyRequest().authenticated() // 그 외 요청은 인증 필수
                 )
