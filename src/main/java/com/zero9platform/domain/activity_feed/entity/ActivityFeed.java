@@ -26,6 +26,7 @@ public class ActivityFeed extends BaseEntity {
     @Column(nullable = true)
     private Long targetId;
 
+    // userId가 null이면 전체공개피드, 값이 있으면 해당하는 유저의 개인 알림피드
     @Column(nullable = true)
     private Long userId;
 

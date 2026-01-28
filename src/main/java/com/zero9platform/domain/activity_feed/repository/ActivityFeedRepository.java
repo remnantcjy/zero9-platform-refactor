@@ -8,5 +8,5 @@ import java.util.List;
 public interface ActivityFeedRepository extends JpaRepository<ActivityFeed, Long> {
 
     // 동일한 건으로 피드 생성 방지 (중복방지)
-    boolean existsByTypeAndProductPostId(String type, Long productPostId);
+    boolean existsByTypeAndTargetId(String type, Long targetId);
 }
