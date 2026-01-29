@@ -10,7 +10,6 @@ import java.util.List;
 
 public interface SearchContextRepository extends JpaRepository<SearchContext, Long> {
 
-    Optional<SearchContext> findTopByProductPostIdOrderByCreatedAtDesc(Long productPostId);
     @Query("""
             SELECT sc
             FROM SearchContext sc

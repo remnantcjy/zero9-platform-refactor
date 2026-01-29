@@ -17,7 +17,7 @@ public class ProductPostSearchResponse {
         return new ProductPostSearchResponse(
                 productPost.getId(),
                 productPost.getTitle(),
-                productPost.getProduct().getProductPrice(),
+                productPost.getOriginalPrice(),
                 productPost.getImage()
         );
     }
