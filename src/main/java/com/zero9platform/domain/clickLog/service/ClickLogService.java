@@ -29,7 +29,7 @@ public class ClickLogService {
     public ClickLogProductPostDetailResponse productDetailClick(Long productPostId, AuthUser authUser) {
 
         //상품 정보 가져오기
-        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
+        ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         //토큰이 null 이면 저장하지 않고 값을 반환한다.

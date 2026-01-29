@@ -43,7 +43,7 @@ public class ProductPostFavoriteService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //게시물 존재 여부 확인
-        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
+        ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         //중복 등록 방지
@@ -80,7 +80,7 @@ public class ProductPostFavoriteService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //게시물 존재 여부 확인
-        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
+        ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         // 찜 등록 확인

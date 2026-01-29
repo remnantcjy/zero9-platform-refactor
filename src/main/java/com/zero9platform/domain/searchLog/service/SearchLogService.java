@@ -43,41 +43,29 @@ public class SearchLogService {
         // searchCondition 검증
         validateSearchCondition(searchCondition);
 
-        // 검색어 로그 저장 (검색 카운트 증가)
-        searchKeywordSave(keyword);
-
-        // 통합 검색
-        // category(product_title, product_name, influencer), 없으면 셋 다 포함하여 검색
+        // 통합 검색 category(product_title, product_name, influencer), 없으면 셋 다 포함하여 검색
         Page<ProductPost> searchResult = productPostRepository.searchByKeyword(keyword, searchCondition, pageable);
 
-
-        // 컨텍스트 저장
-        if (authUser != null) {
-            saveSearchContext(keyword, searchResult.getContent(), authUser.getId());
+        // 검색 결과 없으면 바로 반환 (불필요한 쿼리 방지)
+        if (searchResult.isEmpty()) {
+            return Page.empty(pageable);
         }
 
-        // 4. 찜 개수 조회
+        // 찜 개수 조회
         Map<Long, Long> favoriteCountMap = getFavoriteCountMap(searchResult.getContent());
 
-//        // searchResult로부터 gppId 추출
-//        List<Long> gppIdList = new ArrayList<>();
-//        for (ProductPost post : searchResult) {
-//            gppIdList.add(post.getId());
-//        }
-//
-//        // 찜 개수 조회 -> Map 변환
-//        Map<Long, Long> favoriteCountMap = new HashMap<>();
-//        for (Object[] row : productPostFavoriteRepository.countByGppIdList(gppIdList)) {
-//            favoriteCountMap.put((Long) row[0], (Long) row[1]);
-//        }
-
         // DTO 변환
-        List<SearchLogItemResponse> dtoList = new ArrayList<>();
-        for (ProductPost post : searchResult.getContent()) {
-            dtoList.add(SearchLogItemResponse.from(post, favoriteCountMap.getOrDefault(post.getId(), 0L)));
-        }
+        Page<SearchLogItemResponse> resultPage = searchResult.map(
+                post -> SearchLogItemResponse.from(
+                        post,
+                        favoriteCountMap.getOrDefault(post.getId(), 0L)
+                )
+        );
 
-        return new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
+        // 로그 저장은 트랜잭션 분리
+        saveSearchLogs(keyword, searchResult.getContent(), authUser.getId());
+
+        return resultPage;
     }
 
     /**
@@ -90,7 +78,7 @@ public class SearchLogService {
 
 
     /**
-     * searchCondition 검증기
+     * 검색 조건 검증
      */
     private void validateSearchCondition(String condition) {
         if (condition == null || condition.isBlank()) {
@@ -102,14 +90,33 @@ public class SearchLogService {
         }
     }
 
+//    /**
+//     * 검색 키워드 로그 저장
+//     */
+//    private void searchKeywordSave(String keyword) {
+//
+//        // 검색어가 없으면 로그 저장하지 않음
+//        if (keyword == null || keyword.isBlank()) {
+//            return;
+//        }
+//
+//        // 기존 검색어가 있으면 조회, 없으면 새로 생성
+//        SearchLog searchLog = searchLogRepository.findByKeyword(keyword)
+//                .orElseGet(() -> new SearchLog(keyword));
+//
+//        searchLog.increaseCount();
+//
+//        searchLogRepository.save(searchLog);
+//    }
+
+
     /**
-     * 검색 키워드 로그 저장
+     * 검색 컨텍스트 저장 (SearchContext)
      */
-    private void searchKeywordSave(String keyword) {
+    private void saveSearchLogs(String keyword, List<ProductPost> posts, Long userId) {
 
         // 검색어가 없으면 로그 저장하지 않음
         if (keyword == null || keyword.isBlank()) {
-//            log.log();
             return;
         }
 
@@ -120,13 +127,11 @@ public class SearchLogService {
         searchLog.increaseCount();
 
         searchLogRepository.save(searchLog);
-    }
 
-
-    /**
-     * 검색 컨텍스트 저장 (SearchContext)
-     */
-    private void saveSearchContext(String keyword, List<ProductPost> posts, Long userId) {
+        // 로그인 유저만 컨텍스트 저장
+        if (userId == null || posts.isEmpty()) {
+            return;
+        }
 
         List<SearchContext> contexts = posts
                 .stream()
@@ -140,6 +145,7 @@ public class SearchLogService {
      * 찜 개수 조회
      */
     private Map<Long, Long> getFavoriteCountMap(List<ProductPost> posts) {
+
         List<Long> ids = posts.stream()
                 .map(ProductPost::getId)
                 .toList();
