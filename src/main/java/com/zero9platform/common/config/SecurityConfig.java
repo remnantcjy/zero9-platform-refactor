@@ -70,6 +70,11 @@ public class SecurityConfig {
                                 "/zero9/test/**"
                         ).permitAll()
                         .requestMatchers(
+                                HttpMethod.POST,
+                                "/zero9/users/normal",
+                                "/zero9/users/influencer"
+                        ).permitAll()
+                        .requestMatchers(
                                 HttpMethod.GET,
                                 "/zero9/product-posts",
                                 "/zero9/product-posts/*",
@@ -81,11 +86,6 @@ public class SecurityConfig {
                                 "/zero9/comments",
                                 "/zero9/influencers/*/follows",
                                 "/zero9/feeds"
-                        ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/zero9/users/normal",
-                                "/zero9/users/influencer"
                         ).permitAll()
                         .requestMatchers("/zero9/admin/**").hasRole(UserRole.ADMIN.name())
                         .anyRequest().authenticated() // 그 외 요청은 인증 필수

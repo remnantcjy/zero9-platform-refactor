@@ -4,12 +4,15 @@ import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.aws.s3.S3Service;
+import com.zero9platform.domain.auth.refresh_token.RefreshTokenRepository;
 import com.zero9platform.domain.user.entity.Influencer;
 import com.zero9platform.domain.user.repository.InfluencerRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.model.request.*;
 import com.zero9platform.domain.user.model.response.*;
 import com.zero9platform.domain.user.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final InfluencerRepository influencerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final S3Service s3Service;
 
     private static final String ADMIN_EN = "admin";

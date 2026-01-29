@@ -88,6 +88,12 @@ public enum ExceptionCode {
     // 주문
     ALREADY_ORDERED_ORDERITEM(HttpStatus.CONFLICT, "이미 주문된 주문 상품입니다."),
 
+    // 리프래쉬 토큰
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST, "Refresh Token이 없습니다."),
+    REFRESH_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 Refresh Token입니다."),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다."),
+    REFRESH_TOKEN_REUSED(HttpStatus.UNAUTHORIZED, "Refresh Token 재사용이 감지되었습니다.");
+
     ;
 
     private final HttpStatus status;
