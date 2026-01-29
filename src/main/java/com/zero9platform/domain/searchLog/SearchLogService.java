@@ -7,13 +7,11 @@ import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
-import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +28,7 @@ public class SearchLogService {
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
     private final ProductPostRepository productPostRepository;
     private final SearchContextRepository searchContextRepository;
+
     /**
      * 키워드 통합 검색
      */
@@ -80,15 +79,6 @@ public class SearchLogService {
 
         return new PageImpl<>(dtoList, searchResult.getPageable(), searchResult.getTotalElements());
     }
-
-    /**
-     * 인기 검색어 차트(공동구매 상품명)
-     */
-    @Transactional(readOnly = true)
-    public List<SearchLogListResponse> searchLogProductNameList() {
-        return searchLogRepository.findTopKeywords(PageRequest.of(0, 10) );
-    }
-
 
     /**
      * 검색 키워드 로그 저장

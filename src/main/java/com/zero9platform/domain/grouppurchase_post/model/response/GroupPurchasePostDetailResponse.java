@@ -27,26 +27,26 @@ public class GroupPurchasePostDetailResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static GroupPurchasePostDetailResponse from(GroupPurchasePost groupPurchasePost) {
+    public static GroupPurchasePostDetailResponse from(GroupPurchasePost groupPurchasePostGetDetailResponse) {
 
-        Category category = Category.valueOf(groupPurchasePost.getCategory());
-        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePost.getGppProgressStatus());
+        Category category = Category.valueOf(groupPurchasePostGetDetailResponse.getCategory());
+        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePostGetDetailResponse.getGppProgressStatus());
 
         return new GroupPurchasePostDetailResponse(
-                groupPurchasePost.getId(),
-                groupPurchasePost.getProductName(),
-                groupPurchasePost.getUser().getId(),
-                groupPurchasePost.getContent(),
-                groupPurchasePost.getImage(),
-                groupPurchasePost.getViewCount(),
-                groupPurchasePost.getPrice(),
-                groupPurchasePost.getLinkUrl(),
+                groupPurchasePostGetDetailResponse.getId(),
+                groupPurchasePostGetDetailResponse.getProductName(),
+                groupPurchasePostGetDetailResponse.getUser().getId(),
+                groupPurchasePostGetDetailResponse.getContent(),
+                groupPurchasePostGetDetailResponse.getImage(),
+                groupPurchasePostGetDetailResponse.getViewCount(),
+                groupPurchasePostGetDetailResponse.getPrice(),
+                groupPurchasePostGetDetailResponse.getLinkUrl(),
                 category.getDescription(),
                 gppProgressStatus.getDescription(),
-                groupPurchasePost.getStartDate(),
-                groupPurchasePost.getEndDate(),
-                groupPurchasePost.getCreatedAt(),
-                groupPurchasePost.getUpdatedAt()
+                groupPurchasePostGetDetailResponse.getStartDate(),
+                groupPurchasePostGetDetailResponse.getEndDate(),
+                groupPurchasePostGetDetailResponse.getCreatedAt(),
+                groupPurchasePostGetDetailResponse.getUpdatedAt()
         );
     }
 

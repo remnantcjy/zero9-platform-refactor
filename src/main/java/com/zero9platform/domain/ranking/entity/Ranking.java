@@ -1,13 +1,9 @@
 package com.zero9platform.domain.ranking.entity;
 
-import com.zero9platform.common.entity.BaseEntity;
-import com.zero9platform.common.enums.OrderStatus;
-import com.zero9platform.domain.orderitem.entity.OrderItem;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Getter
