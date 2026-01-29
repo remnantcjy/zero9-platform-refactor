@@ -27,11 +27,13 @@ public class ActivityFeedService {
     @Transactional
     public void feedCreate(FeedType type, Long targetId, String title) {
 
-        // 중복 방지(이미 있으면 패스)
-        if (targetId != null && feedRepository.existsByTypeAndTargetId(type.name(), targetId)) {
-            return;
+        // 중복이 불가능한 타입인데 이미 존재할 경우 패스
+        if (!type.isRepeatable() && targetId != null) {
+            if (feedRepository.existsByTypeAndTargetId(type.name(), targetId)) {
+                return;
+            }
         }
-
+        // 존재하지않거나 반복가능한 타입일 경우
         // enum 내부 메소드호출 - 피드 내용(메시지) 위임
         String message = type.toMessage(title);
 
