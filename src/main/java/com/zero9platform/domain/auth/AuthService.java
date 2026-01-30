@@ -53,12 +53,11 @@ public class AuthService {
         }
 
         // 비밀번호 검사
-        boolean matches = passwordEncoder.matches(request.getPassword(), user.getPassword());
-        if (!matches) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new CustomException(ExceptionCode.PASSWORD_NOT_MATCH);
         }
 
-        // role request enum 변환
+        // role 변환
         UserRole role = UserRole.valueOf(user.getRole());
 
         // 인플루언서 승인 확인
@@ -67,36 +66,44 @@ public class AuthService {
                     .map(Influencer::getInfluencerApprovalStatus)
                     .orElse(false);
 
-            log.info("user status: {}", approved);
-
             if (!approved) {
                 throw new CustomException(ExceptionCode.INFLUENCER_NOT_APPROVED);
             }
         }
 
+        // ⭐ 기존 Refresh Token 전부 제거 (핵심)
+        refreshTokenRepository.deleteAllByUserId(user.getId());
+
         // Access Token 생성
-        String token = jwtUtil.createToken(user.getId(), user.getNickname(), role);
+        String accessToken = jwtUtil.createToken(
+                user.getId(),
+                user.getNickname(),
+                role
+        );
 
         // Refresh Token 생성
         String refreshTokenValue = jwtUtil.createRefreshToken();
 
-        RefreshToken refreshToken = new RefreshToken(refreshTokenValue, user.getId(), LocalDateTime.now().plusDays(14)); // 14일
+        RefreshToken refreshToken = new RefreshToken(
+                refreshTokenValue,
+                user.getId(),
+                LocalDateTime.now().plusDays(14)
+        );
 
         refreshTokenRepository.save(refreshToken);
 
-        // 쿠키 생성
+        // ✅ 쿠키 생성 (개발 환경 기준)
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshTokenValue)
                 .httpOnly(true)
-                .secure(false) // HTTPS 환경이면 true
+                .secure(false)          // HTTPS면 true
                 .path("/")
-                .maxAge(60 * 60 * 24 * 14) // 14일
-                .sameSite("None") // .sameSite("Lax")
+                .maxAge(60 * 60 * 24 * 14)
+                .sameSite("Lax")        // 개발 환경 안정
                 .build();
 
-        // Response 헤더에 추가
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return new AuthLoginResponse(token);
+        return new AuthLoginResponse(accessToken);
     }
 
     /**
@@ -124,15 +131,15 @@ public class AuthService {
      */
     @Transactional
     public AuthLoginResponse reissue(HttpServletRequest request, HttpServletResponse response) {
+        log.info("Cookies: {}", Arrays.toString(request.getCookies()));
 
-        // NPE 방지
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             throw new CustomException(ExceptionCode.REFRESH_TOKEN_NOT_FOUND);
         }
 
         String refreshTokenValue = Arrays.stream(cookies)
-                .filter(c -> c.getName().equals("refresh_token"))
+                .filter(c -> "refresh_token".equals(c.getName()))
                 .findFirst()
                 .orElseThrow(() -> new CustomException(ExceptionCode.REFRESH_TOKEN_NOT_FOUND))
                 .getValue();
@@ -140,7 +147,7 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenValue)
                 .orElseThrow(() -> new CustomException(ExceptionCode.REFRESH_TOKEN_INVALID));
 
-        // 만료
+        // 만료 체크
         if (refreshToken.getExpireAt().isBefore(LocalDateTime.now())) {
             throw new CustomException(ExceptionCode.REFRESH_TOKEN_EXPIRED);
         }
@@ -162,22 +169,25 @@ public class AuthService {
                 refreshToken.getUserId(),
                 LocalDateTime.now().plusDays(14)
         );
-
         refreshTokenRepository.save(newRefreshToken);
 
         // Access Token 재발급
         User user = userRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        String newAccessToken = jwtUtil.createToken(user.getId(), user.getNickname(), UserRole.valueOf(user.getRole()));
+        String newAccessToken = jwtUtil.createToken(
+                user.getId(),
+                user.getNickname(),
+                UserRole.valueOf(user.getRole())
+        );
 
-        // 쿠키 교체 (새로 발급한 refresh token)
+        // 쿠키 재설정 (개발환경용)
         ResponseCookie cookie = ResponseCookie.from("refresh_token", newRefreshTokenValue)
                 .httpOnly(true)
-                .secure(false) // HTTPS 환경이면 true
-                .path("/")
-                .maxAge(60 * 60 * 24 * 14) // 14일
-                .sameSite("None") // .sameSite("Lax")
+                .secure(false)          //  localhost
+                .sameSite("Lax")        // 중요
+                .path("/")              // 필수
+                .maxAge(60 * 60 * 24 * 14)
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());

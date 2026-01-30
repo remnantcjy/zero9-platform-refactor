@@ -53,12 +53,4 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("Refresh Token 재발급", response));
     }
-
-    @GetMapping("/reissue")
-    public ResponseEntity<CommonResponse<AuthLoginResponse>> getReissueHandler(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-
-        AuthLoginResponse response = authService.reissue(httpServletRequest, httpServletResponse);
-
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("Refresh Token 재발급", response));
-    }
 }

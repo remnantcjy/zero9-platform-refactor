@@ -66,6 +66,12 @@ public class SecurityConfig {
                                 "/**"
                         ).permitAll() // CORS Preflight 허용
                         .requestMatchers(
+                                "/login.html",
+                                "/logout.html",
+                                "/main.html",
+                                "/css/**",
+                                "/js/**",
+
                                 "/zero9/auth/**",
                                 "/zero9/test/**"
                         ).permitAll()
