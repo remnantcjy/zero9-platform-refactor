@@ -35,7 +35,7 @@ public class SearchLogService {
      * 통합 검색 API
      * 검색 대상 - 공동구매 상품명, 인플루언서 활동 닉네임
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public Page<SearchLogItemResponse> searchLog(String keyword, String searchCondition, Pageable pageable, AuthUser authUser) {
 
         // 검색 조건 검증 (허용되지 않은 조건 차단)
@@ -80,7 +80,7 @@ public class SearchLogService {
     /**
      * 검색 조건 검증
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public void validateSearchCondition(String condition) {
 
         if (condition == null || condition.isBlank()) {return;}
@@ -128,7 +128,7 @@ public class SearchLogService {
     /**
      * 찜 개수 조회
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public Map<Long, Long> getFavoriteCountMap(List<ProductPost> posts) {
 
         // 게시물 ID 추출
