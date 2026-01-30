@@ -7,6 +7,7 @@ import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.auth.model.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,21 +24,26 @@ public class ActivityFeedController {
 
     private final ActivityFeedService feedService;
 
-    @GetMapping
-    public ResponseEntity<CommonResponse<PageResponse<ActivityFeedResponse>>> feedsGetListHandler(@AuthenticationPrincipal AuthUser authUser, @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+    /**
+     * 전체 피드 조회
+     */
+    @GetMapping("/all")
+    public ResponseEntity<CommonResponse<PageResponse<ActivityFeedResponse>>> feedsGetListHandler(@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        PageResponse<ActivityFeedResponse> response;
+        PageResponse<ActivityFeedResponse> response = PageResponse.from(feedService.feedsGetList(pageable));
 
-        // 로그인 여부에 따른 서비스 로직
-        if (authUser == null) {
-            // 비로그인: 전체 목록 조회
-            response = PageResponse.from(feedService.feedsGetList(pageable));
-        } else {
-            // 로그인: 찜 등 개인화 목록 조회
-            response = PageResponse.from(feedService.myFeedsGetList(authUser.getId(), pageable));
-        }
+        return ResponseEntity.ok(CommonResponse.success("전체 피드 목록 조회 성공", response));
+    }
 
-        return ResponseEntity.ok(CommonResponse.success("피드 목록 조회 성공", response));
+    /**
+     * 로그인한 유저의 본인 피드 확인
+     */
+    @GetMapping("/me")
+    public ResponseEntity<CommonResponse<PageResponse<ActivityFeedResponse>>> feedsGetMyListHandler(@AuthenticationPrincipal AuthUser authUser, @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        PageResponse<ActivityFeedResponse> response = PageResponse.from(feedService.feedsGetMyList(authUser.getId(), pageable));
+
+        return ResponseEntity.ok(CommonResponse.success("내 피드 목록 조회 성공", response));
     }
 }
 

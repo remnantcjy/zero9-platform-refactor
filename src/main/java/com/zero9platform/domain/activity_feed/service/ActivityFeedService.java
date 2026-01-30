@@ -55,22 +55,21 @@ public class ActivityFeedService {
     }
 
     /**
-     * 로그인한 사용자의 피드 전체목록 조회
+     * 로그인한 사용자의 피드(현재는 찜) 조회
      */
     @Transactional(readOnly = true)
-    public Page<ActivityFeedResponse> myFeedsGetList(Long userId, Pageable pageable) {
+    public Page<ActivityFeedResponse> feedsGetMyList(Long userId, Pageable pageable) {
 
         // 유저가 찜한 상품 리스트 가져오기
         List<Long> favoriteList = favoriteRepository.findProductPostIdsByUserId(userId);
 
-        // 찜한 상품이 없다면 전체피드 조회
+        // 찜한 상품이 없다면 빈 페이지 반환 (현재는 찜만)
         if (favoriteList.isEmpty()) {
-            return feedsGetList(pageable);
+            return Page.<ActivityFeed>empty(pageable).map(ActivityFeedResponse::from);
         }
 
-        // 찜한 상품 + 전체 피드 합쳐서 조회
-        return feedRepository.findFeedsByInterest(favoriteList, pageable)
+        // 찜한 상품들에 대한 피드만 조회
+        return feedRepository.findFeedsByFavoriteList(favoriteList, pageable)
                 .map(ActivityFeedResponse::from);
     }
-
 }

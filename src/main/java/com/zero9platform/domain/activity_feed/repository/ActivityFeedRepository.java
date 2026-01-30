@@ -15,10 +15,7 @@ public interface ActivityFeedRepository extends JpaRepository<ActivityFeed, Long
     boolean existsByTypeAndTargetId(String type, Long targetId);
 
     // 피드 개인화
-    // 사용자가 찜한 상품들의 소식과 전체소식 통합 조회
-    @Query("SELECT f FROM ActivityFeed f " +
-            "WHERE f.targetId IN :interestIds " +
-            "OR f.type = 'NOTICE' " +
-            "ORDER BY f.createdAt DESC")
-    Page<ActivityFeed> findFeedsByInterest(@Param("interestIds") List<Long> interestIds, Pageable pageable);
+    // 내 피드 조회
+    @Query("SELECT f FROM ActivityFeed f WHERE f.targetId IN :favoriteList ORDER BY f.createdAt DESC")
+    Page<ActivityFeed> findFeedsByFavoriteList(@Param("favoriteList") List<Long> favoriteList, Pageable pageable);
 }
