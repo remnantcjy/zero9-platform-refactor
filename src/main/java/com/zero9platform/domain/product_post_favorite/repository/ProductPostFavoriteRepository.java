@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface ProductPostFavoriteRepository extends JpaRepository<ProductPostFavorite, Long> {
 
     // 찜 등록 여부 확인용
-    Optional<ProductPostFavorite> findByUserAndProductPost(User user, ProductPost productPost);
+    Optional<ProductPostFavorite> findAllByUserAndProductPost(User user, ProductPost productPost);
 
     // 찜 등록 중복 방지용
     boolean existsByUser_IdAndProductPost_Id(Long userId, Long productPostId);

@@ -2,16 +2,15 @@ package com.zero9platform.domain.product_post_favorite;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.auth.model.AuthUser;
-import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.entity.ProductPostFavorite;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteCreateResponse;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteGetResponse;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
+import com.zero9platform.domain.ranking.service.ProductRankingCounter;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,9 +27,9 @@ public class ProductPostFavoriteService {
 
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
     private final UserRepository userRepository;
-    private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final ProductPostRepository productPostRepository;
     private final ActivityFeedService activityFeedService;
+    private final ProductRankingCounter productRankingCounter;
 
     /**
      * 찜 등록
@@ -58,6 +57,9 @@ public class ProductPostFavoriteService {
         //DB 저장
         productPostFavoriteRepository.save(productPostFavorite);
 
+        // 랭킹 카운터 증가
+        productRankingCounter.increaseFavorite(productPost.getId());
+
         // 현재 게시물의 찜 개수 확인
         long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
 
@@ -84,7 +86,7 @@ public class ProductPostFavoriteService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         // 찜 등록 확인
-        Optional<ProductPostFavorite> gppFavorite = productPostFavoriteRepository.findByUserAndProductPost(user, productPost);
+        Optional<ProductPostFavorite> gppFavorite = productPostFavoriteRepository.findAllByUserAndProductPost(user, productPost);
 
         if (gppFavorite.isEmpty()) {
             throw new CustomException(ExceptionCode.NOT_FOUND_FAVORITE);
@@ -92,6 +94,9 @@ public class ProductPostFavoriteService {
 
         // DB 삭제
         productPostFavoriteRepository.deleteById(gppFavorite.get().getId());
+
+        // 랭킹 카운터 감소
+        productRankingCounter.decreaseFavorite(productPost.getId());
     }
 
     /**

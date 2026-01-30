@@ -1,6 +1,7 @@
 package com.zero9platform.domain.ranking.controller;
 
 import com.zero9platform.common.model.CommonResponse;
+import com.zero9platform.domain.ranking.model.response.ProductRankingListResponse;
 import com.zero9platform.domain.ranking.service.RankingService;
 import com.zero9platform.domain.ranking.model.response.GroupPurchasePostRankingListResponse;
 import com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingListResponse;
@@ -59,6 +60,15 @@ public class RankingController {
 
         // 공통 응답 포맷으로 반환
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인기 검색어 차트 조회 성공", searchLogRankingListResponse));
+    }
+
+    /**
+     * 상품 일간 랭킹 (스냅샷)
+     */
+    @GetMapping("/ranking/products/daily")
+    public ResponseEntity<CommonResponse<List<ProductRankingListResponse>>> dailyProductRanking() {
+        List<ProductRankingListResponse> productRankingListResponses = rankingService.dailyProductRanking();
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("일간 인기공동구매게시물 차트 조회 성공", productRankingListResponses));
     }
 }
 

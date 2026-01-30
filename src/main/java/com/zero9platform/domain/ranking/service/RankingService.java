@@ -4,13 +4,16 @@ import com.zero9platform.common.enums.PppProgressStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
+import com.zero9platform.domain.ranking.entity.ProductRankingSnapshot;
 import com.zero9platform.domain.ranking.model.response.*;
+import com.zero9platform.domain.ranking.repository.ProductRankingSnapshotRepository;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,7 +24,7 @@ public class RankingService {
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final SearchLogRepository searchLogRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
-
+    private final ProductRankingSnapshotRepository productRankingSnapshotRepository;
     /**
      * 공동구매 게시물 랭킹 (조회수 기준)
      */
@@ -54,7 +57,7 @@ public class RankingService {
 
         // 찜 개수 기준 상위 10개 상품 게시물 집계 조회
         List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository
-                .findTop10ProductPostByFavorite( PppProgressStatus.DOING, PageRequest.of(0, 10));
+                .findTop10ProductPostByFavorite(PppProgressStatus.DOING, PageRequest.of(0, 10));
 
         AtomicInteger rank = new AtomicInteger(1);
 
@@ -91,6 +94,29 @@ public class RankingService {
                                 rank.getAndIncrement(),
                                 aggregate.getKeyword(),
                                 aggregate.getCount()
+                        )
+                )
+                .toList();
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<ProductRankingListResponse> dailyProductRanking() {
+
+        List<ProductRankingSnapshot> snapshots =
+                productRankingSnapshotRepository
+                        .findTop10BySnapshotDateOrderByScoreDesc(
+                                LocalDate.now().minusDays(1)
+                        );
+
+        AtomicInteger rank = new AtomicInteger(1);
+
+        return snapshots.stream()
+                .map(snapshot ->
+                        ProductRankingListResponse.from(
+                                rank.getAndIncrement(),
+                                snapshot.getProductId(),
+                                snapshot.getScore()
                         )
                 )
                 .toList();
