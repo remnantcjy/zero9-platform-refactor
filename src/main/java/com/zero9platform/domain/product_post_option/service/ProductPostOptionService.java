@@ -10,7 +10,6 @@ import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
-import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionUpdateRequest;
 import com.zero9platform.domain.product_post_option.model.response.*;
 import com.zero9platform.domain.product_post_option.repository.ProductPostOptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -123,14 +122,16 @@ public class ProductPostOptionService {
         ProductPostOption option = optionRepository.findByIdAndProductPost_IdAndStockStatus(optionId, productPostId, "IN_STOCK")
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_OPTION_NOT_FOUND));
 
+        // 옵션의 개수가 1일 때, 삭제 불가 예외 처리
+        if (productPost.getProductPostOptionList().size() == 1) {
+            throw new CustomException(ExceptionCode.OPTION_CANNOT_DELETE_LAST);
+        }
+
         // 옵션 삭제
         productPost.getProductPostOptionList().remove(option);
 
         // 양방향
         option.setProductPost(null);
-
-        // 옵션 리스트가 비었을 때, 상품 게시물의 판매 상태 "비활성화"
-        productPost.allOptionIsEmpty();
     }
 
     /**

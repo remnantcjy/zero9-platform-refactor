@@ -1,5 +1,6 @@
 package com.zero9platform.domain.orderitem.model.request;
 
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,5 +9,7 @@ import lombok.Getter;
 public class OrderItemCreateRequest {
 
     private Long optionId;
-    private Integer quantity;
+
+    @Min(1)
+    private Integer orderQuantity;
 }
