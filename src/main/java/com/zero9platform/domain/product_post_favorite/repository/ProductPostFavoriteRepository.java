@@ -1,5 +1,6 @@
 package com.zero9platform.domain.product_post_favorite.repository;
 
+import com.zero9platform.common.enums.PppProgressStatus;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post_favorite.entity.ProductPostFavorite;
 import com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingAggregateResponse;
@@ -53,9 +54,9 @@ public interface ProductPostFavoriteRepository extends JpaRepository<ProductPost
                 )
                 FROM ProductPostFavorite f
                 JOIN f.productPost p
-                WHERE p.deletedAt IS NULL
+                WHERE p.progressStatus = :status
                 GROUP BY p.id, p.title
                 ORDER BY COUNT(f.id) DESC
             """)
-    List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(Pageable pageable);
+    List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(@Param("status") PppProgressStatus status, Pageable pageable);
 }

@@ -1,5 +1,6 @@
 package com.zero9platform.domain.ranking.service;
 
+import com.zero9platform.common.enums.PppProgressStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
@@ -52,7 +53,8 @@ public class RankingService {
     public List<ProductPostFavoriteRankingListResponse> productPostFavoriteRanking() {
 
         // 찜 개수 기준 상위 10개 상품 게시물 집계 조회
-        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTop10ProductPostByFavorite(PageRequest.of(0, 10));
+        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository
+                .findTop10ProductPostByFavorite( PppProgressStatus.DOING, PageRequest.of(0, 10));
 
         AtomicInteger rank = new AtomicInteger(1);
 
@@ -77,7 +79,8 @@ public class RankingService {
     public List<SearchLogRankingListResponse> searchLogKeywordRanking() {
 
         // 검색 횟수 기준 상위 10개 키워드 조회
-        List<SearchLogRankingAggregateResponse> searchLogs = searchLogRepository.findTop10Keywords(PageRequest.of(0, 10));
+        List<SearchLogRankingAggregateResponse> searchLogs = searchLogRepository
+                .findTop10Keywords(PageRequest.of(0, 10));
 
         AtomicInteger rank = new AtomicInteger(1);
 
