@@ -35,8 +35,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
-    private HttpServletRequest request;
-    private HttpServletResponse response;
 
     /**
      * 로그인
@@ -71,7 +69,7 @@ public class AuthService {
             }
         }
 
-        // ⭐ 기존 Refresh Token 전부 제거 (핵심)
+        // 기존 Refresh Token 전부 제거
         refreshTokenRepository.deleteAllByUserId(user.getId());
 
         // Access Token 생성
@@ -92,15 +90,16 @@ public class AuthService {
 
         refreshTokenRepository.save(refreshToken);
 
-        // ✅ 쿠키 생성 (개발 환경 기준)
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshTokenValue)
+        // 쿠키 생성
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshTokenValue)
                 .httpOnly(true)
-                .secure(false)          // HTTPS면 true
+                .secure(false) // https = true
                 .path("/")
                 .maxAge(60 * 60 * 24 * 14)
-                .sameSite("Lax")        // 개발 환경 안정
+                .sameSite("Lax") // 개발 환경 = Lax
                 .build();
 
+        // 브라우저는 이 헤더를 보고 쿠키를 저장 이후 요청 시 자동으로 서버에 쿠키를 포함해서 보냄
         response.addHeader("Set-Cookie", cookie.toString());
 
         return new AuthLoginResponse(accessToken);
@@ -114,14 +113,16 @@ public class AuthService {
 
         refreshTokenRepository.deleteAllByUserId(userId);
 
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
+        // 쿠키 지우기
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(false) // https = true
                 .path("/")
                 .maxAge(0)
-                .sameSite("None") // .sameSite("Lax")
+                .sameSite("Lax") // 개발환경 = Lax
                 .build();
 
+        // 브라우저는 이 헤더를 보고 쿠키를 저장 이후 요청 시 자동으로 서버에 쿠키를 포함해서 보냄
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
@@ -131,7 +132,6 @@ public class AuthService {
      */
     @Transactional
     public AuthLoginResponse reissue(HttpServletRequest request, HttpServletResponse response) {
-        log.info("Cookies: {}", Arrays.toString(request.getCookies()));
 
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
@@ -139,7 +139,7 @@ public class AuthService {
         }
 
         String refreshTokenValue = Arrays.stream(cookies)
-                .filter(c -> "refresh_token".equals(c.getName()))
+                .filter(c -> "refreshToken".equals(c.getName()))
                 .findFirst()
                 .orElseThrow(() -> new CustomException(ExceptionCode.REFRESH_TOKEN_NOT_FOUND))
                 .getValue();
@@ -167,7 +167,7 @@ public class AuthService {
         RefreshToken newRefreshToken = new RefreshToken(
                 newRefreshTokenValue,
                 refreshToken.getUserId(),
-                LocalDateTime.now().plusDays(14)
+                LocalDateTime.now().plusDays(14) // 14일 동안 유지
         );
         refreshTokenRepository.save(newRefreshToken);
 
@@ -181,15 +181,16 @@ public class AuthService {
                 UserRole.valueOf(user.getRole())
         );
 
-        // 쿠키 재설정 (개발환경용)
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", newRefreshTokenValue)
+        // 쿠키 재설정
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshTokenValue)
                 .httpOnly(true)
-                .secure(false)          //  localhost
-                .sameSite("Lax")        // 중요
-                .path("/")              // 필수
+                .secure(false) // https = true
+                .sameSite("Lax") // 개발 환경 = Lax
+                .path("/")
                 .maxAge(60 * 60 * 24 * 14)
                 .build();
 
+        // 브라우저는 이 헤더를 보고 쿠키를 저장 이후 요청 시 자동으로 서버에 쿠키를 포함해서 보냄
         response.addHeader("Set-Cookie", cookie.toString());
 
         return new AuthLoginResponse(newAccessToken);

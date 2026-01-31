@@ -6,9 +6,9 @@ import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.product_post.model.request.ProductPostCreateRequest;
 import com.zero9platform.domain.product_post.model.request.ProductPostUpdateRequest;
 import com.zero9platform.domain.product_post.model.response.ProductPostCreateResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostGetDetailResponse;
+/*import com.zero9platform.domain.product_post.model.response.ProductPostGetDetailResponse;
 import com.zero9platform.domain.product_post.model.response.ProductPostGetListResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostUpdateResponse;
+import com.zero9platform.domain.product_post.model.response.ProductPostUpdateResponse;*/
 import com.zero9platform.domain.product_post.service.ProductPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,29 +41,29 @@ public class ProductPostController {
     /**
      * 상품 게시물 상세 조회
      */
-    @GetMapping("/product-posts/{productPostId}")
+    /*@GetMapping("/product-posts/{productPostId}")
     public ResponseEntity<CommonResponse<ProductPostGetDetailResponse>> productPostGetDetailHandler(@PathVariable Long productPostId) {
 
         ProductPostGetDetailResponse response = productPostService.productPostGetDetail(productPostId);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 게시물 상세 조회 성공", response));
-    }
+    }*/
 
     /**
      * 상품 게시물 목록 조회
      */
-    @GetMapping("/product-posts")
+   /* @GetMapping("/product-posts")
     public ResponseEntity<CommonResponse<PageResponse<ProductPostGetListResponse>>> productPostGetListHandler(Pageable pageable) {
 
         PageResponse<ProductPostGetListResponse> responsePage = productPostService.productPostGetList(pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 게시물 목록 조회 성공", responsePage));
-    }
+    }*/
 
     /**
      * 상품 게시물 수정
      */
-    @PatchMapping("/product-posts/{productPostId}")
+    /*@PatchMapping("/product-posts/{productPostId}")
     public ResponseEntity<CommonResponse<ProductPostUpdateResponse>> productPostUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long productPostId, @RequestBody ProductPostUpdateRequest request) {
 
         Long userId = authUser.getId();
@@ -71,7 +71,7 @@ public class ProductPostController {
         ProductPostUpdateResponse response = productPostService.productPostUpdate(userId, productPostId, request);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 게시물 수정 성공", response));
-    }
+    }*/
 
 //    /**
 //     * 상품 게시물 삭제

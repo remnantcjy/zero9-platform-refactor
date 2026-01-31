@@ -1,3 +1,4 @@
+/*
 package com.zero9platform.domain.product_post.model.response;
 
 import com.zero9platform.domain.product_post.entity.ProductPost;
@@ -39,3 +40,4 @@ public class ProductPostGetListResponse {
         );
     }
 }
+*/

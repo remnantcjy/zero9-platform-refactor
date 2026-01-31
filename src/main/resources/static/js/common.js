@@ -15,9 +15,11 @@ if (!accessToken) {
         const payload = JSON.parse(payloadJson);
 
         const now = Math.floor(Date.now() / 1000);
+
         isExpired = payload.exp < now;
     } catch (e) {
         console.error("JWT 디코딩 실패", e);
+
         isExpired = true; // 실패 = 무효
     }
 }
@@ -41,6 +43,7 @@ if (existToken && isExpired) {
             }
 
             localStorage.setItem("accessToken", newAccessToken);
+
             console.log("Access Token 재발급 완료");
         })
         .catch(() => {
