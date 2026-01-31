@@ -2,11 +2,12 @@ package com.zero9platform.domain.orderitem.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.OrderStatus;
-import com.zero9platform.common.enums.ProductPostStatus;
+//import com.zero9platform.common.enums.DisplayStatus;
+import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.domain.user.repository.InfluencerRepository;
-import com.zero9platform.domain.order.entity.Order;
+import com.zero9platform.domain.admin.repository.InfluencerRepository;
+//import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.orderitem.entity.OrderItem;
 import com.zero9platform.domain.orderitem.model.request.OrderItemCreateRequest;
 import com.zero9platform.domain.orderitem.model.response.OrderItemCreateResponse;
@@ -37,18 +38,17 @@ public class OrderItemService {
      * 주문 상품 생성
      */
     @Transactional
-    public OrderItemCreateResponse orderItemCreate(Long userId, Long productpostId, OrderItemCreateRequest request) {
+    public OrderItemCreateResponse orderItemCreate(Long userId, Long productPostId, OrderItemCreateRequest request) {
 
-        // 회원 조회
-        User user = userRepository.findById(userId)
+        // 회원 조회 - 탈퇴한 회원 제외
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         // 상품 게시물 조회
-        ProductPost productPost = productPostRepository.findById(productpostId)
+        ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
-        // 상품 게시물이 비활성화 상태일시 예외처리
-        throwIfProductPostInactive(productPost);
+
 
         // 옵션 (옵션명, 수량)
         Long optionId = request.getOptionId();
@@ -58,7 +58,12 @@ public class OrderItemService {
                 .findFirst()
                 .orElseThrow(() -> new CustomException(ExceptionCode.OPTION_NOT_FOUND));
 
-        OrderItem orderItem = new OrderItem(user, productPost, option, request.getQuantity());
+        // 해당 옵션이 품절일 시, 주문 상품 생성 불가
+        if (option.getStockStatus().equals(StockStatus.SOLD_OUT.name())) {
+            throw new CustomException(ExceptionCode.OPTION_SOLD_OUT);
+        }
+
+        OrderItem orderItem = new OrderItem(user, productPost, option, request.getOrderQuantity());
 
         OrderItem savedOrderItem = orderItemRepository.save(orderItem);
 
@@ -73,7 +78,7 @@ public class OrderItemService {
     public OrderItemGetDetailResponse orderItemGetDetail(Long userId, Long orderItemId) {
 
         // 회원 조회
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         // 사용자 권한 체크
@@ -100,19 +105,19 @@ public class OrderItemService {
 
         // 주문 상품 권한 체크
         OrderItem orderItem = checkOrderItemPermission(orderItemId, user);
-
-        Order order = orderItem.getOrder();
-
-        if (order != null) {
-
-            // 결제 완료된 주문이면 주문 상품 삭제 불가
-            if (OrderStatus.PAID.name().equals(order.getOrderStatus())) {
-                throw new CustomException(ExceptionCode.ALREADY_ORDERED_ORDERITEM);
-            }
-
-            // PENDING 또는 CANCELED라면 삭제 가능, 연관 끊기
-            order.setOrderItem(null);  // 양방향 관계 끊기
-        }
+//
+//        Order order = orderItem.getOrder();
+//
+//        if (order != null) {
+//
+//            // 결제 완료된 주문이면 주문 상품 삭제 불가
+//            if (OrderStatus.PAID.name().equals(order.getOrderStatus())) {
+//                throw new CustomException(ExceptionCode.ALREADY_ORDERED_ORDERITEM);
+//            }
+//
+//            // PENDING 또는 CANCELED라면 삭제 가능, 연관 끊기
+//            order.setOrderItem(null);  // 양방향 관계 끊기
+//        }
 
         // 결제 대기 & 취소 상태인 주문이면 주문 상품 삭제 가능
         orderItemRepository.delete(orderItem);
@@ -138,13 +143,13 @@ public class OrderItemService {
     /**
      * 상품 게시물이 비활성화 상태일시 예외처리
      */
-    private static void throwIfProductPostInactive(ProductPost productPost) {
-
-        // 상품 게시물이 비활성화 상태일시
-        if (productPost.getProductPostStatus().equals(ProductPostStatus.INACTIVE.name())) {
-            throw new CustomException(ExceptionCode.CANNOT_CREATE_AN_ORDERITEM);
-        }
-    }
+//    private static void throwIfProductPostInactive(ProductPost productPost) {
+//
+//        // 상품 게시물이 비활성화 상태일시
+//        if (productPost.getProductPostStatus().equals(DisplayStatus.INACTIVE.name())) {
+//            throw new CustomException(ExceptionCode.CANNOT_CREATE_AN_ORDERITEM);
+//        }
+//    }
 
     /**
      * 주문 상품 권한 체크

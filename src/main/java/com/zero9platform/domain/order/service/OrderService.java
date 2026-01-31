@@ -56,19 +56,15 @@ public class OrderService {
 
         // 총 결제 금액
         ProductPostOption option = orderItem.getProductPostOption();
-        Long optionPrice = option.getOptionPrice(); // 옵션가
-        Integer capacity = option.getCapacity();    // 재고
-        Integer quantity = orderItem.getQuantity(); // 수량
-        Integer totalQuantity = capacity * quantity;
-        Long totalAmount = optionPrice * quantity; // 총 결제 금액
+        Long salePrice = option.getSalePrice(); // 옵션가
+        Integer stockQuantity = option.getStockQuantity();    // 재고 수량
+        Integer orderQuantity = orderItem.getOrderQuantity(); // 주문 수량
+        Long totalAmount = salePrice * orderQuantity; // 총 결제 금액
 
         // 재고 검증
-        ProductPost productPost = orderItem.getProductPost();   // 상품 게시물
-        Integer stock = productPost.getStock(); // 재고
-
         // 재고보다 선택한 수량이 많을 때 예외 처리 및 남아있는 재고 반환
-        if (totalQuantity > stock) {
-            throw new CustomException(ExceptionCode.INSUFFICIENT_STOCK, stock);
+        if (orderQuantity > stockQuantity) {
+            throw new CustomException(ExceptionCode.INSUFFICIENT_STOCK, stockQuantity);
         }
 
         // 결제 상태 변경
@@ -76,15 +72,15 @@ public class OrderService {
         String orderStatus = OrderStatus.PAID.name();
 
         // 재고 차감
-        productPost.decreaseStock(totalQuantity);
+        option.decreaseStock(orderQuantity);
 
-        if (productPost.getStock() == 0) {
-            // 품절 = 재고가 0개
-            activityFeedService.feedCreate("SOLD_OUT", productPost.getId(), productPost.getTitle());
-        } else if (productPost.getStock() <= 10) {
-            // 재고가 10개 이하
-            activityFeedService.feedCreate("LOW_STOCK", productPost.getId(), productPost.getTitle());
-        }
+//        if (productPost.getStock() == 0) {
+//            // 품절 = 재고가 0개
+//            activityFeedService.feedCreate("SOLD_OUT", productPost.getId(), productPost.getTitle());
+//        } else if (productPost.getStock() <= 10) {
+//            // 재고가 10개 이하
+//            activityFeedService.feedCreate("LOW_STOCK", productPost.getId(), productPost.getTitle());
+//        }
 
         // 주문 고유번호 생성
         String orderNo = OrderCodeGenerator.generate();
@@ -111,7 +107,6 @@ public class OrderService {
 
         return OrderGetDetailResponse.from(order);
     }
-
 
     /**
      * 사용자의 주문 목록 조회
@@ -142,17 +137,13 @@ public class OrderService {
         OrderItem orderItem = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDERITEM_NOT_FOUND));
 
-        Integer quantity = orderItem.getQuantity(); // 내가 선택한 수량
+        Integer orderQuantity = orderItem.getOrderQuantity(); // 구매 수량
         Long optionId = orderItem.getProductPostOption().getId();
 
         ProductPostOption option = productPostOptionRepository.findById(optionId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.OPTION_NOT_FOUND));
 
-        Integer capacity = option.getCapacity();
-        Integer totalQuantity = quantity * capacity;
-
-        ProductPost productPost = orderItem.getProductPost();
-        productPost.increaseStock(totalQuantity);
+        option.increaseStock(orderQuantity);
 
         order.cancel();
 

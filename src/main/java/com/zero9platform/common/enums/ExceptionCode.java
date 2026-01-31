@@ -44,6 +44,7 @@ public enum ExceptionCode {
     // GPP - 400 BAD REQUEST
     GPP_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "종료일은 시작일 이후여야 하며, 시작일은 오늘 이전일 수 없습니다."),
     PP_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "시작일은 오늘 이전일 수 없으며, 종료일은 시작일 이후여야 합니다."),
+    PP_DATE_REQUIRED(HttpStatus.NOT_FOUND, "시작일과 종료일은 필수입니다."),
 
     // GPP - 401 FORBIDDEN
     GPP_NO_PERMISSION(HttpStatus.FORBIDDEN, "공동구매 게시물에 대한 권한이 없습니다."),
@@ -81,6 +82,9 @@ public enum ExceptionCode {
 
     // 옵션
     OPTION_IS_DISABLED(HttpStatus.BAD_REQUEST, "옵션이 비활성화 상태입니다."),
+    OPTION_CANNOT_DELETE_LAST(HttpStatus.BAD_REQUEST, "옵션은 최소 1개 이상 유지되어야 합니다."),
+    OPTION_SOLD_OUT(HttpStatus.BAD_REQUEST, "선택하신 옵션은 이미 품절되었습니다."),
+    OPTION_INVALID_STOCK_INCREASE_QUANTITY(HttpStatus.BAD_REQUEST, "증가 수량은 1 이상이어야 합니다."),
 
     // 주문 상품
     CANNOT_CREATE_AN_ORDERITEM(HttpStatus.NOT_FOUND, "상품 게시물이 비활성화 상태라 주문 상품을 생성할 수 없습니다."),
