@@ -1,6 +1,5 @@
 package com.zero9platform.domain.product_post_favorite.repository;
 
-import com.zero9platform.common.enums.PppProgressStatus;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post_favorite.entity.ProductPostFavorite;
 import com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingAggregateResponse;
@@ -11,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,5 +58,28 @@ public interface ProductPostFavoriteRepository extends JpaRepository<ProductPost
                 GROUP BY p.id, p.title
                 ORDER BY COUNT(f.id) DESC
             """)
-    List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(@Param("status") PppProgressStatus status, Pageable pageable);
+    List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(@Param("status") String status, Pageable pageable);
+
+
+    // 기간별 찜 집계 쿼리
+    @Query("""
+    SELECT new com.zero9platform.domain.ranking.model.response
+        .ProductPostFavoriteRankingAggregateResponse(
+            p.id,
+            p.title,
+            COUNT(f.id)
+        )
+    FROM ProductPostFavorite f
+    JOIN f.productPost p
+    WHERE f.createdAt BETWEEN :from AND :to
+      AND p.progressStatus = :status
+    GROUP BY p.id, p.title
+    ORDER BY COUNT(f.id) DESC
+""")
+    List<ProductPostFavoriteRankingAggregateResponse> findTopByFavoriteBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to,
+            @Param("status") String status,
+            Pageable pageable
+    );
 }

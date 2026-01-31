@@ -10,7 +10,6 @@ import com.zero9platform.domain.product_post_favorite.entity.ProductPostFavorite
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteCreateResponse;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteGetResponse;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
-import com.zero9platform.domain.ranking.service.ProductRankingCounter;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ public class ProductPostFavoriteService {
     private final UserRepository userRepository;
     private final ProductPostRepository productPostRepository;
     private final ActivityFeedService activityFeedService;
-    private final ProductRankingCounter productRankingCounter;
 
     /**
      * 찜 등록
@@ -56,9 +54,6 @@ public class ProductPostFavoriteService {
 
         //DB 저장
         productPostFavoriteRepository.save(productPostFavorite);
-
-        // 랭킹 카운터 증가
-        productRankingCounter.increaseFavorite(productPost.getId());
 
         // 현재 게시물의 찜 개수 확인
         long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
@@ -94,9 +89,6 @@ public class ProductPostFavoriteService {
 
         // DB 삭제
         productPostFavoriteRepository.deleteById(gppFavorite.get().getId());
-
-        // 랭킹 카운터 감소
-        productRankingCounter.decreaseFavorite(productPost.getId());
     }
 
     /**
