@@ -82,6 +82,9 @@ public enum ExceptionCode {
 
     // 옵션
     OPTION_IS_DISABLED(HttpStatus.BAD_REQUEST, "옵션이 비활성화 상태입니다."),
+    OPTION_CANNOT_DELETE_LAST(HttpStatus.BAD_REQUEST, "옵션은 최소 1개 이상 유지되어야 합니다."),
+    OPTION_SOLD_OUT(HttpStatus.BAD_REQUEST, "선택하신 옵션은 이미 품절되었습니다."),
+    OPTION_INVALID_STOCK_INCREASE_QUANTITY(HttpStatus.BAD_REQUEST, "증가 수량은 1 이상이어야 합니다."),
 
     // 주문 상품
     CANNOT_CREATE_AN_ORDERITEM(HttpStatus.NOT_FOUND, "상품 게시물이 비활성화 상태라 주문 상품을 생성할 수 없습니다."),

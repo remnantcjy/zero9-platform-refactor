@@ -1,6 +1,7 @@
 package com.zero9platform.domain.product_post.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
@@ -52,6 +53,7 @@ public class ProductPostService {
         // 옵션 생성
         for (ProductPostOptionCreateRequest optionRequest: request.getOptionList()) {
             ProductPostOption option = new ProductPostOption(productPost, optionRequest.getName(), optionRequest.getSalePrice(), optionRequest.getStockQuantity());
+            option.setStockStatus(StockStatus.IN_STOCK.name());
             productPost.addOption(option);
         }
 
@@ -71,9 +73,6 @@ public class ProductPostService {
 
         ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
-
-        // 상품 게시물의 하위 옵션 리스트가 전부 "비활성화" 상태 체크 (조회는 가능 -> 추후 주문 상품 생성 불가)
-        productPost.allOptionIsEmpty();
 
         return ProductPostGetDetailResponse.from(productPost);
     }

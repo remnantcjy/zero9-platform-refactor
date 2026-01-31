@@ -1,7 +1,9 @@
 package com.zero9platform.domain.product_post_option.entity;
 
 import com.zero9platform.common.entity.BaseEntity;
+import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.StockStatus;
+import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -69,7 +71,35 @@ public class ProductPostOption  extends BaseEntity {
         this.productPost = productPost;
     }
 
-    public void optionSoldOut() {
-        this.stockStatus = StockStatus.SOLD_OUT.name();
+    public void setStockStatus(String stockStatus) {
+        this.stockStatus = stockStatus;
+    }
+
+    // 재고 차감
+    public void decreaseStock(Integer orderQuantity) {
+
+        if (orderQuantity > this.stockQuantity) {
+            throw new CustomException(ExceptionCode.INSUFFICIENT_STOCK);
+        }
+
+        this.stockQuantity -= orderQuantity;
+
+        if (this.stockQuantity == 0) {
+            this.stockStatus = StockStatus.SOLD_OUT.name();
+        }
+    }
+
+    // 재고 증가
+    public void increaseStock(Integer orderQuantity) {
+
+        if (orderQuantity <= 0) {
+            throw new CustomException(ExceptionCode.OPTION_INVALID_STOCK_INCREASE_QUANTITY);
+        }
+
+        this.stockQuantity += orderQuantity;
+
+        if (this.stockStatus == StockStatus.SOLD_OUT.name() && this.stockQuantity > 0) {
+            this.stockStatus = StockStatus.IN_STOCK.name();
+        }
     }
 }

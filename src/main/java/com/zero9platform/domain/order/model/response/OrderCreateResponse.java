@@ -18,7 +18,6 @@ public class OrderCreateResponse {
     private final String orderStatus;
     private final Long orderItemId;
 
-
     public static OrderCreateResponse from(Order order) {
 
         OrderStatus orderStatus = OrderStatus.valueOf(order.getOrderStatus());

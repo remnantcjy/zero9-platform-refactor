@@ -36,13 +36,13 @@ public class OrderItem extends BaseEntity {
     private Order order;
 
     @Column(nullable = false)
-    private Integer quantity;  // 수량
+    private Integer orderQuantity;  // 수량
 
-    public OrderItem(User user, ProductPost productPost, ProductPostOption productPostOption, Integer quantity) {
+    public OrderItem(User user, ProductPost productPost, ProductPostOption productPostOption, Integer orderQuantity) {
         this.user = user;
         this.productPost = productPost;
         this.productPostOption = productPostOption;
-        this.quantity = quantity;
+        this.orderQuantity = orderQuantity;
     }
 
     public void setOrder(Order order) {

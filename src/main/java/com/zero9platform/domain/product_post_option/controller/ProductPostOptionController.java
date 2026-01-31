@@ -4,7 +4,6 @@ import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
-import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionUpdateRequest;
 import com.zero9platform.domain.product_post_option.model.response.*;
 import com.zero9platform.domain.product_post_option.service.ProductPostOptionService;
 import jakarta.validation.Valid;
