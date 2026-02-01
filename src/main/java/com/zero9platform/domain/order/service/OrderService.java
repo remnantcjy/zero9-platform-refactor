@@ -63,9 +63,9 @@ public class OrderService {
 
         // 재고 검증
         // 재고보다 선택한 수량이 많을 때 예외 처리 및 남아있는 재고 반환
-        if (orderQuantity > stockQuantity) {
-            throw new CustomException(ExceptionCode.INSUFFICIENT_STOCK, stockQuantity);
-        }
+//        if (orderQuantity > stockQuantity) {
+//            throw new CustomException(ExceptionCode.INSUFFICIENT_STOCK, stockQuantity);
+//        }
 
         // 결제 상태 변경
         // 현재는 페이먼츠와 연동 전이므로 "결제 완료"로 상태로 처리
@@ -125,7 +125,7 @@ public class OrderService {
      * 주문 취소
      */
     @Transactional
-    public OrderCancelResponse orderCancel(Long userId, Long orderItemId, Long orderId) {
+    public OrderCancelResponse orderCancel(Long userId, Long orderId) {
 
         // 주문 권한 체크
         Order order = checkOrderPermission(orderRepository.findById(orderId), userId);
@@ -134,7 +134,7 @@ public class OrderService {
         OrderStatus.CANCELED.name();
 
         // 재고 증가
-        OrderItem orderItem = orderItemRepository.findById(orderItemId)
+        OrderItem orderItem = orderItemRepository.findById(order.getOrderItem().getId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDERITEM_NOT_FOUND));
 
         Integer orderQuantity = orderItem.getOrderQuantity(); // 구매 수량
