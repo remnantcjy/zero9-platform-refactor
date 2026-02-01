@@ -1,7 +1,9 @@
 package com.zero9platform.domain.ranking.service;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.PppProgressStatus;
+import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,23 +56,6 @@ public class RankingService {
     }
 
     /**
-     * 상품판매 게시물 랭킹 조회
-     * - 기본: 실시간 랭킹
-     * - period 지정 시: 기간별 랭킹
-     */
-    @Transactional(readOnly = true)
-    public List<ProductPostFavoriteRankingListResponse> productPostFavoriteRanking(RankingPeriod period) {
-
-        // 실시간 랭킹이 기본 (메인 기능)
-        if (period == null || period == RankingPeriod.REALTIME) {
-            return loadRealtimeFavoriteRanking();
-        }
-
-        // 기간별 랭킹(회고/비상용)
-        return loadPeriodFavoriteRanking(period);
-    }
-
-    /**
      * 인기 검색어 랭킹 (키워드 조회수)
      */
     @Transactional(readOnly = true)
@@ -102,7 +88,7 @@ public class RankingService {
      * 실시간 상품 찜 랭킹
      * - Cache-Aside 전략 사용
      */
-    private List<ProductPostFavoriteRankingListResponse> loadRealtimeFavoriteRanking() {
+    private List<ProductPostFavoriteRankingListResponse> loadRealtimeFavoriteRanking(RankingPeriod rankingPeriod) {
 
         // Cache-Aside: 캐시에서 먼저 조회
         List<ProductPostFavoriteRankingListResponse> cache = caffeineCache.getIfPresent(FAVORITE_RANKING_KEY);
@@ -138,23 +124,56 @@ public class RankingService {
      * 기간별 랭킹 (회고 / 비상용)
      * period: DAILY / WEEKLY / MONTHLY
      */
-    private List<ProductPostFavoriteRankingListResponse> loadPeriodFavoriteRanking(RankingPeriod period) {
+    @Transactional(readOnly = true)
+    public List<ProductPostFavoriteRankingListResponse> loadPeriodFavoriteRanking(RankingPeriod period,
+                                                                                  LocalDate from,
+                                                                                  LocalDate to) {
 
-        // 기간 계산
+
+
+        // REALTIME은 캐시 기반 메인 랭킹
+        if(period == null || period == RankingPeriod.REALTIME){
+            return loadRealtimeFavoriteRanking(period);
+        }
+
+        // 기간 랭킹 허용 값 검증
+        if (period != RankingPeriod.DAILY && period != RankingPeriod.WEEKLY && period != RankingPeriod.MONTHLY) {
+            throw new CustomException(ExceptionCode.INVALID_PERIOD);
+        }
+
+        // 기간 계산(단일 책임)
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime from;
-        LocalDateTime to = now;
+        LocalDateTime start;
+        LocalDateTime end;
 
-        switch (period) {
-            case DAILY -> from = now.minusDays(1).toLocalDate().atStartOfDay();
-            case WEEKLY -> from = now.minusWeeks(1);
-            case MONTHLY -> from = now.minusMonths(1);
-            default -> throw new IllegalArgumentException("REALTIME은 기간 랭킹 대상이 아님");
+        // 관리자 커스텀 기간 우선
+        if (from != null && to != null) {
+            start = from.atStartOfDay();
+            end   = to.atTime(23, 59, 59);
+            throw new CustomException(ExceptionCode.INVALID_DATE_RANGE);
+        } else {
+            switch (period) {
+                case DAILY -> {
+                    start = now.minusDays(1).toLocalDate().atStartOfDay();
+                    end = now;
+                }
+                case WEEKLY -> {
+                    start = now.minusWeeks(1);
+                    end = now;
+                }
+                case MONTHLY -> {
+                    start = now.minusMonths(1);
+                    end = now;
+                }
+                default -> throw new IllegalArgumentException(
+                        "기간 랭킹은 관리자/회고 전용입니다."
+                );
+            }
         }
 
         // 기간 내 찜 기준 랭킹 집계
         List<ProductPostFavoriteRankingAggregateResponse> favorite =
-                productPostFavoriteRepository.findTopByFavoriteBetween(from, to, PppProgressStatus.DOING.name(), PageRequest.of(0, 10)
+                productPostFavoriteRepository.findTopByFavoriteBetween(start, end, PppProgressStatus.DOING.name(), PageRequest.of(0, 10)
                 );
 
         AtomicInteger rank = new AtomicInteger(1);

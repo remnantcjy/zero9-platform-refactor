@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum RankingPeriod {
 
-    REALTIME, // 기본값 (메인, 상시 노출)
-    DAILY,
-    WEEKLY,
-    MONTHLY
+    REALTIME, // 실시간 (메인)
+    DAILY,    // 하루
+    WEEKLY,   // 1주
+    MONTHLY,  // 1개월
 }

@@ -67,6 +67,11 @@ public enum ExceptionCode {
     ALREADY_FAVORITE(HttpStatus.BAD_REQUEST, "이미 찜한 상품입니다."),
     NOT_FOUND_FAVORITE(HttpStatus.NOT_FOUND, "이미 찜이 취소되었거나 존재하지 않습니다."),
 
+    //랭킹
+    INVALID_PERIOD(HttpStatus.BAD_REQUEST, "기간 랭킹은 DAILY / WEEKLY / MONTHLY 만 지원합니다."),
+    INVALID_DATE_FORMAT(HttpStatus.BAD_REQUEST, "날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)"),
+    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "조회 시작일은 종료일보다 이후일 수 없습니다."),
+
     // GppComment - 404 NOT FOUND
     GPP_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물 댓글을 찾을 수 없습니다."),
     OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 옵션을 찾을 수 없습니다."),

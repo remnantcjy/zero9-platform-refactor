@@ -6,6 +6,7 @@ import com.zero9platform.domain.ranking.model.response.GroupPurchasePostRankingL
 import com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingListResponse;
 import com.zero9platform.domain.ranking.model.response.SearchLogRankingListResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -37,7 +40,7 @@ public class RankingController {
 
 
     /**
-     * 상품판매 게시물 랭킹 (찜 기준)
+     * 상품판매 게시물 찜 랭킹 (유저용 - 실시간)
      */
     @GetMapping("/ranking/favorite")
     public ResponseEntity<CommonResponse<List<ProductPostFavoriteRankingListResponse>>> productPostFavoriteRankingHandler(@RequestParam(required = false) RankingPeriod Period) {
@@ -46,7 +49,7 @@ public class RankingController {
         RankingPeriod rankingPeriod = (Period == null) ? RankingPeriod.REALTIME : Period;
 
         // 검색 서비스 호출
-        List<ProductPostFavoriteRankingListResponse> productPostFavoriteRankingListResponse = rankingService.productPostFavoriteRanking(rankingPeriod);
+        List<ProductPostFavoriteRankingListResponse> productPostFavoriteRankingListResponse = rankingService.loadRealtimeFavoriteRanking(rankingPeriod);
 
         // 공통 응답 포맷으로 반환
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 판매 게시물 랭킹 조회 성공", productPostFavoriteRankingListResponse));
@@ -65,6 +68,24 @@ public class RankingController {
         // 공통 응답 포맷으로 반환
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인기 검색어 차트 조회 성공", searchLogRankingListResponse));
     }
+
+
+    /**
+     * 상품판매 게시물 랭킹 (찜 기준) - 관리자용
+     */
+    @GetMapping("/ranking/favorite")
+    public ResponseEntity<CommonResponse<List<ProductPostFavoriteRankingListResponse>>> productPostFavoriteRankingAdminHandler(
+            @RequestParam(required = false) RankingPeriod period,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        // 검색 서비스 호출
+        List<ProductPostFavoriteRankingListResponse> productPostFavoriteRankingListResponse = rankingService.loadPeriodFavoriteRanking(period, from, to);
+
+        // 공통 응답 포맷으로 반환
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 판매 게시물 랭킹 조회 성공", productPostFavoriteRankingListResponse));
+    }
+
 }
 
 
