@@ -69,6 +69,8 @@ public enum ExceptionCode {
 
     //랭킹
     INVALID_PERIOD(HttpStatus.BAD_REQUEST, "기간 랭킹은 DAILY / WEEKLY / MONTHLY 만 지원합니다."),
+    DUPLICATE_PERIOD(HttpStatus.BAD_REQUEST, "기간은 하나만 선택할 수 있습니다."),
+    PERIOD_REQUIRED(HttpStatus.BAD_REQUEST, "기간(period)은 필수 값입니다."),
     INVALID_DATE_FORMAT(HttpStatus.BAD_REQUEST, "날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)"),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "조회 시작일은 종료일보다 이후일 수 없습니다."),
 

@@ -26,12 +26,7 @@ public class ProductPostFavorite {
     private ProductPost productPost;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    private void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     //찜 등록용 생성자 주입
     public ProductPostFavorite(User user, ProductPost productPost) {

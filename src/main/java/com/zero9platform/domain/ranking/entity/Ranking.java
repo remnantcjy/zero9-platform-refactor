@@ -25,13 +25,12 @@ public class Ranking {
     @Column(nullable = false)
     private String orderStatus;
 
-    @Column
-    private LocalDateTime canceledAt;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    public Ranking(String orderNo, Long totalAmount, String orderStatus, LocalDateTime canceledAt) {
+    public Ranking(String orderNo, Long totalAmount, String orderStatus) {
         this.orderNo = orderNo;
         this.totalAmount = totalAmount;
         this.orderStatus = orderStatus;
-        this.canceledAt = canceledAt;
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,5 +31,13 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
     int increaseViewCount(@Param("gppId") Long gppId);
 
     // ViewCount 랭킹 조회
-    List<GroupPurchasePost> findTop10ByDeletedAtIsNullOrderByViewCountDesc();
+    @Query("""
+                SELECT g
+                FROM GroupPurchasePost g
+                WHERE g.gppProgressStatus = :status
+                  AND g.createdAt BETWEEN :from AND :to
+                  AND g.deletedAt IS NULL
+                ORDER BY g.viewCount DESC
+            """)
+    List<GroupPurchasePost> findTopByViewCountBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("status") String status, Pageable pageable);
 }

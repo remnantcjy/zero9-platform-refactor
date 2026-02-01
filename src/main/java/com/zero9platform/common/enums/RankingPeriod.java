@@ -1,4 +1,4 @@
-package com.zero9platform.domain.ranking.controller;
+package com.zero9platform.common.enums;
 
 import lombok.Getter;
 
