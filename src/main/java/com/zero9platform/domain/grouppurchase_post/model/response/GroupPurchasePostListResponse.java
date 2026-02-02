@@ -26,7 +26,7 @@ public class GroupPurchasePostListResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static GroupPurchasePostListResponse from(GroupPurchasePost groupPurchasePostGetDetailResponse) {
+    public static GroupPurchasePostListResponse from(GroupPurchasePost groupPurchasePost) {
 
 //        Category category = Category.valueOf(groupPurchasePost.getCategory());
 //        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePost.getGppProgressStatus());
