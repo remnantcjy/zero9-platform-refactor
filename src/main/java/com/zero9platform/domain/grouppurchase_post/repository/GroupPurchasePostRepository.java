@@ -62,4 +62,6 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
 //""")
 //    int updateDoingToEnd(@Param("now") LocalDateTime now);
 
+    // ViewCount 랭킹 조회
+    List<GroupPurchasePost> findTop10ByDeletedAtIsNullOrderByViewCountDesc();
 }
