@@ -53,5 +53,3 @@ public class SearchLogController {
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인기 검색어 차트 조회 성공", searchLogListResponses));
     }
 }
-
-
