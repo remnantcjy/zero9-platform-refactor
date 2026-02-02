@@ -4,34 +4,34 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
-@Getter
 @Entity
-@Table(name = "search_logs")
+@Getter
+@Table(name = "search_contexts")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SearchLog {
+public class SearchContext {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 255, unique = true)
+    @Column(name = "product_post_id", nullable = false)
+    private Long productPostId;
+
+    @Column(nullable = false, length = 255)
     private String keyword;
 
     @Column(nullable = false)
-    private Long count = 0L;
+    private Long userId;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = true)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public SearchLog(String keyword) {
+    public SearchContext(String keyword, Long productPostId, Long userId) {
+        this.productPostId = productPostId;
         this.keyword = keyword;
-        this.count = 1L;
+        this.userId = userId;
     }
-
-    public void increaseCount() {
-        this.count++;
-    }
-
 }
