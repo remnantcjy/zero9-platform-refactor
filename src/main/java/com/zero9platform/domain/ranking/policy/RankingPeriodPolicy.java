@@ -3,13 +3,10 @@ package com.zero9platform.domain.ranking.policy;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.RankingPeriod;
 import com.zero9platform.common.exception.CustomException;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class RankingPeriodPolicy {
-
-    private RankingPeriodPolicy() {}
 
     public static LocalDateTime[] resolve(RankingPeriod period, LocalDate from, LocalDate to) {
 
@@ -33,7 +30,7 @@ public class RankingPeriodPolicy {
 
         return switch (period) {
             case REALTIME -> new LocalDateTime[]{
-                    now.minusMinutes(5), // 또는 누적
+                    now.minusMinutes(5),
                     now
             };
             case DAILY -> new LocalDateTime[]{

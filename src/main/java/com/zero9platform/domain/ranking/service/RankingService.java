@@ -29,7 +29,26 @@ public class RankingService {
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final SearchLogRepository searchLogRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
-    private final Cache<String, Object> rankingCache;
+
+    /**
+     * 랭킹 전용 캐시 영역
+     */
+    private final Cache<String, Object> realtimeRankingCache;   // 실시간 랭킹 캐시 (TTL 1분)
+    private final Cache<String, Object> dailyRankingCache;      // 일간 랭킹 캐시 (TTL 30분)
+    private final Cache<String, Object> weeklyRankingCache;     // 주간 랭킹 캐시 (TTL 2시간)
+    private final Cache<String, Object> monthlyRankingCache;    // 월간 랭킹 캐시 (TTL 12시간)
+
+    /**
+     * 기간별 캐시 선택 로직
+     */
+    private Cache<String, Object> selectCache(RankingPeriod period) {
+        return switch (period) {
+            case REALTIME -> realtimeRankingCache;
+            case DAILY -> dailyRankingCache;
+            case WEEKLY -> weeklyRankingCache;
+            case MONTHLY -> monthlyRankingCache;
+        };
+    }
 
     /**
      * 공동구매 게시물 랭킹 (조회수 기준)
@@ -45,9 +64,11 @@ public class RankingService {
         // 캐시 키
         String cacheKey = "RANKING:GPP:" + period.name();
 
+        Cache<String, Object> cache = selectCache(period);
+
         // 캐시조회
         @SuppressWarnings("unchecked")
-        List<GroupPurchasePostRankingListResponse> cached = (List<GroupPurchasePostRankingListResponse>) rankingCache.getIfPresent(cacheKey);
+        List<GroupPurchasePostRankingListResponse> cached = (List<GroupPurchasePostRankingListResponse>) cache.getIfPresent(cacheKey);
         if (cached != null && !cached.isEmpty()) {return cached;}
 
         // 조회수 기준 상위 10개 게시물 조회
@@ -68,7 +89,7 @@ public class RankingService {
                 .toList();
 
         // 조회 결과를 캐시에 저장
-        rankingCache.put(cacheKey, responses);
+        cache.put(cacheKey, responses);
         return responses;
     }
 
@@ -87,9 +108,11 @@ public class RankingService {
         // 캐시 키
         String cacheKey = "RANKING:SEARCH:" + period.name();
 
+        Cache<String, Object> cache = selectCache(period);
+
         // 캐시 조회
         @SuppressWarnings("unchecked")
-        List<SearchLogRankingListResponse> cached = (List<SearchLogRankingListResponse>) rankingCache.getIfPresent(cacheKey);
+        List<SearchLogRankingListResponse> cached = (List<SearchLogRankingListResponse>) cache.getIfPresent(cacheKey);
         if (cached != null && !cached.isEmpty()) {return cached;}
 
         // 검색 횟수 기준 상위 10개 키워드 조회
@@ -106,7 +129,7 @@ public class RankingService {
                 .toList();
 
         // 조회 결과를 캐시에 저장
-        rankingCache.put(cacheKey, result);
+        cache.put(cacheKey, result);
         return result;
     }
 
@@ -125,9 +148,11 @@ public class RankingService {
         // 캐시 키
         String cacheKey = "RANKING:PRODUCT:FAVORITE:" + period.name();
 
+        Cache<String, Object> cache = selectCache(period);
+
         // 캐시 조회
         @SuppressWarnings("unchecked")
-        List<ProductPostFavoriteRankingListResponse> cached = (List<ProductPostFavoriteRankingListResponse>) rankingCache.getIfPresent(cacheKey);
+        List<ProductPostFavoriteRankingListResponse> cached = (List<ProductPostFavoriteRankingListResponse>) cache.getIfPresent(cacheKey);
         if (cached != null && !cached.isEmpty()) return cached;
 
         // 캐시 miss 시 DB에서 실시간 집계 조회
@@ -146,7 +171,7 @@ public class RankingService {
                         .toList();
 
         // 조회 결과를 캐시에 저장
-        rankingCache.put(cacheKey, result);
+        cache.put(cacheKey, result);
         return result;
     }
 

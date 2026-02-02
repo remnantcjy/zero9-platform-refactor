@@ -1,5 +1,6 @@
 package com.zero9platform.domain.searchLog.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.auth.model.AuthUser;
@@ -30,6 +31,7 @@ public class SearchLogService {
     private final SearchContextRepository searchContextRepository;
     private final ProductPostRepository productPostRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
+    private final Cache<String, Object> searchCache;
 
     /**
      * 통합 검색 API
@@ -40,6 +42,12 @@ public class SearchLogService {
 
         // 검색 조건 검증 (허용되지 않은 조건 차단)
         validateSearchCondition(searchCondition);
+
+        String cacheKey = String.format("SEARCH:RESULT:%s:%s:%d:%d", keyword, searchCondition, pageable.getPageNumber(), pageable.getPageSize());
+
+        @SuppressWarnings("unchecked")
+        Page<SearchLogItemResponse> cached = (Page<SearchLogItemResponse>) searchCache.getIfPresent(cacheKey);
+        if (cached != null) {return cached;}
 
         // 통합 검색 category(product_title, product_name, influencer), 없으면 셋 다 포함하여 검색
         Page<ProductPost> searchResult = productPostRepository.searchByKeyword(keyword, searchCondition, pageable);
@@ -59,6 +67,9 @@ public class SearchLogService {
                         favoriteCountMap.getOrDefault(post.getId(), 0L)
                 )
         );
+
+        // 캐시에 저장 (읽기 결과만)
+        searchCache.put(cacheKey, resultPage);
 
         // 검색 로그 저장
         // - 비회원: 검색어 로그만 저장
