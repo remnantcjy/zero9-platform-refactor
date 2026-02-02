@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/zero9/product-posts")
+@RequestMapping("/zero9")
 public class ProductPostOptionController {
 
     private final ProductPostOptionService postOptionService;
@@ -22,7 +22,7 @@ public class ProductPostOptionController {
     /**
      * 옵션 추가 생성
      */
-    @PostMapping("/{productPostId}/options")
+    @PostMapping("/product-posts/{productPostId}/options")
     public ResponseEntity<CommonResponse<ProductPostOptionCreateResponse>> optionCreateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long productPostId, @RequestBody @Valid ProductPostOptionCreateRequest request) {
 
         ProductPostOptionCreateResponse response = postOptionService.optionCreate(authUser.getId(), authUser.getUserRole(), productPostId, request);
@@ -31,9 +31,20 @@ public class ProductPostOptionController {
     }
 
     /**
+     * 옵션 상세 조회
+     */
+    @GetMapping("/options/{optionId}")
+    public ResponseEntity<CommonResponse<ProductPostOptionGetDetailResponse>> optionCreateHandler(@PathVariable Long optionId) {
+
+        ProductPostOptionGetDetailResponse response = postOptionService.optionGetDetail(optionId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("옵션 상세 조회 성공", response));
+    }
+
+    /**
      * 옵션 삭제
      * */
-    @DeleteMapping("/{productPostId}/options/{optionId}")
+    @DeleteMapping("/product-posts/{productPostId}/options/{optionId}")
     public ResponseEntity<CommonResponse<Void>> optionDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long productPostId, @PathVariable Long optionId) {
 
         postOptionService.optionDelete(authUser.getId(), authUser.getUserRole(), productPostId, optionId);
