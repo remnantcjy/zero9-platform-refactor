@@ -71,6 +71,7 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
+                                "/zero9/options/*",
                                 "/zero9/product-posts",
                                 "/zero9/product-posts/*",
                                 "/zero9/gp-posts/**",
@@ -80,6 +81,7 @@ public class SecurityConfig {
                                 "/zero9/gpp-comments/**",
                                 "/zero9/comments",
                                 "/zero9/influencers/*/follows",
+                                "/zero9/feeds/all"
                                 "/zero9/feeds",
                                 "/zero9/ranking/**"
                         ).permitAll()

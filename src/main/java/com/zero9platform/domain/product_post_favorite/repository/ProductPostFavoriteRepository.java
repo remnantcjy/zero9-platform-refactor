@@ -59,4 +59,8 @@ public interface ProductPostFavoriteRepository extends JpaRepository<ProductPost
                 ORDER BY COUNT(f.id) DESC
             """)
     List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(@Param("status") PppProgressStatus status, Pageable pageable);
+
+    // 특정 유저가 찜한 상품들의 id 조회
+    @Query("SELECT pf.productPost.id FROM ProductPostFavorite pf WHERE pf.user.id = :userId")
+    List<Long> findProductPostIdsByUserId(@Param("userId") Long userId);
 }
