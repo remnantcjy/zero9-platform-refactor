@@ -1,6 +1,7 @@
 package com.zero9platform.domain.product_post_favorite;
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
@@ -43,7 +44,7 @@ public class ProductPostFavoriteService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //게시물 존재 여부 확인
-        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
+        ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         //중복 등록 방지
@@ -63,7 +64,7 @@ public class ProductPostFavoriteService {
 
         // 3개가 되는 순간 피드 생성 및 이미 있다면 패스
         if (favoriteCount >= 3) {
-            activityFeedService.feedCreate("POPULAR", productPost.getId(), productPost.getTitle());
+            activityFeedService.feedCreate(FeedType.DEADLINE, productPost.getId(), productPost.getTitle());
         }
 
         return ProductPostFavoriteCreateResponse.from(productPostFavorite);
@@ -80,7 +81,7 @@ public class ProductPostFavoriteService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_USER));
 
         //게시물 존재 여부 확인
-        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productPostId)
+        ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
 
         // 찜 등록 확인
