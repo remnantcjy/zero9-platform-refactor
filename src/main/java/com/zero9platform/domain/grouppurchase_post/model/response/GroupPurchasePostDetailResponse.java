@@ -29,24 +29,24 @@ public class GroupPurchasePostDetailResponse {
 
     public static GroupPurchasePostDetailResponse from(GroupPurchasePost groupPurchasePostGetDetailResponse) {
 
-        Category category = Category.valueOf(groupPurchasePostGetDetailResponse.getCategory());
-        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePostGetDetailResponse.getGppProgressStatus());
+//        Category category = Category.valueOf(groupPurchasePost.getCategory());
+//        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePost.getGppProgressStatus());
 
         return new GroupPurchasePostDetailResponse(
-                groupPurchasePostGetDetailResponse.getId(),
-                groupPurchasePostGetDetailResponse.getProductName(),
-                groupPurchasePostGetDetailResponse.getUser().getId(),
-                groupPurchasePostGetDetailResponse.getContent(),
-                groupPurchasePostGetDetailResponse.getImage(),
-                groupPurchasePostGetDetailResponse.getViewCount(),
-                groupPurchasePostGetDetailResponse.getPrice(),
-                groupPurchasePostGetDetailResponse.getLinkUrl(),
-                category.getDescription(),
-                gppProgressStatus.getDescription(),
-                groupPurchasePostGetDetailResponse.getStartDate(),
-                groupPurchasePostGetDetailResponse.getEndDate(),
-                groupPurchasePostGetDetailResponse.getCreatedAt(),
-                groupPurchasePostGetDetailResponse.getUpdatedAt()
+                groupPurchasePost.getId(),
+                groupPurchasePost.getProductName(),
+                groupPurchasePost.getUser().getId(),
+                groupPurchasePost.getContent(),
+                groupPurchasePost.getImage(),
+                groupPurchasePost.getViewCount(),
+                groupPurchasePost.getPrice(),
+                groupPurchasePost.getLinkUrl(),
+                groupPurchasePost.getCategoryDescription(),
+                groupPurchasePost.getProgressStatusDescription(),
+                groupPurchasePost.getStartDate(),
+                groupPurchasePost.getEndDate(),
+                groupPurchasePost.getCreatedAt(),
+                groupPurchasePost.getUpdatedAt()
         );
     }
 
