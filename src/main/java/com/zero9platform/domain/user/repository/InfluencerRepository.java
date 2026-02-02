@@ -1,6 +1,6 @@
-package com.zero9platform.domain.admin.repository;
+package com.zero9platform.domain.user.repository;
 
-import com.zero9platform.domain.admin.entity.Influencer;
+import com.zero9platform.domain.user.entity.Influencer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,9 +16,10 @@ public interface InfluencerRepository extends JpaRepository<Influencer, Long> {
      */
     @Query("""
         SELECT i FROM Influencer i JOIN i.user u
-        WHERE (:approved IS NULL OR i.influencerApprovalStatus = :approved) AND u.role = 'INFLUENCER'
+        WHERE (:approved IS NULL OR i.influencerApprovalStatus = :approved) AND (:nickname IS NULL OR u.nickname LIKE CONCAT('%', :nickname, '%')) AND u.role = 'INFLUENCER' 
+        ORDER BY u.createdAt DESC
     """)
-    Page<Influencer> findByApprovalStatusAndUser(@Param("approved") Boolean approved, Pageable pageable);
+    Page<Influencer> findByApprovalStatusAndUser(@Param("approved") Boolean approved, @Param("nickname") String nickname, Pageable pageable);
 
     /**
      * 인플루언서 user_id 조회

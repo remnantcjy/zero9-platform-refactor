@@ -1,6 +1,5 @@
-package com.zero9platform.domain.admin.entity;
+package com.zero9platform.domain.user.entity;
 
-import com.zero9platform.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

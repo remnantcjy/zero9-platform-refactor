@@ -10,4 +10,9 @@ import java.util.Optional;
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByOrderItem_User_Id(Long userId, Pageable pageable);
+
+    /**
+     * 주문 번호 조회
+     */
+    Optional<Order> findByOrderNo(String orderNo);
 }

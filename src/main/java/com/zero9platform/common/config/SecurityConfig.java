@@ -66,8 +66,19 @@ public class SecurityConfig {
                                 "/**"
                         ).permitAll() // CORS Preflight 허용
                         .requestMatchers(
+                                "/login.html",
+                                "/logout.html",
+                                "/main.html",
+                                "/css/**",
+                                "/js/**",
+
                                 "/zero9/auth/**",
                                 "/zero9/test/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/zero9/users/normal",
+                                "/zero9/users/influencer"
                         ).permitAll()
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -83,16 +94,6 @@ public class SecurityConfig {
                                 "/zero9/influencers/*/follows",
                                 "/zero9/feeds/all"
                         ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/zero9/users/normal",
-                                "/zero9/users/influencer"
-                        ).permitAll()
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/zero9/users",
-                                "/zero9/influencers"
-                        ).hasRole(UserRole.ADMIN.name())
                         .requestMatchers("/zero9/admin/**").hasRole(UserRole.ADMIN.name())
                         .anyRequest().authenticated() // 그 외 요청은 인증 필수
                 )

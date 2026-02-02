@@ -1,4 +1,4 @@
-package com.zero9platform.domain.user.model.user.request;
+package com.zero9platform.domain.user.model.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
