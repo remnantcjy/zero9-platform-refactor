@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchasePost, Long> {
@@ -28,4 +29,6 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
             """)
     int increaseViewCount(@Param("gppId") Long gppId);
 
+    // ViewCount 랭킹 조회
+    List<GroupPurchasePost> findTop10ByDeletedAtIsNullOrderByViewCountDesc();
 }

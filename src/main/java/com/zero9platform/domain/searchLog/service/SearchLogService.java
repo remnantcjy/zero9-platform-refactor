@@ -70,14 +70,6 @@ public class SearchLogService {
     }
 
     /**
-     * 인기 검색어 차트(공동구매 상품명)
-     */
-    @Transactional(readOnly = true)
-    public List<SearchLogListResponse> searchLogProductNameList() {
-        return searchLogRepository.findTopKeywords(PageRequest.of(0, 10));
-    }
-
-    /**
      * 검색 조건 검증
      */
     @Transactional

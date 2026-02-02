@@ -26,25 +26,25 @@ public class GroupPurchasePostListResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static GroupPurchasePostListResponse from(GroupPurchasePost groupPurchasePost) {
+    public static GroupPurchasePostListResponse from(GroupPurchasePost groupPurchasePostGetDetailResponse) {
 
-        Category category = Category.valueOf(groupPurchasePost.getCategory());
-        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePost.getGppProgressStatus());
+        Category category = Category.valueOf(groupPurchasePostGetDetailResponse.getCategory());
+        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePostGetDetailResponse.getGppProgressStatus());
 
         return new GroupPurchasePostListResponse(
-                groupPurchasePost.getId(),
-                groupPurchasePost.getProductName(),
-                groupPurchasePost.getUser().getId(),
-                groupPurchasePost.getImage(),
-                groupPurchasePost.getViewCount(),
+                groupPurchasePostGetDetailResponse.getId(),
+                groupPurchasePostGetDetailResponse.getProductName(),
+                groupPurchasePostGetDetailResponse.getUser().getId(),
+                groupPurchasePostGetDetailResponse.getImage(),
+                groupPurchasePostGetDetailResponse.getViewCount(),
                 0L, // favoriteCount 임시값 (추후 연관관계 추가 시 수정)
-                groupPurchasePost.getPrice(),
+                groupPurchasePostGetDetailResponse.getPrice(),
                 category.getDescription(),
                 gppProgressStatus.getDescription(),
-                groupPurchasePost.getStartDate(),
-                groupPurchasePost.getEndDate(),
-                groupPurchasePost.getCreatedAt(),
-                groupPurchasePost.getUpdatedAt()
+                groupPurchasePostGetDetailResponse.getStartDate(),
+                groupPurchasePostGetDetailResponse.getEndDate(),
+                groupPurchasePostGetDetailResponse.getCreatedAt(),
+                groupPurchasePostGetDetailResponse.getUpdatedAt()
         );
     }
 

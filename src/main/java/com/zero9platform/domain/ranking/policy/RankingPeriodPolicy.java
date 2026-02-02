@@ -9,11 +9,11 @@
 //
 //public class RankingPeriodPolicy {
 //
-////    private RankingPeriodPolicy() {}
+//    private RankingPeriodPolicy() {}
 //
 //    public static LocalDateTime[] resolve(RankingPeriod period, LocalDate from, LocalDate to) {
 //
-//        // 허용 값 검증
+//         // 허용 값 검증
 //        if (period != RankingPeriod.REALTIME
 //                && period != RankingPeriod.DAILY
 //                && period != RankingPeriod.WEEKLY
