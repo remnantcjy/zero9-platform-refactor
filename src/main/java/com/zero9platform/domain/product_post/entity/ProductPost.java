@@ -127,5 +127,4 @@ public class ProductPost extends BaseEntity {
 //        this.productPostStatus = productPostStatus;
 //    }
 
-
 }
