@@ -1,6 +1,5 @@
 package com.zero9platform.domain.product_post.repository;
 
-import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +27,6 @@ public interface ProductPostRepository extends JpaRepository<ProductPost, Long> 
             """)
     Page<ProductPost> searchByKeyword(@Param("keyword") String keyword, @Param("searchCondition") String searchCondition, Pageable pageable);
 
-//    Page<ProductPost> findAllByDeletedAtIsNull(Pageable pageable);
 
 //    @Query("select distinct pp from ProductPost pp " +
 //            "join pp.productPostOptionList o " +
