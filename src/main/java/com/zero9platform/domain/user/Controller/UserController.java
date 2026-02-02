@@ -11,7 +11,6 @@ import com.zero9platform.domain.user.model.request.UserUpdateRequest;
 import com.zero9platform.domain.user.model.response.UserCreateResponse;
 import com.zero9platform.domain.user.model.response.UserDetailResponse;
 import com.zero9platform.domain.user.model.response.UserUpdateResponse;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
