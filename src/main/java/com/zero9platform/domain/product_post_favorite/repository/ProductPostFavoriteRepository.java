@@ -41,4 +41,8 @@ public interface ProductPostFavoriteRepository extends JpaRepository<ProductPost
     //    GROUP BY gpp_id;
 
     long countByProductPost_Id(Long productPostId);
+
+    // 특정 유저가 찜한 상품들의 id 조회
+    @Query("SELECT pf.productPost.id FROM ProductPostFavorite pf WHERE pf.user.id = :userId")
+    List<Long> findProductPostIdsByUserId(@Param("userId") Long userId);
 }

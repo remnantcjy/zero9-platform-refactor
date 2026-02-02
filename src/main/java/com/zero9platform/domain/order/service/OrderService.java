@@ -91,7 +91,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // 피드 생성
-        activityFeedService.feedCreate("PAYMENT", savedOrder.getOrderItem().getProductPost().getId(), savedOrder.getOrderItem().getProductPost().getTitle());
+        //activityFeedService.feedCreate("PAYMENT", savedOrder.getOrderItem().getProductPost().getId(), savedOrder.getOrderItem().getProductPost().getTitle());
 
         return OrderCreateResponse.from(savedOrder);
     }
