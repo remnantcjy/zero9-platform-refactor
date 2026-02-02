@@ -60,8 +60,9 @@ public enum ExceptionCode {
 
     //검색
     INVALID_KEYWORD(HttpStatus.BAD_REQUEST, "검색어가 비어있을 수 없습니다"),
-    CATEGORY_FALSE(HttpStatus.NOT_FOUND, "category는 product 또는 influencer 둘 중 하나여야 합니다."),
+    CATEGORY_FALSE(HttpStatus.NOT_FOUND, "category는 product_title, product_name 또는 influencer 둘 중 하나여야 합니다."),
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품이 없습니다."),
+    NOT_FOUND_SEARCH_CONTEXT(HttpStatus.NOT_FOUND, "검색리스트가 없습니다."),
 
     //찜
     ALREADY_FAVORITE(HttpStatus.BAD_REQUEST, "이미 찜한 상품입니다."),
