@@ -9,6 +9,7 @@ import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavo
 import com.zero9platform.domain.searchLog.entity.SearchContext;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
+import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
 import com.zero9platform.domain.searchLog.repository.SearchContextRepository;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -67,14 +68,6 @@ public class SearchLogService {
 
         return resultPage;
     }
-
-//    /**
-//     * 인기 검색어 차트(공동구매 상품명)
-//     */
-//    @Transactional(readOnly = true)
-//    public List<SearchLogItemResponse> searchLogProductNameList() {
-//        return searchLogRepository.findTopKeywords(PageRequest.of(0, 10));
-//    }
 
     /**
      * 검색 조건 검증

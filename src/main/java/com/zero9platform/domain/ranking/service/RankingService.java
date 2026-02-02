@@ -80,7 +80,7 @@ public class RankingService {
 
         // 검색 횟수 기준 상위 10개 키워드 조회
         List<SearchLogRankingAggregateResponse> searchLogs = searchLogRepository
-                .findTop10Keywords(PageRequest.of(0, 10));
+                .findTopKeywords(PageRequest.of(0, 10));
 
         AtomicInteger rank = new AtomicInteger(1);
 
