@@ -2,6 +2,7 @@ package com.zero9platform.domain.searchLog;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.domain.searchLog.entity.SearchContext;
 import com.zero9platform.domain.searchLog.repository.SearchContextRepository;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
@@ -54,9 +55,7 @@ public class SearchLogService {
 
         // 임시 컨텍스트 저장
         searchResult.getContent().forEach(post ->
-                searchContextRepository.save(
-                        new SearchContext(keyword, post.getId())
-                )
+                searchContextRepository.save(new SearchContext(keyword, post.getId()))
         );
 
         // searchResult로부터 gppId 추출
