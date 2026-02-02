@@ -61,4 +61,10 @@ public class Order extends BaseEntity {
         }
     }
 
+    /**
+     * 결제 상태 업데이트
+     */
+    public void paymentStatusUpdate(OrderStatus status) {
+        this.orderStatus = status.toString();
+    }
 }

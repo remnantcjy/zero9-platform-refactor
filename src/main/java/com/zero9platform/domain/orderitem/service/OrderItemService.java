@@ -1,8 +1,9 @@
 package com.zero9platform.domain.orderitem.service;
 
 import com.zero9platform.common.enums.*;
+//import com.zero9platform.common.enums.DisplayStatus;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.domain.admin.repository.InfluencerRepository;
+//import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.orderitem.entity.OrderItem;
 import com.zero9platform.domain.orderitem.model.request.OrderItemCreateRequest;
@@ -13,6 +14,7 @@ import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.user.entity.User;
+import com.zero9platform.domain.user.repository.InfluencerRepository;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

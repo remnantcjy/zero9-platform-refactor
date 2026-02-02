@@ -1,6 +1,5 @@
-package com.zero9platform.domain.user.model.user.response;
+package com.zero9platform.domain.user.model.response;
 
-import com.zero9platform.domain.admin.entity.Influencer;
 import com.zero9platform.domain.user.entity.User;
 import lombok.Getter;
 

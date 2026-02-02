@@ -44,7 +44,8 @@ public enum ExceptionCode {
     // GPP - 400 BAD REQUEST
     GPP_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "종료일은 시작일 이후여야 하며, 시작일은 오늘 이전일 수 없습니다."),
     PP_INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "시작일은 오늘 이전일 수 없으며, 종료일은 시작일 이후여야 합니다."),
-    PP_DATE_REQUIRED(HttpStatus.NOT_FOUND, "시작일과 종료일은 필수입니다."),
+    PP_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "시작일과 종료일은 필수입니다."),
+    ORDER_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다."),
 
     // GPP - 401 FORBIDDEN
     GPP_NO_PERMISSION(HttpStatus.FORBIDDEN, "공동구매 게시물에 대한 권한이 없습니다."),
@@ -94,6 +95,12 @@ public enum ExceptionCode {
 
     // 주문
     ALREADY_ORDERED_ORDERITEM(HttpStatus.CONFLICT, "이미 주문된 주문 상품입니다."),
+
+    // 리프래쉬 토큰
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST, "Refresh Token이 없습니다."),
+    REFRESH_TOKEN_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 Refresh Token입니다."),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh Token이 만료되었습니다."),
+    REFRESH_TOKEN_REUSED(HttpStatus.UNAUTHORIZED, "Refresh Token 재사용이 감지되었습니다.");
 
     ;
 

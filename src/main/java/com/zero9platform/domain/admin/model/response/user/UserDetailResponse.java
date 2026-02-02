@@ -1,36 +1,38 @@
-package com.zero9platform.domain.user.model.user.response;
+package com.zero9platform.domain.admin.model.response.user;
 
 import com.zero9platform.domain.user.entity.User;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
-@AllArgsConstructor
-public class UserCreateResponse {
+@RequiredArgsConstructor
+public class UserDetailResponse {
 
     private final Long id;
-    private final String role;
     private final String loginId;
     private final String name;
     private final String email;
     private final String phone;
     private final String nickname;
+    private final String role;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
+    private final Boolean deleted;
 
-    public static UserCreateResponse from(User user) {
-        return new UserCreateResponse(
+    public static UserDetailResponse from(User user) {
+        return new UserDetailResponse(
                 user.getId(),
-                user.getRole(),
                 user.getLoginId(),
                 user.getName(),
                 user.getEmail(),
                 user.getPhone(),
                 user.getNickname(),
+                user.getRole(),
                 user.getCreatedAt(),
-                user.getUpdatedAt()
+                user.getUpdatedAt(),
+                user.getDeletedAt() != null
         );
     }
 }

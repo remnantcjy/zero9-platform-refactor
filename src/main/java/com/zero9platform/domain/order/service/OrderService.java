@@ -4,15 +4,15 @@ import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.OrderStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
-import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
+import com.zero9platform.common.util.payment.toss.TossPaymentClient;
 import com.zero9platform.domain.order.entity.Order;
+import com.zero9platform.domain.order.model.request.OrderPaymentRequest;
 import com.zero9platform.domain.order.model.response.OrderCancelResponse;
 import com.zero9platform.domain.order.model.response.OrderCreateResponse;
 import com.zero9platform.domain.order.model.response.OrderGetDetailResponse;
 import com.zero9platform.domain.order.repository.OrderRepository;
 import com.zero9platform.domain.orderitem.entity.OrderItem;
 import com.zero9platform.domain.orderitem.repository.OrderItemRepository;
-import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.repository.ProductPostOptionRepository;
 import com.zero9platform.domain.user.entity.User;
@@ -34,7 +34,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductPostOptionRepository productPostOptionRepository;
-    private final ActivityFeedService activityFeedService;
+    private final TossPaymentClient tossPaymentClient;
 
     /**
      * 주문 생성
@@ -69,7 +69,7 @@ public class OrderService {
 
         // 결제 상태 변경
         // 현재는 페이먼츠와 연동 전이므로 "결제 완료"로 상태로 처리
-        String orderStatus = OrderStatus.PAID.name();
+        String orderStatus = OrderStatus.PENDING.name();
 
         // 재고 차감
         option.decreaseStock(orderQuantity);
@@ -119,6 +119,34 @@ public class OrderService {
         Page<OrderGetDetailResponse> OrderGetDetailResponsePage = orderPage.map(OrderGetDetailResponse::from);
 
         return OrderGetDetailResponsePage;
+    }
+
+    /**
+     * 결제 완료
+     */
+    @Transactional
+    public void orderPayment(Long userId, Long orderId, OrderPaymentRequest request) {
+
+        // 주문 권한 체크
+        Order order = checkOrderPermission(orderRepository.findById(orderId), userId);
+
+        // 주문 조회
+        orderRepository.findByOrderNo(request.getOrderNo())
+                .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
+
+        // 결제 금액 검증
+        if (request.getAmount() != order.getTotalAmount()) {
+            throw new CustomException(ExceptionCode.ORDER_AMOUNT_MISMATCH);
+        }
+
+        // TossPayments 결제 승인
+        tossPaymentClient.tossPayment(
+                request.getPaymentKey(),
+                request.getOrderNo(),
+                request.getAmount()
+        );
+
+        order.paymentStatusUpdate(OrderStatus.PAID);
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.zero9platform.domain.user.model.user.request;
+package com.zero9platform.domain.user.model.request;
 
 import com.zero9platform.common.enums.UserRole;
 
