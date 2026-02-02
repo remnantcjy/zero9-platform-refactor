@@ -17,7 +17,7 @@ public class GroupPurchasePostListResponse {
     private Long userId;
     private String image;
     private Long viewCount;
-    private Long favoriteCount; // 추후 좋아요 기능 연동
+//    private Long favoriteCount; // 추후 좋아요 기능 연동
     private Long price;
     private String category;
     private String gppProgressStatus;
@@ -26,25 +26,25 @@ public class GroupPurchasePostListResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static GroupPurchasePostListResponse from(GroupPurchasePost groupPurchasePostGetDetailResponse) {
+    public static GroupPurchasePostListResponse from(GroupPurchasePost groupPurchasePost) {
 
-        Category category = Category.valueOf(groupPurchasePostGetDetailResponse.getCategory());
-        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePostGetDetailResponse.getGppProgressStatus());
+//        Category category = Category.valueOf(groupPurchasePost.getCategory());
+//        GppProgressStatus gppProgressStatus = GppProgressStatus.valueOf(groupPurchasePost.getGppProgressStatus());
 
         return new GroupPurchasePostListResponse(
-                groupPurchasePostGetDetailResponse.getId(),
-                groupPurchasePostGetDetailResponse.getProductName(),
-                groupPurchasePostGetDetailResponse.getUser().getId(),
-                groupPurchasePostGetDetailResponse.getImage(),
-                groupPurchasePostGetDetailResponse.getViewCount(),
-                0L, // favoriteCount 임시값 (추후 연관관계 추가 시 수정)
-                groupPurchasePostGetDetailResponse.getPrice(),
-                category.getDescription(),
-                gppProgressStatus.getDescription(),
-                groupPurchasePostGetDetailResponse.getStartDate(),
-                groupPurchasePostGetDetailResponse.getEndDate(),
-                groupPurchasePostGetDetailResponse.getCreatedAt(),
-                groupPurchasePostGetDetailResponse.getUpdatedAt()
+                groupPurchasePost.getId(),
+                groupPurchasePost.getProductName(),
+                groupPurchasePost.getUser().getId(),
+                groupPurchasePost.getImage(),
+                groupPurchasePost.getViewCount(),
+//                0L, // favoriteCount 임시값 (추후 연관관계 추가 시 수정)
+                groupPurchasePost.getPrice(),
+                groupPurchasePost.getCategoryDescription(),
+                groupPurchasePost.getProgressStatusDescription(),
+                groupPurchasePost.getStartDate(),
+                groupPurchasePost.getEndDate(),
+                groupPurchasePost.getCreatedAt(),
+                groupPurchasePost.getUpdatedAt()
         );
     }
 
