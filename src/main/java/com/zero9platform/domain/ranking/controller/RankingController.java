@@ -1,8 +1,6 @@
 package com.zero9platform.domain.ranking.controller;
 
-import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.RankingPeriod;
-import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.ranking.service.RankingService;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -51,7 +50,7 @@ public class RankingController {
         List<SearchLogRankingListResponse> searchLogRankingListResponse = rankingService.searchLogKeywordRanking(period);
 
         // 공통 응답 포맷으로 반환
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인기 검색어 차트 조회 성공", searchLogRankingListResponse));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인기 검색어 랭킹 조회 성공", searchLogRankingListResponse));
     }
 
     /**
