@@ -1,6 +1,6 @@
 package com.zero9platform.domain.ranking.service;
 
-import com.zero9platform.common.enums.PppProgressStatus;
+import com.zero9platform.common.enums.ProgressStatus;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
@@ -54,7 +54,7 @@ public class RankingService {
 
         // 찜 개수 기준 상위 10개 상품 게시물 집계 조회
         List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository
-                .findTop10ProductPostByFavorite( PppProgressStatus.DOING, PageRequest.of(0, 10));
+                .findTop10ProductPostByFavorite(ProgressStatus.DOING, PageRequest.of(0, 10));
 
         AtomicInteger rank = new AtomicInteger(1);
 

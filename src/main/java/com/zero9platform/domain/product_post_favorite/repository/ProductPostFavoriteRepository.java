@@ -1,6 +1,6 @@
 package com.zero9platform.domain.product_post_favorite.repository;
 
-import com.zero9platform.common.enums.PppProgressStatus;
+import com.zero9platform.common.enums.ProgressStatus;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post_favorite.entity.ProductPostFavorite;
 import com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingAggregateResponse;
@@ -58,7 +58,7 @@ public interface ProductPostFavoriteRepository extends JpaRepository<ProductPost
                 GROUP BY p.id, p.title
                 ORDER BY COUNT(f.id) DESC
             """)
-    List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(@Param("status") PppProgressStatus status, Pageable pageable);
+    List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(@Param("status") ProgressStatus status, Pageable pageable);
 
     // 특정 유저가 찜한 상품들의 id 조회
     @Query("SELECT pf.productPost.id FROM ProductPostFavorite pf WHERE pf.user.id = :userId")
