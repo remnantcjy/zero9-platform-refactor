@@ -50,6 +50,18 @@ public class ProductPostOptionService {
     }
 
     /**
+     * 옵션 상세 조회
+     */
+    @Transactional(readOnly = true)
+    public ProductPostOptionGetDetailResponse optionGetDetail(Long optionId) {
+
+        ProductPostOption option = optionRepository.findById(optionId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.OPTION_NOT_FOUND));
+
+        return ProductPostOptionGetDetailResponse.from(option);
+    }
+
+    /**
      * 옵션 삭제
      */
     @Transactional
