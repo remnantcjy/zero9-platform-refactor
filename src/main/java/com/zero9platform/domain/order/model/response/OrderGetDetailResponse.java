@@ -12,11 +12,13 @@ public class OrderGetDetailResponse {
     private final Long id;
     private final Long userId;
     private final String nickname;
+    private final String email;
+    private final String phone;
     private final String orderNo;
     private final Long totalAmount;
     private final String orderStatus;
     private final Long orderItemId;
-
+    private final String optionName;
 
     public static OrderGetDetailResponse from(Order order) {
 
@@ -26,10 +28,13 @@ public class OrderGetDetailResponse {
                 order.getId(),
                 order.getOrderItem().getUser().getId(),
                 order.getOrderItem().getUser().getNickname(),
+                order.getOrderItem().getUser().getEmail(),
+                order.getOrderItem().getUser().getPhone(),
                 order.getOrderNo(),
                 order.getTotalAmount(),
                 orderStatus.getDescription(),
-                order.getOrderItem().getId()
+                order.getOrderItem().getId(),
+                order.getOrderItem().getProductPostOption().getName()
         );
     }
 }
