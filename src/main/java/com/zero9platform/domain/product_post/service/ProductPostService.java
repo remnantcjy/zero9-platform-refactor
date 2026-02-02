@@ -60,7 +60,7 @@ public class ProductPostService {
         ProductPost savedProductPost = productPostRepository.save(productPost);
 
         // 피드 생성 호출
-        activityFeedService.feedCreate("SOON", savedProductPost.getId(), savedProductPost.getTitle());
+        //activityFeedService.feedCreate("SOON", savedProductPost.getId(), savedProductPost.getTitle());
 
         return ProductPostCreateResponse.from(savedProductPost);
     }
@@ -111,28 +111,6 @@ public class ProductPostService {
 
         return ProductPostUpdateResponse.from(productPost);
     }*/
-
-//    /**
-//     * 상품 게시물 삭제
-//     */
-//    @Transactional
-//    public void productPostDelete(Long userId, Long productpostId) {
-//
-//        User user = validPermission(userId);
-//
-//        ProductPost productPost = productPostRepository.findByIdAndDeletedAtIsNull(productpostId)
-//                .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
-//
-//        // 본인만 삭제 가능
-//        validProductPostOwner(user, productPost);
-//
-//        // 상품 게시물 소프트 딜리트
-//        productPost.softDelete();
-//
-//        // 하위 옵션 리스트들 비활성화
-//        productPost.getProductPostOptionList()
-//                .forEach(ProductPostOption::optionInactive);
-//    }
 
     /**
      * 본인의 상품 게시물인지 검증

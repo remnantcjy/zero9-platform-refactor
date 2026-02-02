@@ -44,13 +44,13 @@ public class ProductPostOption  extends BaseEntity {
         updateStockStatus();
     }
 
-    public void update(ProductPost productPost, String name, Long salePrice, Integer stockQuantity) {
-
-        if (productPost != null) this.productPost = productPost;
-        if (name != null) this.name = name;
-        if (salePrice != null) this.salePrice = salePrice;
-        if (stockQuantity != null) this.stockQuantity = stockQuantity;
-    }
+//    public void update(ProductPost productPost, String name, Long salePrice, Integer stockQuantity) {
+//
+//        if (productPost != null) this.productPost = productPost;
+//        if (name != null) this.name = name;
+//        if (salePrice != null) this.salePrice = salePrice;
+//        if (stockQuantity != null) this.stockQuantity = stockQuantity;
+//    }
 
     // 재고 상태 지정
     private void updateStockStatus() {
@@ -60,12 +60,6 @@ public class ProductPostOption  extends BaseEntity {
             this.stockStatus = StockStatus.SOLD_OUT.name();
         }
     }
-
-//    public void update(String name, Long salePrice, Integer capacity) {
-//        if (name != null) this.name = name;
-//        if (salePrice != null) this.salePrice = salePrice;
-//        if (capacity != null) this.capacity = capacity;
-//    }
 
     public void setProductPost(ProductPost productPost) {
         this.productPost = productPost;
