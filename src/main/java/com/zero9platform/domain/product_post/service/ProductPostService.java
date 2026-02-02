@@ -10,9 +10,9 @@ import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.model.request.ProductPostCreateRequest;
 import com.zero9platform.domain.product_post.model.request.ProductPostUpdateRequest;
 import com.zero9platform.domain.product_post.model.response.ProductPostCreateResponse;
-/*import com.zero9platform.domain.product_post.model.response.ProductPostGetDetailResponse;
+import com.zero9platform.domain.product_post.model.response.ProductPostGetDetailResponse;
 import com.zero9platform.domain.product_post.model.response.ProductPostGetListResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostUpdateResponse;*/
+import com.zero9platform.domain.product_post.model.response.ProductPostUpdateResponse;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
@@ -68,19 +68,19 @@ public class ProductPostService {
     /**
      * 상품 게시물 상세 조회
      */
-    /*@Transactional
+    @Transactional
     public ProductPostGetDetailResponse productPostGetDetail(Long productPostId) {
 
         ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
         return ProductPostGetDetailResponse.from(productPost);
-    }*/
+    }
 
     /**
      * 상품 게시물 목록 조회
      */
-    /*@Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public PageResponse<ProductPostGetListResponse> productPostGetList(Pageable pageable) {
 
         Page<ProductPost> productPostsPage = productPostRepository.findAllByOrderByUpdatedAtDesc(pageable);
@@ -88,12 +88,12 @@ public class ProductPostService {
         Page<ProductPostGetListResponse> responsePage = productPostsPage.map(ProductPostGetListResponse::from);
 
         return PageResponse.from(responsePage);
-    }*/
+    }
 
     /**
      * 상품 게시물 수정
      */
-   /* @Transactional
+    @Transactional
     public ProductPostUpdateResponse productPostUpdate(Long userId, Long productPostId, ProductPostUpdateRequest request) {
 
         // 인가 확인 (사용자 제외)
@@ -110,7 +110,7 @@ public class ProductPostService {
         productPost.update(category, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), request.getImage(), request.getStartDate(), request.getEndDate());
 
         return ProductPostUpdateResponse.from(productPost);
-    }*/
+    }
 
     /**
      * 본인의 상품 게시물인지 검증
