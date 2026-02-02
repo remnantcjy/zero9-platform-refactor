@@ -1,6 +1,10 @@
 package com.zero9platform.domain.ranking.service;
 
-import com.zero9platform.common.enums.PppProgressStatus;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.ProgressStatus;
+import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
@@ -47,7 +51,7 @@ public class RankingService {
         if (cached != null && !cached.isEmpty()) {return cached;}
 
         // 조회수 기준 상위 10개 게시물 조회
-        List<GroupPurchasePost> posts = groupPurchasePostRepository.findTopByViewCountBetween(range[0], range[1], PppProgressStatus.DOING.name(), PageRequest.of(0, 10));
+        List<GroupPurchasePost> posts = groupPurchasePostRepository.findTopByViewCountBetween(range[0], range[1], ProgressStatus.DOING.name(), PageRequest.of(0, 10));
 
         // 랭킹 순위를 응답 시점에 부여하기 위한 카운터
         AtomicInteger rank = new AtomicInteger(1);
@@ -90,9 +94,6 @@ public class RankingService {
 
         // 검색 횟수 기준 상위 10개 키워드 조회
         List<SearchLogRankingAggregateResponse> searchLogs = searchLogRepository.findTopKeywordsBetween(range[0], range[1], PageRequest.of(0, 10));
-        // 찜 개수 기준 상위 10개 상품 게시물 집계 조회
-        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository
-                .findTop10ProductPostByFavorite(ProgressStatus.DOING, PageRequest.of(0, 10));
 
         AtomicInteger rank = new AtomicInteger(1);
         List<SearchLogRankingListResponse> result =
@@ -130,7 +131,7 @@ public class RankingService {
         if (cached != null && !cached.isEmpty()) return cached;
 
         // 캐시 miss 시 DB에서 실시간 집계 조회
-        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTopByFavoriteBetween(range[0], range[1], PppProgressStatus.DOING.name(), PageRequest.of(0, 10));
+        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTopByFavoriteBetween(range[0], range[1], ProgressStatus.DOING.name(), PageRequest.of(0, 10));
 
         // 랭킹 순위를 응답 시점에 부여하기 위한 카운터
         AtomicInteger rank = new AtomicInteger(1);
@@ -172,10 +173,7 @@ public class RankingService {
         LocalDateTime[] range = RankingPeriodPolicy.resolve(period, from, to);
 
         // 기간 내 찜 기준 랭킹 집계
-        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTopByFavoriteBetween(range[0], range[1], PppProgressStatus.DOING.name(), PageRequest.of(0, 10));
-        // 검색 횟수 기준 상위 10개 키워드 조회
-        List<SearchLogRankingAggregateResponse> searchLogs = searchLogRepository
-                .findTopKeywords(PageRequest.of(0, 10));
+        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTopByFavoriteBetween(range[0], range[1], ProgressStatus.DOING.name(), PageRequest.of(0, 10));
 
         AtomicInteger rank = new AtomicInteger(1);
         List<ProductPostFavoriteRankingListResponse> result = favorite.stream()

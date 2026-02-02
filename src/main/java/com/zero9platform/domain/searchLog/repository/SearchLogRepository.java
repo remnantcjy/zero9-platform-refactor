@@ -19,24 +19,15 @@ public interface SearchLogRepository extends JpaRepository<SearchLog, Long> {
 
     // 인기검색어 차트(상품명)
     @Query("""
-                SELECT new com.zero9platform.domain.searchLog.model.SearchLogListResponse(
-                    ROW_NUMBER() OVER (ORDER BY s.count DESC) AS rank,
+                SELECT new com.zero9platform.domain.ranking.model.response.SearchLogRankingAggregateResponse(
                     s.keyword,
-                    s.count
+                    COUNT(s)
                 )
                 FROM SearchLog s
-                ORDER BY s.count DESC
+                WHERE s.createdAt BETWEEN :from AND :to
+                GROUP BY s.keyword
+                ORDER BY COUNT(s) DESC
             """)
-    List<SearchLogRankingAggregateResponse> findTopKeywords(Pageable pageable);
-    SELECT new com.zero9platform.domain.ranking.model.response.SearchLogRankingAggregateResponse(
-        s.keyword,
-        COUNT(s)
-    )
-    FROM SearchLog s
-    WHERE s.createdAt BETWEEN :from AND :to
-    GROUP BY s.keyword
-    ORDER BY COUNT(s) DESC
-""")
     List<SearchLogRankingAggregateResponse> findTopKeywordsBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to, Pageable pageable);
 
 }

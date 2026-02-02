@@ -46,26 +46,9 @@ public interface ProductPostFavoriteRepository extends JpaRepository<ProductPost
     // 현재 게시물의 찜 개수 확인용
     long countByProductPost_Id(Long productPostId);
 
-    //찜 랭킹 조회용
-    @Query("""
-                SELECT new com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingAggregateResponse(
-                      p.id,
-                      p.title,
-                      COUNT(f.id)
-                )
-                FROM ProductPostFavorite f
-                JOIN f.productPost p
-                WHERE p.progressStatus = :status
-                GROUP BY p.id, p.title
-                ORDER BY COUNT(f.id) DESC
-            """)
-    List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(@Param("status") ProgressStatus status, Pageable pageable);
-
     // 특정 유저가 찜한 상품들의 id 조회
     @Query("SELECT pf.productPost.id FROM ProductPostFavorite pf WHERE pf.user.id = :userId")
     List<Long> findProductPostIdsByUserId(@Param("userId") Long userId);
-    List<ProductPostFavoriteRankingAggregateResponse> findTop10ProductPostByFavorite(@Param("status") String status, Pageable pageable);
-
 
     // 기간별 찜 집계 쿼리
     @Query("""
