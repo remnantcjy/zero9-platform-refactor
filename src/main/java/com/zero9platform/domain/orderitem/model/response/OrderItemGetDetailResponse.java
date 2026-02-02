@@ -9,11 +9,6 @@ import lombok.RequiredArgsConstructor;
 public class OrderItemGetDetailResponse {
 
     private final Long id;
-    private final Long userId;
-    private final String nickname;
-    private final Long productPostId;
-    private final String productTitle;
-    private final String productPostStatus;
     private final Long optionId;
     private final String optionName;
     private final Long optionPrice;
@@ -23,15 +18,10 @@ public class OrderItemGetDetailResponse {
 
         return new OrderItemGetDetailResponse(
                 orderItem.getId(),
-                orderItem.getUser().getId(),
-                orderItem.getUser().getNickname(),
-                orderItem.getProductPost().getId(),
-                orderItem.getProductPost().getTitle(),
-                orderItem.getProductPost().getProductPostStatus(),
                 orderItem.getProductPostOption().getId(),
                 orderItem.getProductPostOption().getName(),
-                orderItem.getProductPostOption().getOptionPrice(),
-                orderItem.getProductPostOption().getCapacity()
+                orderItem.getProductPostOption().getSalePrice(),
+                orderItem.getOrderQuantity()
         );
     }
 

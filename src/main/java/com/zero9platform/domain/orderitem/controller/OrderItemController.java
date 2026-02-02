@@ -23,12 +23,12 @@ public class OrderItemController {
     /**
      * 주문 상품 생성
      */
-    @PostMapping("/zero9/product-posts/{productpostId}/order-items")
-    public ResponseEntity<CommonResponse<OrderItemCreateResponse>> orderItemCreateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long productpostId, @RequestBody OrderItemCreateRequest request) {
+    @PostMapping("/zero9/product-posts/{productPostId}/order-items")
+    public ResponseEntity<CommonResponse<OrderItemCreateResponse>> orderItemCreateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long productPostId, @RequestBody OrderItemCreateRequest request) {
 
         Long userId = authUser.getId();
 
-        OrderItemCreateResponse response = orderItemService.orderItemCreate(userId, productpostId, request);
+        OrderItemCreateResponse response = orderItemService.orderItemCreate(userId, productPostId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("주문 상품 생성 성공", response));
     }

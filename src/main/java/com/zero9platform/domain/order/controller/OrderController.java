@@ -72,12 +72,12 @@ public class OrderController {
     /**
      * 주문 취소
      */
-    @PatchMapping("/zero9/order-item/{orderItemId}/orders/{orderId}")
-    public ResponseEntity<CommonResponse<OrderCancelResponse>> orderCancelHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long orderItemId, @PathVariable Long orderId) {
+    @PatchMapping("/zero9/orders/{orderId}")
+    public ResponseEntity<CommonResponse<OrderCancelResponse>> orderCancelHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long orderId) {
 
         Long userId = authUser.getId();
 
-        OrderCancelResponse response = orderService.orderCancel(userId, orderItemId, orderId);
+        OrderCancelResponse response = orderService.orderCancel(userId, orderId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("주문 취소 성공", response));
     }
