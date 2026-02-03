@@ -16,10 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-@Controller
+@RestController
 @RequestMapping("/zero9")
 @RequiredArgsConstructor
 public class ProductPostController {
@@ -30,10 +30,10 @@ public class ProductPostController {
      * 상품 게시물 생성
      */
     @PostMapping("/product-posts")
-    public ResponseEntity<CommonResponse<ProductPostCreateResponse>> productPostCreateHandler(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody ProductPostCreateRequest request) {
+    public ResponseEntity<CommonResponse<ProductPostCreateResponse>> productPostCreateHandler(@AuthenticationPrincipal AuthUser authUser, @RequestPart("ppCreateRequest") @Valid ProductPostCreateRequest request, @RequestPart(value = "contentImage", required = false) MultipartFile file) {
         Long userId = authUser.getId();
 
-        ProductPostCreateResponse response = productPostService.productPostCreate(userId, request);
+        ProductPostCreateResponse response = productPostService.productPostCreate(userId, request, file);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("상품 게시물 생성 성공", response));
     }
@@ -64,11 +64,11 @@ public class ProductPostController {
      * 상품 게시물 수정
      */
     @PatchMapping("/product-posts/{productPostId}")
-    public ResponseEntity<CommonResponse<ProductPostUpdateResponse>> productPostUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long productPostId, @RequestBody ProductPostUpdateRequest request) {
+    public ResponseEntity<CommonResponse<ProductPostUpdateResponse>> productPostUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long productPostId, @RequestPart("ppUpdateRequest") ProductPostUpdateRequest request, @RequestPart(value = "contentImage", required = false) MultipartFile file) {
 
         Long userId = authUser.getId();
 
-        ProductPostUpdateResponse response = productPostService.productPostUpdate(userId, productPostId, request);
+        ProductPostUpdateResponse response = productPostService.productPostUpdate(userId, productPostId, request, file);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 게시물 수정 성공", response));
     }
