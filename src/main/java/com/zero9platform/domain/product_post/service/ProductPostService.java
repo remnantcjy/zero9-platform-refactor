@@ -1,5 +1,6 @@
 package com.zero9platform.domain.product_post.service;
 
+import com.zero9platform.common.aws.s3.S3Service;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
@@ -23,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -34,12 +36,13 @@ public class ProductPostService {
     private final UserRepository userRepository;
     private final ProductPostRepository productPostRepository;
     private final ActivityFeedService activityFeedService;
+    private final S3Service s3Service;
 
     /**
      * 상품 판매 게시물 생성 - Influencer, Admin
      */
     @Transactional
-    public ProductPostCreateResponse productPostCreate(Long userId, ProductPostCreateRequest request) {
+    public ProductPostCreateResponse productPostCreate(Long userId, ProductPostCreateRequest request, MultipartFile file) {
 
         // 인가 확인 (사용자 제외)
         User user = validPermission(userId);
@@ -47,8 +50,14 @@ public class ProductPostService {
         // 판매일 검증
         validProductPostSaleDate(request.getStartDate(), request.getEndDate());
 
+        // 이미지 파일 업로드 S3 서비스 호출
+        String contentImage = "";
+        if (file != null && !file.isEmpty()) {
+            contentImage = s3Service.upload(file);
+        }
+
         // 상품판매 게시물 생성
-        ProductPost productPost = new ProductPost(user, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), request.getImage(), request.getCategory().name(), request.getStartDate(), request.getEndDate());
+        ProductPost productPost = new ProductPost(user, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImage, request.getCategory().name(), request.getProgressStatus().name(), request.getStartDate(), request.getEndDate());
 
         // 옵션 생성
         for (ProductPostOptionCreateRequest optionRequest: request.getOptionList()) {
@@ -94,7 +103,7 @@ public class ProductPostService {
      * 상품 게시물 수정
      */
     @Transactional
-    public ProductPostUpdateResponse productPostUpdate(Long userId, Long productPostId, ProductPostUpdateRequest request) {
+    public ProductPostUpdateResponse productPostUpdate(Long userId, Long productPostId, ProductPostUpdateRequest request, MultipartFile file) {
 
         // 인가 확인 (사용자 제외)
         User user = validPermission(userId);
@@ -105,9 +114,16 @@ public class ProductPostService {
         // 본인만 수정 가능
         validProductPostOwner(user, productPost);
 
-        String category = request.getCategory() != null ? request.getCategory().name() : null;
+        // 이미지 파일 업로드 S3 서비스 호출
+        String contentImage = "";
+        if (file != null && !file.isEmpty()) {
+            contentImage = s3Service.upload(file);
+        }
 
-        productPost.update(category, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), request.getImage(), request.getStartDate(), request.getEndDate());
+        String category = request.getCategory() != null ? request.getCategory().name() : null;
+        String progressStatus = request.getProgressStatus() != null ? request.getProgressStatus().name() : null;
+
+        productPost.update(category, progressStatus, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImage, request.getStartDate(), request.getEndDate());
 
         return ProductPostUpdateResponse.from(productPost);
     }

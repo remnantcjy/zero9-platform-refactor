@@ -17,7 +17,7 @@ public class ProductPostGetListResponse {
     private final String name;
     private final Long originalPrice;
     private final String image;
-    private final String progressStatus;
+//    private final String progressStatus;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -33,7 +33,7 @@ public class ProductPostGetListResponse {
                 productPost.getName(),
                 productPost.getOriginalPrice(),
                 productPost.getImage(),
-                productPost.getProgressStatus(),
+//                productPost.getProgressStatus(),
                 productPost.getCreatedAt(),
                 productPost.getUpdatedAt()
         );
