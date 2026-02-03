@@ -9,12 +9,10 @@ import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavo
 import com.zero9platform.domain.searchLog.entity.SearchContext;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
-import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
 import com.zero9platform.domain.searchLog.repository.SearchContextRepository;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
