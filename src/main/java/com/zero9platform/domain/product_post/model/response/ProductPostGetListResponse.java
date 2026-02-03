@@ -23,10 +23,6 @@ public class ProductPostGetListResponse {
 
     public static ProductPostGetListResponse from(ProductPost productPost) {
 
-        List<ProductPostOptionCreateResponse> optionList = productPost.getProductPostOptionList().stream()
-                .map(ProductPostOptionCreateResponse::from)
-                .toList();
-
         return new ProductPostGetListResponse(
                 productPost.getId(),
                 productPost.getTitle(),

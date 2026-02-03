@@ -77,7 +77,7 @@ public class ProductPostService {
     /**
      * 상품 게시물 상세 조회
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public ProductPostGetDetailResponse productPostGetDetail(Long productPostId) {
 
         ProductPost productPost = productPostRepository.findById(productPostId)
