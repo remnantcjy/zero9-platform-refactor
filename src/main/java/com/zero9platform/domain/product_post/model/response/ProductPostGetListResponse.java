@@ -21,14 +21,14 @@ public class ProductPostGetListResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    public static ProductPostGetListResponse from(ProductPost productPost) {
+    public static ProductPostGetListResponse from(ProductPost productPost, String image) {
 
         return new ProductPostGetListResponse(
                 productPost.getId(),
                 productPost.getTitle(),
                 productPost.getName(),
                 productPost.getOriginalPrice(),
-                productPost.getImage(),
+                image,
 //                productPost.getProgressStatus(),
                 productPost.getCreatedAt(),
                 productPost.getUpdatedAt()

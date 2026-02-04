@@ -26,7 +26,7 @@ public class ProductPostGetDetailResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    public static ProductPostGetDetailResponse from(ProductPost productPost) {
+    public static ProductPostGetDetailResponse from(ProductPost productPost, String image) {
 
         List<ProductPostOptionCreateResponse> optionList = productPost.getProductPostOptionList().stream()
                 .map(ProductPostOptionCreateResponse::from)
@@ -41,7 +41,7 @@ public class ProductPostGetDetailResponse {
                 productPost.getContent(),
                 productPost.getOriginalPrice(),
                 optionList,
-                productPost.getImage(),
+                image,
                 productPost.getStartDate(),
                 productPost.getEndDate(),
                 productPost.getCreatedAt(),
