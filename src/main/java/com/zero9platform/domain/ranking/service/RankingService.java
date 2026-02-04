@@ -57,7 +57,7 @@ public class RankingService {
 
 
         // DAILY / WEEKLY / MONTHLY → DB
-        var snapshots = keywordSnapshotRepository.findByPeriodOrderByCountDesc(resolved, PageRequest.of(0, 10));
+        var snapshots = keywordSnapshotRepository.findByPeriodOrderByKeywordCountDesc(resolved, PageRequest.of(0, 10));
         if (snapshots == null || snapshots.isEmpty()) {
             return List.of();
         }
