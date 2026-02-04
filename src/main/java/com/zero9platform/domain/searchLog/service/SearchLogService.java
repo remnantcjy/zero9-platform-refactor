@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 public class SearchLogService {
 
     private final SearchLogRepository searchLogRepository;
-    private final SearchContextRepository searchContextRepository;
     private final ProductPostRepository productPostRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
     private final RankingCounter rankingCounter;
@@ -89,7 +88,7 @@ public class SearchLogService {
     }
 
     /**
-     * 검색 로그 + 컨텍스트 저장
+     * 검색 로그 저장
      */
     @Transactional
     public void saveSearchLogs(String keyword, List<ProductPost> posts, Long userId) {
@@ -107,20 +106,6 @@ public class SearchLogService {
         searchLog.increaseCount();
 
         searchLogRepository.save(searchLog);
-
-        // 로그인 유저가 아니면 컨텍스트 저장 안 함
-        if (userId == null || posts.isEmpty()) {
-            return;
-        }
-
-        // 검색 결과 게시물 기준으로 컨텍스트 생성
-        List<SearchContext> contexts = posts
-                .stream()
-                .map(post -> new SearchContext(keyword, post.getId(), userId))
-                .toList();
-
-        // 일괄 저장
-        searchContextRepository.saveAll(contexts);
     }
 
     /**
