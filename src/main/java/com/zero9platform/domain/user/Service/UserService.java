@@ -124,13 +124,7 @@ public class UserService {
 
         // 새 이미지가 들어온 경우
         if (profileImage != null && !profileImage.isEmpty()) {
-            try {
-                newProfileImageKey = s3Service.upload(profileImage, S3_FOLDER);
-            } catch (Exception e) {
-                s3Service.uploadToTemp(profileImage);
-
-                throw e;
-            }
+            newProfileImageKey = s3Service.upload(profileImage, S3_FOLDER);
         }
 
         // 사용자 정보 수정

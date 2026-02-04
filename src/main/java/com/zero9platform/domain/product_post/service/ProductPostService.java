@@ -59,17 +59,9 @@ public class ProductPostService {
         validProductPostSaleDate(request.getStartDate(), request.getEndDate());
 
         // 이미지 파일 업로드 S3 서비스 호출
-        String contentImage = "";
         String contentImageKey = null;
         if (file != null && !file.isEmpty()) {
-            try {
-                contentImageKey = s3Service.upload(file, S3_FOLDER);
-            } catch (Exception e) {
-                // 실패 시 temp 업로드
-                s3Service.uploadToTemp(file);
-
-                throw e;
-            }
+            contentImageKey = s3Service.upload(file, S3_FOLDER);
         }
 
         // 상품판매 게시물 생성
@@ -136,13 +128,7 @@ public class ProductPostService {
         String oldImageKey = productPost.getImage();
 
         if (file != null && !file.isEmpty()) {
-            try {
-                newImageKey = s3Service.upload(file, S3_FOLDER);
-            } catch (Exception e) {
-                s3Service.uploadToTemp(file);
-
-                throw e;
-            }
+            newImageKey = s3Service.upload(file, S3_FOLDER);
         }
 
         String category = request.getCategory() != null ? request.getCategory().name() : null;

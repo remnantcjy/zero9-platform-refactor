@@ -71,14 +71,7 @@ public class GroupPurchasePostService {
         // 4. 이미지 파일 업로드 S3 서비스 호출
         String contentImage = "";
         if (file != null && !file.isEmpty()) {
-            try {
-                contentImage = s3Service.upload(file, S3_FOLDER);
-            } catch (Exception e) {
-                // 실패 시 temp 업로드
-                s3Service.uploadToTemp(file);
-
-                throw e;
-            }
+            contentImage = s3Service.upload(file, S3_FOLDER);
         }
 
         // 5. Entity 생성
@@ -169,13 +162,7 @@ public class GroupPurchasePostService {
         String newImageKey = null;
 
         if (file != null && !file.isEmpty()) {
-            try {
-                newImageKey = s3Service.upload(file, S3_FOLDER);
-            } catch (Exception e) {
-                s3Service.uploadToTemp(file);
-
-                throw e;
-            }
+            newImageKey = s3Service.upload(file, S3_FOLDER);
         }
 
         // 5. Enum 변환 - 카테고리, 진행상태
