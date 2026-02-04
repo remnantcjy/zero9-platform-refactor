@@ -1,21 +1,19 @@
 package com.zero9platform.domain.searchLog.service;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
+import com.zero9platform.domain.ranking.service.RankingCounter;
 import com.zero9platform.domain.searchLog.entity.SearchContext;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
-import com.zero9platform.domain.searchLog.model.SearchLogListResponse;
 import com.zero9platform.domain.searchLog.repository.SearchContextRepository;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +29,8 @@ public class SearchLogService {
     private final SearchContextRepository searchContextRepository;
     private final ProductPostRepository productPostRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
+    private final RankingCounter rankingCounter;
+
 
     /**
      * 통합 검색 API
@@ -41,6 +41,10 @@ public class SearchLogService {
 
         // 검색 조건 검증 (허용되지 않은 조건 차단)
         validateSearchCondition(searchCondition);
+
+        if (keyword != null && !keyword.isBlank()) {
+            rankingCounter.increaseKeyword(keyword);
+        }
 
         // 통합 검색 category(product_title, product_name, influencer), 없으면 셋 다 포함하여 검색
         Page<ProductPost> searchResult = productPostRepository.searchByKeyword(keyword, searchCondition, pageable);

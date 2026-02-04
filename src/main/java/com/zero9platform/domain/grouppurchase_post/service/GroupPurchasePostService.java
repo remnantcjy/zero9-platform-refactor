@@ -4,6 +4,7 @@ import com.zero9platform.common.aws.s3.S3Service;
 import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.GppProgressStatus;
+import com.zero9platform.common.enums.RankingPeriod;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostCreateRequest;
@@ -11,6 +12,7 @@ import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePo
 import com.zero9platform.domain.grouppurchase_post.model.response.GroupPurchasePostDetailResponse;
 import com.zero9platform.domain.grouppurchase_post.model.response.GroupPurchasePostListResponse;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
+import com.zero9platform.domain.ranking.service.RankingCounter;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,8 @@ public class GroupPurchasePostService {
     private final UserRepository userRepository;
     private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
     private final S3Service s3Service;
+    private final RankingCounter rankingCounter;
+
 
     /**
      * 공동구매 게시물 작성

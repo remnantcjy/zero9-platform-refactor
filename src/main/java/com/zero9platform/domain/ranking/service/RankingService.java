@@ -1,216 +1,212 @@
 package com.zero9platform.domain.ranking.service;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.zero9platform.common.enums.ExceptionCode;
-import com.zero9platform.common.enums.ProgressStatus;
-import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.domain.auth.model.AuthUser;
-import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
-import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
-import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.common.enums.RankingPeriod;
-import com.zero9platform.domain.ranking.model.response.*;
-import com.zero9platform.domain.ranking.policy.RankingPeriodPolicy;
-import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
+import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.domain.product_post.entity.ProductPost;
+import com.zero9platform.domain.product_post.repository.ProductPostRepository;
+import com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingListResponse;
+import com.zero9platform.domain.ranking.model.response.SearchLogRankingListResponse;
+import com.zero9platform.domain.ranking.repository.FavoriteRankingSnapshotRepository;
+import com.zero9platform.domain.ranking.repository.KeywordRankingSnapshotRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class RankingService {
 
-    private final GroupPurchasePostRepository groupPurchasePostRepository;
-    private final SearchLogRepository searchLogRepository;
-    private final ProductPostFavoriteRepository productPostFavoriteRepository;
+    private final RankingCounter rankingCounter;
+    private final ProductPostRepository productPostRepository;
+    private final FavoriteRankingSnapshotRepository favoriteSnapshotRepository;
+    private final KeywordRankingSnapshotRepository keywordSnapshotRepository;
+//    private final GroupPurchasePostRepository groupPurchasePostRepository;
+//    private final SearchLogRepository searchLogRepository;
 
     /**
-     * 랭킹 전용 캐시 영역
-     */
-    private final Cache<String, Object> realtimeRankingCache;   // 실시간 랭킹 캐시 (TTL 1분)
-    private final Cache<String, Object> dailyRankingCache;      // 일간 랭킹 캐시 (TTL 30분)
-    private final Cache<String, Object> weeklyRankingCache;     // 주간 랭킹 캐시 (TTL 2시간)
-    private final Cache<String, Object> monthlyRankingCache;    // 월간 랭킹 캐시 (TTL 12시간)
-
-    /**
-     * 기간별 캐시 선택 로직
-     */
-    private Cache<String, Object> selectCache(RankingPeriod period) {
-        return switch (period) {
-            case REALTIME -> realtimeRankingCache;
-            case DAILY -> dailyRankingCache;
-            case WEEKLY -> weeklyRankingCache;
-            case MONTHLY -> monthlyRankingCache;
-        };
-    }
-
-    /**
-     * 공동구매 게시물 랭킹 (조회수 기준)
+     * 인기 검색어 랭킹 조회
      */
     @Transactional(readOnly = true)
-    public List<GroupPurchasePostRankingListResponse> groupPurchasePostRanking(RankingPeriod period) {
+    public List<SearchLogRankingListResponse> searchKeywordRanking(RankingPeriod period) {
 
-        // 기본값
-        if (period == null) {period = RankingPeriod.REALTIME;}
-
-        LocalDateTime[] range = RankingPeriodPolicy.resolve(period, null, null);
-
-        // 캐시 키
-        String cacheKey = "RANKING:GPP:" + period.name();
-
-        Cache<String, Object> cache = selectCache(period);
-
-        // 캐시조회
-        @SuppressWarnings("unchecked")
-        List<GroupPurchasePostRankingListResponse> cached = (List<GroupPurchasePostRankingListResponse>) cache.getIfPresent(cacheKey);
-        if (cached != null && !cached.isEmpty()) {return cached;}
-
-        // 조회수 기준 상위 10개 게시물 조회
-        List<GroupPurchasePost> posts = groupPurchasePostRepository.findTopByViewCountBetween(range[0], range[1], ProgressStatus.DOING.name(), PageRequest.of(0, 10));
-
-        // 랭킹 순위를 응답 시점에 부여하기 위한 카운터
+        RankingPeriod resolved = resolvePeriod(period);
+        validatePeriod(resolved);
         AtomicInteger rank = new AtomicInteger(1);
 
-        // 집계 결과를 랭킹 응답 DTO로 변환
-        List<GroupPurchasePostRankingListResponse> responses =
-                posts.stream()
-                .map(p -> GroupPurchasePostRankingListResponse.from(
-                                rank.getAndIncrement(),
-                                p.getId(),
-                                p.getProductName(),
-                                p.getViewCount()
-                        ))
+        // REALTIME → 캐시
+        if (resolved == RankingPeriod.REALTIME) {
+            return rankingCounter.searchCounters(RankingPeriod.REALTIME)
+                    .entrySet()
+                    .stream()
+                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                    .limit(10)
+                    .map(e -> SearchLogRankingListResponse.of(
+                            rank.getAndIncrement(),
+                            rankingCounter.extractKeyword(e.getKey()),
+                            e.getValue()
+                    ))
+                    .toList();
+        }
+
+
+        // DAILY / WEEKLY / MONTHLY → DB
+        var snapshots = keywordSnapshotRepository.findByPeriodOrderByCountDesc(resolved, PageRequest.of(0, 10));
+        if (snapshots == null || snapshots.isEmpty()) {
+            return List.of();
+        }
+        return snapshots.stream()
+                .map(s -> SearchLogRankingListResponse.of(
+                        rank.getAndIncrement(),
+                        s.getKeyword(),
+                        s.getKeywordCount()
+                ))
                 .toList();
-
-        // 조회 결과를 캐시에 저장
-        cache.put(cacheKey, responses);
-        return responses;
     }
 
     /**
-     * 인기 검색어 랭킹 (키워드)
+     * 공동구매 상품 게시물 랭킹 조회(찜)
      */
     @Transactional(readOnly = true)
-    public List<SearchLogRankingListResponse> searchLogKeywordRanking(RankingPeriod period) {
+    public List<ProductPostFavoriteRankingListResponse> favoriteRanking(RankingPeriod period) {
 
-        // 기본값
-        if (period == null) {period = RankingPeriod.REALTIME;}
-
-        // period 공백 검증
-        LocalDateTime[] range = RankingPeriodPolicy.resolve(period, null, null);
-
-        // 캐시 키
-        String cacheKey = "RANKING:SEARCH:" + period.name();
-
-        Cache<String, Object> cache = selectCache(period);
-
-        // 캐시 조회
-        @SuppressWarnings("unchecked")
-        List<SearchLogRankingListResponse> cached = (List<SearchLogRankingListResponse>) cache.getIfPresent(cacheKey);
-        if (cached != null && !cached.isEmpty()) {return cached;}
-
-        // 검색 횟수 기준 상위 10개 키워드 조회
-        List<SearchLogRankingAggregateResponse> searchLogs = searchLogRepository.findTopKeywordsBetween(range[0], range[1], PageRequest.of(0, 10));
-
+        RankingPeriod resolved = resolvePeriod(period);
+        validatePeriod(resolved);
         AtomicInteger rank = new AtomicInteger(1);
-        List<SearchLogRankingListResponse> result =
-                searchLogs.stream()
-                .map(l -> SearchLogRankingListResponse.from(
+
+        // REALTIME → 캐시
+        if (resolved == RankingPeriod.REALTIME) {
+            return rankingCounter.favoriteCounters(RankingPeriod.REALTIME)
+                    .entrySet()
+                    .stream()
+                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                    .limit(10)
+                    .map(e -> {
+                        Long productPostId = rankingCounter.extractProductPostId(e.getKey());
+                        ProductPost post = productPostRepository.findById(productPostId)
+                                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+
+                        return ProductPostFavoriteRankingListResponse.of(
                                 rank.getAndIncrement(),
-                                l.getKeyword(),
-                                l.getCount()
-                        ))
-                .toList();
+                                post.getId(),
+                                post.getTitle(),
+                                e.getValue()
+                        );
+                    })
+                    .toList();
+        }
 
-        // 조회 결과를 캐시에 저장
-        cache.put(cacheKey, result);
-        return result;
+        // DAILY / WEEKLY / MONTHLY → DB
+        var snapshots = favoriteSnapshotRepository.findByPeriodOrderByFavoriteCountDesc(resolved, PageRequest.of(0, 10));
+        if (snapshots == null || snapshots.isEmpty()) {
+            return List.of();
+        }
+        return snapshots.stream()
+                .map(s -> {
+                    ProductPost post = productPostRepository.findById(s.getProductPostId())
+                            .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+
+                    return ProductPostFavoriteRankingListResponse.of(
+                            rank.getAndIncrement(),
+                            post.getId(),
+                            post.getTitle(),
+                            s.getFavoriteCount()
+                    );
+                })
+                .toList();
+    }
+
+
+    /**
+     * period 공통 처리(null일 경우 REALTIME으로 보정)
+     */
+    private RankingPeriod resolvePeriod(RankingPeriod period) {
+        return (period == null) ? RankingPeriod.REALTIME : period;
     }
 
     /**
-     * 실시간 공동구매 상품 게시물 랭킹(찜)
+     * 랭킹 조회시 허용된 기간만 처리
      */
-    @Transactional(readOnly = true)
-    public List<ProductPostFavoriteRankingListResponse> loadRealtimeFavoriteRanking(RankingPeriod period) {
-
-        // 기본값
-        if (period == null) {period = RankingPeriod.REALTIME;}
-
-        // period 공백 검증
-        LocalDateTime[] range = RankingPeriodPolicy.resolve(period, null, null);
-
-        // 캐시 키
-        String cacheKey = "RANKING:PRODUCT:FAVORITE:" + period.name();
-
-        Cache<String, Object> cache = selectCache(period);
-
-        // 캐시 조회
-        @SuppressWarnings("unchecked")
-        List<ProductPostFavoriteRankingListResponse> cached = (List<ProductPostFavoriteRankingListResponse>) cache.getIfPresent(cacheKey);
-        if (cached != null && !cached.isEmpty()) return cached;
-
-        // 캐시 miss 시 DB에서 실시간 집계 조회
-        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTopByFavoriteBetween(range[0], range[1], ProgressStatus.DOING.name(), PageRequest.of(0, 10));
-
-        // 랭킹 순위를 응답 시점에 부여하기 위한 카운터
-        AtomicInteger rank = new AtomicInteger(1);
-        List<ProductPostFavoriteRankingListResponse> result =
-                favorite.stream()
-                        .map(a -> ProductPostFavoriteRankingListResponse.from(
-                                        rank.getAndIncrement(),
-                                        a.getProductPostId(),
-                                        a.getTitle(),
-                                        a.getFavoriteCount()
-                                ))
-                        .toList();
-
-        // 조회 결과를 캐시에 저장
-        cache.put(cacheKey, result);
-        return result;
+    private void validatePeriod(RankingPeriod period) {
+        if (period != RankingPeriod.REALTIME &&
+                period != RankingPeriod.DAILY &&
+                period != RankingPeriod.WEEKLY &&
+                period != RankingPeriod.MONTHLY) {
+            throw new CustomException(ExceptionCode.INVALID_PERIOD);
+        }
     }
 
-    /**
-     * 기간별 상품 찜 랭킹 (관리자용)
-     * period: DAILY / WEEKLY / MONTHLY
-     */
-    @Transactional(readOnly = true)
-    public List<ProductPostFavoriteRankingListResponse> loadPeriodFavoriteRanking(AuthUser authUser, RankingPeriod period, LocalDate from, LocalDate to) {
-
-        // 관리자 권한 검증
-        if (!"ADMIN".equals(authUser.getUserRole().name())) {throw new CustomException(ExceptionCode.NO_PERMISSION);}
-
-        // period 공백 검증
-        if (period == null || period.name().isBlank()) {period = RankingPeriod.REALTIME;}
-
-        // 기간 랭킹 허용 값 검증
-        if (period != RankingPeriod.REALTIME && period != RankingPeriod.DAILY && period != RankingPeriod.WEEKLY && period != RankingPeriod.MONTHLY) {throw new CustomException(ExceptionCode.INVALID_PERIOD);}
-
-        // 날짜 검증
-        if (from != null && to != null && from.isAfter(to)) {throw new CustomException(ExceptionCode.INVALID_DATE_RANGE);}
-
-        // period 공백 검증
-        LocalDateTime[] range = RankingPeriodPolicy.resolve(period, from, to);
-
-        // 기간 내 찜 기준 랭킹 집계
-        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTopByFavoriteBetween(range[0], range[1], ProgressStatus.DOING.name(), PageRequest.of(0, 10));
-
-        AtomicInteger rank = new AtomicInteger(1);
-        List<ProductPostFavoriteRankingListResponse> result = favorite.stream()
-                .map(a ->
-                        ProductPostFavoriteRankingListResponse.from(
-                                rank.getAndIncrement(),
-                                a.getProductPostId(),
-                                a.getTitle(),
-                                a.getFavoriteCount()
-                        ))
-                .toList();
-
-        return result;
-    }
+//    /**
+//     * 공동구매 조회수 랭킹
+//     */
+//    @Transactional(readOnly = true)
+//    public List<GroupPurchasePostRankingListResponse> groupPurchasePostRanking(RankingPeriod period) {
+//        RankingPeriod resolved = resolvePeriod(period);
+//        Map<String, Long> counters = rankingCounter.getAll(resolved);
+//        AtomicInteger rank = new AtomicInteger(1);
+//
+//        return counters.entrySet().stream()
+//                .filter(e -> e.getKey().startsWith(viewPrefix(resolved)))
+//                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+//                .limit(10)
+//                .map(e -> {
+//                    Long gppId = extractLastId(e.getKey());
+//                    GroupPurchasePost gpp = groupPurchasePostRepository
+//                            .findByIdAndDeletedAtIsNull(gppId)
+//                            .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+//
+//                    return GroupPurchasePostRankingListResponse.of(
+//                            rank.getAndIncrement(),
+//                            gpp.getId(),
+//                            gpp.getProductName(),
+//                            e.getValue()
+//                    );
+//                })
+//                .toList();
+//    }
+//
+//    /**
+//     * 기간별 상품 찜 랭킹 (관리자용)
+//     * period: DAILY / WEEKLY / MONTHLY
+//     */
+//    @Transactional(readOnly = true)
+//    public List<ProductPostFavoriteRankingListResponse> loadPeriodFavoriteRanking(AuthUser authUser, RankingPeriod period, LocalDate from, LocalDate to) {
+//
+//        // 관리자 권한 검증
+//        if (!"ADMIN".equals(authUser.getUserRole().name())) {throw new CustomException(ExceptionCode.NO_PERMISSION);}
+//
+//        // period 공백 검증
+//        if (period == null || period.name().isBlank()) {period = RankingPeriod.REALTIME;}
+//
+//        // 기간 랭킹 허용 값 검증
+//        if (period != RankingPeriod.REALTIME && period != RankingPeriod.DAILY && period != RankingPeriod.WEEKLY && period != RankingPeriod.MONTHLY) {throw new CustomException(ExceptionCode.INVALID_PERIOD);}
+//
+//        // 날짜 검증
+//        if (from != null && to != null && from.isAfter(to)) {throw new CustomException(ExceptionCode.INVALID_DATE_RANGE);}
+//
+//        // period 공백 검증
+//        LocalDateTime[] range = RankingPeriodPolicy.resolve(period, from, to);
+//
+//        // 기간 내 찜 기준 랭킹 집계
+//        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTopByFavoriteBetween(range[0], range[1], ProgressStatus.DOING.name(), PageRequest.of(0, 10));
+//
+//        AtomicInteger rank = new AtomicInteger(1);
+//        List<ProductPostFavoriteRankingListResponse> result = favorite.stream()
+//                .map(a ->
+//                        ProductPostFavoriteRankingListResponse.from(
+//                                rank.getAndIncrement(),
+//                                a.getProductPostId(),
+//                                a.getTitle(),
+//                                a.getFavoriteCount()
+//                        ))
+//                .toList();
+//
+//        return result;
+//    }
 }

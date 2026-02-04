@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "product_posts_favorites")
+@Table(name = "product_posts_favorites", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id"})})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductPostFavorite {
 

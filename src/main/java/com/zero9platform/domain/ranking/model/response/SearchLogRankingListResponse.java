@@ -11,8 +11,7 @@ public class SearchLogRankingListResponse {
     private final String keyword;
     private final Long count;
 
-    public static SearchLogRankingListResponse from(int rank, String keyword, Long count) {
+    public static SearchLogRankingListResponse of(int rank, String keyword, Long count) {
         return new SearchLogRankingListResponse(rank, keyword, count);
-
     }
 }

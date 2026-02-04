@@ -61,15 +61,4 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
 //      and g.endDate <= :now
 //""")
 //    int updateDoingToEnd(@Param("now") LocalDateTime now);
-
-    // ViewCount 랭킹 조회
-    @Query("""
-                SELECT g
-                FROM GroupPurchasePost g
-                WHERE g.gppProgressStatus = :status
-                  AND g.createdAt BETWEEN :from AND :to
-                  AND g.deletedAt IS NULL
-                ORDER BY g.viewCount DESC
-            """)
-    List<GroupPurchasePost> findTopByViewCountBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to, @Param("status") String status, Pageable pageable);
 }
