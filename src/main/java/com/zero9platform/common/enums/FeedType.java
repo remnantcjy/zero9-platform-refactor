@@ -11,7 +11,7 @@ public enum FeedType {
     PAYMENT("[%s] 상품의 새로운 주문이 접수되었습니다.", true),    // 결제
     DEADLINE("마감 안내: [%s] 상품의 마감이 곧 종료됩니다.", false),   // 마감
     LOW_STOCK("[%s] 상품의 잔여 재고가 얼마 남지 않았습니다.", false),  // 재고
-    SOON("[%s] 상품이 곧 공개될 예정입니다.", false),    // 예정
+    SOON("[%s] 상품이 곧 오픈 예정입니다.", false),    // 예정
     SOLD_OUT("[%s] 상품이 재고 소진으로 인하여 판매 종료되었습니다.", false), // 품절
     NOTICE("[공지] [%s]", false),     // 공지사항 (전체 공지)
     EVENT("[이벤트] [%s]", false)       // 이벤트 (프로모션, 할인 등)
