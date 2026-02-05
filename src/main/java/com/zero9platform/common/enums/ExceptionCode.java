@@ -76,6 +76,7 @@ public enum ExceptionCode {
     PERIOD_REQUIRED(HttpStatus.BAD_REQUEST, "기간(period)은 필수 값입니다."),
     INVALID_DATE_FORMAT(HttpStatus.BAD_REQUEST, "날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)"),
     INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "조회 시작일은 종료일보다 이후일 수 없습니다."),
+    NOT_FOUND_RANKING_LIST(HttpStatus.NOT_FOUND, "랭킹리스트가 없습니다."),
 
     // GppComment - 404 NOT FOUND
     GPP_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물 댓글을 찾을 수 없습니다."),

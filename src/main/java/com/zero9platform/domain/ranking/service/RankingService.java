@@ -15,18 +15,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class RankingService {
 
-    private final RankingCounter rankingCounter;
+    private final RedisRankingCounter redisRankingCounter;
     private final ProductPostRepository productPostRepository;
     private final FavoriteRankingSnapshotRepository favoriteSnapshotRepository;
-    private final KeywordRankingSnapshotRepository keywordSnapshotRepository;
+    private final KeywordRankingSnapshotRepository keywordRankingSnapshotRepository;
 //    private final GroupPurchasePostRepository groupPurchasePostRepository;
 //    private final SearchLogRepository searchLogRepository;
 
@@ -36,38 +36,35 @@ public class RankingService {
     @Transactional(readOnly = true)
     public List<SearchLogRankingListResponse> searchKeywordRanking(RankingPeriod period) {
 
-        RankingPeriod resolved = resolvePeriod(period);
-        validatePeriod(resolved);
-        AtomicInteger rank = new AtomicInteger(1);
+        // period 기간 검증
+        periodValid(period);
 
-        // REALTIME → 캐시
-        if (resolved == RankingPeriod.REALTIME) {
-            return rankingCounter.searchCounters(RankingPeriod.REALTIME)
-                    .entrySet()
-                    .stream()
-                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                    .limit(10)
-                    .map(e -> SearchLogRankingListResponse.of(
+        //npe 검증
+        RankingPeriod resolved = (period == null) ? RankingPeriod.REALTIME : period;
+
+        AtomicInteger rank = new AtomicInteger(1);
+        List<SearchLogRankingListResponse> search = List.of();
+
+        // 현재 진행 중인 데이터 (REALTIME, DAILY) -> Redis 조회
+        if (resolved == RankingPeriod.REALTIME || resolved == RankingPeriod.DAILY) {
+            search = redisRankingCounter.topRankings("SEARCH", resolved, 10).stream()
+                    .map(tuple -> SearchLogRankingListResponse.of(
                             rank.getAndIncrement(),
-                            rankingCounter.extractKeyword(e.getKey()),
-                            e.getValue()
-                    ))
+                            tuple.getValue(),
+                            tuple.getScore().longValue()))
                     .toList();
         }
-
-
         // DAILY / WEEKLY / MONTHLY → DB
-        var snapshots = keywordSnapshotRepository.findByPeriodOrderByKeywordCountDesc(resolved, PageRequest.of(0, 10));
-        if (snapshots == null || snapshots.isEmpty()) {
-            return List.of();
+        if (search.isEmpty()) {
+            return keywordRankingSnapshotRepository.findByPeriodOrderByKeywordCountDesc(resolved, PageRequest.of(0, 10))
+                    .stream()
+                    .map(s -> SearchLogRankingListResponse.of(
+                            rank.getAndIncrement(),
+                            s.getKeyword(),
+                            s.getKeywordCount()))
+                    .toList();
         }
-        return snapshots.stream()
-                .map(s -> SearchLogRankingListResponse.of(
-                        rank.getAndIncrement(),
-                        s.getKeyword(),
-                        s.getKeywordCount()
-                ))
-                .toList();
+        return search;
     }
 
     /**
@@ -76,65 +73,60 @@ public class RankingService {
     @Transactional(readOnly = true)
     public List<ProductPostFavoriteRankingListResponse> favoriteRanking(RankingPeriod period) {
 
-        RankingPeriod resolved = resolvePeriod(period);
-        validatePeriod(resolved);
+        // period 기간 검증
+        periodValid(period);
+
+        //npe 검증
+        RankingPeriod resolved = (period == null) ? RankingPeriod.REALTIME : period;
+
         AtomicInteger rank = new AtomicInteger(1);
+        List<ProductPostFavoriteRankingListResponse> favorite = List.of();
 
         // REALTIME → 캐시
-        if (resolved == RankingPeriod.REALTIME) {
-            return rankingCounter.favoriteCounters(RankingPeriod.REALTIME)
-                    .entrySet()
-                    .stream()
-                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                    .limit(10)
-                    .map(e -> {
-                        Long productPostId = rankingCounter.extractProductPostId(e.getKey());
-                        ProductPost post = productPostRepository.findById(productPostId)
-                                .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
+        if (resolved == RankingPeriod.REALTIME || resolved == RankingPeriod.DAILY) {
+            favorite = redisRankingCounter.topRankings("FAVORITE", resolved, 10).stream()
+                    .map(tuple -> {
+                        Long productId = Long.parseLong(tuple.getValue());
+                        // 게시물이 삭제되었어도 랭킹 리스트는 유지되도록 예외 대신 null 처리 후 분기
+                        String title = productPostRepository.findById(productId)
+                                .map(ProductPost::getTitle)
+                                .orElse("삭제된 게시물");
 
                         return ProductPostFavoriteRankingListResponse.of(
                                 rank.getAndIncrement(),
-                                post.getId(),
-                                post.getTitle(),
-                                e.getValue()
-                        );
+                                productId,
+                                title,
+                                tuple.getScore().longValue());
                     })
                     .toList();
         }
 
         // DAILY / WEEKLY / MONTHLY → DB
-        var snapshots = favoriteSnapshotRepository.findByPeriodOrderByFavoriteCountDesc(resolved, PageRequest.of(0, 10));
-        if (snapshots == null || snapshots.isEmpty()) {
-            return List.of();
+        if (favorite.isEmpty()) {
+            return favoriteSnapshotRepository.findByPeriodOrderByFavoriteCountDesc(resolved, PageRequest.of(0, 10))
+                    .stream()
+                    .map(s -> {
+                        // 게시물이 삭제되었어도 랭킹 리스트는 유지되도록 예외 대신 null 처리 후 분기
+                        String title = productPostRepository.findById(s.getProductPostId())
+                                .map(ProductPost::getTitle)
+                                .orElse("삭제된 게시물");
+
+                        return ProductPostFavoriteRankingListResponse.of(
+                                rank.getAndIncrement(),
+                                s.getProductPostId(),
+                                title,
+                                s.getFavoriteCount());
+                    })
+                    .toList();
         }
-        return snapshots.stream()
-                .map(s -> {
-                    ProductPost post = productPostRepository.findById(s.getProductPostId())
-                            .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
-
-                    return ProductPostFavoriteRankingListResponse.of(
-                            rank.getAndIncrement(),
-                            post.getId(),
-                            post.getTitle(),
-                            s.getFavoriteCount()
-                    );
-                })
-                .toList();
-    }
-
-
-    /**
-     * period 공통 처리(null일 경우 REALTIME으로 보정)
-     */
-    private RankingPeriod resolvePeriod(RankingPeriod period) {
-        return (period == null) ? RankingPeriod.REALTIME : period;
+        return favorite;
     }
 
     /**
      * 랭킹 조회시 허용된 기간만 처리
      */
-    private void validatePeriod(RankingPeriod period) {
-        if (period != RankingPeriod.REALTIME &&
+    private void periodValid(RankingPeriod period) {
+        if (period != null && period != RankingPeriod.REALTIME &&
                 period != RankingPeriod.DAILY &&
                 period != RankingPeriod.WEEKLY &&
                 period != RankingPeriod.MONTHLY) {

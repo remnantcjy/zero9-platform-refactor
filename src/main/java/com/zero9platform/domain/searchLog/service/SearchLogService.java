@@ -6,7 +6,7 @@ import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
-import com.zero9platform.domain.ranking.service.RankingCounter;
+import com.zero9platform.domain.ranking.service.RedisRankingCounter;
 import com.zero9platform.domain.searchLog.entity.SearchLog;
 import com.zero9platform.domain.searchLog.model.SearchLogItemResponse;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
@@ -26,7 +26,7 @@ public class SearchLogService {
     private final SearchLogRepository searchLogRepository;
     private final ProductPostRepository productPostRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
-    private final RankingCounter rankingCounter;
+    private final RedisRankingCounter redisRankingCounter;
 
 
     /**
@@ -40,7 +40,7 @@ public class SearchLogService {
         validateSearchCondition(searchCondition);
 
         if (keyword != null && !keyword.isBlank()) {
-            rankingCounter.increaseKeyword(keyword);
+            redisRankingCounter.increaseKeyword(keyword);
         }
 
         // 통합 검색 category(product_title, product_name, influencer), 없으면 셋 다 포함하여 검색
