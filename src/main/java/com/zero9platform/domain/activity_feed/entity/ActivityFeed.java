@@ -8,7 +8,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "activity_feed")
+@Table(name = "activity_feed",
+        indexes = {
+        @Index(name = "idx_activity_feed_target_id", columnList = "target_id")
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ActivityFeed extends BaseEntity {
 
