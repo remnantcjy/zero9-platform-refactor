@@ -23,7 +23,7 @@ public class FavoriteRankingSnapshot {
 
     // 랭킹 기준 기간
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "period", nullable = false)
     private RankingPeriod period;
 
     // 집계된 찜 개수 (캐시 스냅샷 값)
