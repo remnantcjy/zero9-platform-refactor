@@ -42,7 +42,7 @@ public class ActivityFeedService {
             }
         }
 
-        // 2. 집계형이 아니거나 기존 데이터가 없으면 신규 생성
+        // 집계형이 아니거나 기존 데이터가 없으면 신규 생성
         String message = type.toMessage(combineArgs(title, args));
         ActivityFeed feed = new ActivityFeed(type.name(), message, targetId, null);
         feedRepository.save(feed);
