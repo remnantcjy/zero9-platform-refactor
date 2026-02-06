@@ -54,8 +54,8 @@ public class RankingFlushScheduler {
 
     private void processFlush(RankingPeriod period, LocalDateTime targetTime) {
 
-        String favoriteKey = redisRankingCounter.getNowKey("FAVORITE", period);
-        String searchKey = redisRankingCounter.getNowKey("SEARCH", period);
+        String favoriteKey = redisRankingCounter.generateKey("FAVORITE", period, targetTime);
+        String searchKey = redisRankingCounter.generateKey("SEARCH", period, targetTime);
 
         // 상품 찜 랭킹 스냅샷 저장
         redisRankingCounter.getRankingsBySpecificKey(favoriteKey).forEach(tuple -> {
@@ -75,6 +75,7 @@ public class RankingFlushScheduler {
                     tuple.getScore().longValue()));
         });
         redisRankingCounter.deleteKey(searchKey);
+
 
         log.info("[RANKING-FLUSH] {} data for {} has been moved to DB and deleted from Redis", period, targetTime);
 
