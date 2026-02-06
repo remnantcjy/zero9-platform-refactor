@@ -4,7 +4,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.zero9platform.common.aws.s3.S3Service;
 import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.ExceptionCode;
-import com.zero9platform.common.enums.GppProgressStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostCreateRequest;
@@ -31,7 +30,8 @@ public class GroupPurchasePostService {
 
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final UserRepository userRepository;
-    private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
+//    private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
+    private final GroupPurchasePostViewCountRedisService groupPurchasePostViewCountRedisService;
     private final S3Service s3Service;
     private final AmazonS3 amazonS3;
 
@@ -123,8 +123,10 @@ public class GroupPurchasePostService {
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
 
-        // 2. 조회수 증가 (아직 동시성 문제 고려 안했음, 추후 고민할 것)
-        groupPurchasePostViewCountService.increaseViewCount(gppId);
+        // 2. 조회수 증가 V1 (아직 트래픽 문제 고려 안했음, 추후 고민할 것)
+//        groupPurchasePostViewCountService.increaseViewCount(gppId);
+        // 2. 조회수 증가 V2 (Redis)
+        groupPurchasePostViewCountRedisService.increaseViewCountRedis(gppId);
 
         String imgUrl = gpp.getImage() != null ? amazonS3.getUrl(bucket, gpp.getImage()).toString() : null;
 
