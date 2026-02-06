@@ -8,11 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ActivityFeedRepository extends JpaRepository<ActivityFeed, Long> {
-
-    // 동일한 건으로 피드 생성 방지 (중복방지)
-    boolean existsByTypeAndTargetId(String type, Long targetId);
+    // 타입과 대상 ID로 가장 최근 피드 1건 조회
+    Optional<ActivityFeed> findFirstByTypeAndTargetIdOrderByCreatedAtDesc(String type, Long targetId);
 
     // 피드 개인화
     // 내 피드 조회

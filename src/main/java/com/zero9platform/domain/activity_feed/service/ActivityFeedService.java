@@ -6,6 +6,7 @@ import com.zero9platform.domain.activity_feed.model.response.ActivityFeedRespons
 import com.zero9platform.domain.activity_feed.repository.ActivityFeedRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,33 +14,51 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ActivityFeedService {
 
     private final ActivityFeedRepository feedRepository;
     private final ProductPostFavoriteRepository favoriteRepository;
 
     /**
-     * 피드 생성
+     * 통합 피드 처리 로직 (Upsert)
      */
     @Transactional
-    public void feedCreate(FeedType type, Long targetId, String title) {
+    public void upsertFeed(FeedType type, Long targetId, String title, Object... args) {
 
-        // 중복이 불가능한 타입인데 이미 존재할 경우 패스
-        if (!type.isRepeatable() && targetId != null) {
-            if (feedRepository.existsByTypeAndTargetId(type.name(), targetId)) {
+        // 집계형(isAggregation=true)인 경우 기존 피드 존재 여부 확인
+        if (type.isAggregation()) {
+            Optional<ActivityFeed> existingFeed = feedRepository.findFirstByTypeAndTargetIdOrderByCreatedAtDesc(type.name(), targetId);
+
+            if (existingFeed.isPresent()) {
+                // 기존 피드가 있으면 메시지만 갱신 (Dirty Checking)
+                ActivityFeed feed = existingFeed.get();
+                feed.updateMessage(type.toMessage(combineArgs(title, args)));
                 return;
             }
         }
-        // 존재하지않거나 반복가능한 타입일 경우
-        // enum 내부 메소드호출 - 피드 내용(메시지) 위임
-        String message = type.toMessage(title);
 
-        // 유저id 필드 null이면 전체피드 (현재 개인별 X)
+        // 2. 집계형이 아니거나 기존 데이터가 없으면 신규 생성
+        String message = type.toMessage(combineArgs(title, args));
         ActivityFeed feed = new ActivityFeed(type.name(), message, targetId, null);
         feedRepository.save(feed);
+    }
+
+    /**
+     * 타이틀과 가변 인자를 하나의 배열로 합치는 헬퍼 메소드
+     */
+    private Object[] combineArgs(String title, Object... args) {
+        if (args == null || args.length == 0) {
+            return new Object[]{title};
+        }
+        Object[] combined = new Object[args.length + 1];
+        combined[0] = title;
+        System.arraycopy(args, 0, combined, 1, args.length);
+        return combined;
     }
 
     /**

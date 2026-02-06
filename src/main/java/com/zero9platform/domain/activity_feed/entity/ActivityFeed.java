@@ -40,4 +40,8 @@ public class ActivityFeed extends BaseEntity {
         this.targetId = targetId;
         this.userId = userId;
     }
+
+    public void updateMessage(String newMessage) {
+        this.message = newMessage;
+    }
 }
