@@ -4,7 +4,6 @@ import com.zero9platform.common.entity.BaseEntity;
 import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.ProgressStatus;
-//import com.zero9platform.common.enums.DisplayStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.user.entity.User;
@@ -58,9 +57,6 @@ public class ProductPost extends BaseEntity {
 
     @Column(nullable = false)
     private String progressStatus = ProgressStatus.READY.name();    // 판매 기간 상태
-
-//    @Column(nullable = false)
-//    private String saleStatus = DisplayStatus.ACTIVE.name();    // 판매 가능 상태
 
     @Column(nullable = false)
     private LocalDateTime startDate;

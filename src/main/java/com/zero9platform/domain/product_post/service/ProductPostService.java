@@ -68,9 +68,6 @@ public class ProductPostService {
 
         ProductPost savedProductPost = productPostRepository.save(productPost);
 
-        // 피드 생성 호출
-        //activityFeedService.feedCreate("SOON", savedProductPost.getId(), savedProductPost.getTitle());
-
         return ProductPostCreateResponse.from(savedProductPost);
     }
 
