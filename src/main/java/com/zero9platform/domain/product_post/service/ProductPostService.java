@@ -2,6 +2,7 @@ package com.zero9platform.domain.product_post.service;
 
 import com.zero9platform.common.aws.s3.S3Service;
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.ProgressStatus;
 import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
@@ -56,8 +57,11 @@ public class ProductPostService {
             contentImage = s3Service.upload(file);
         }
 
+        // 현재 시간 생성
+        LocalDateTime now = LocalDateTime.now();
+
         // 상품판매 게시물 생성
-        ProductPost productPost = new ProductPost(user, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImage, request.getCategory().name(), request.getProgressStatus().name(), request.getStartDate(), request.getEndDate());
+        ProductPost productPost = new ProductPost(user, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImage, request.getCategory().name(), request.getStartDate(), request.getEndDate(), now);
 
         // 옵션 생성
         for (ProductPostOptionCreateRequest optionRequest: request.getOptionList()) {
@@ -108,6 +112,11 @@ public class ProductPostService {
         ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
+        // 상품판매 게시물의 상태가 'READY'일 때만 수정 가능
+        if (!productPost.getProgressStatus().equals(ProgressStatus.READY.name())) {
+            throw new CustomException(ExceptionCode.PP_CANNOT_UPDATE_ALREADY_STARTED);
+        }
+
         // 본인만 수정 가능
         validProductPostOwner(user, productPost);
 
@@ -118,9 +127,11 @@ public class ProductPostService {
         }
 
         String category = request.getCategory() != null ? request.getCategory().name() : null;
-        String progressStatus = request.getProgressStatus() != null ? request.getProgressStatus().name() : null;
 
-        productPost.update(category, progressStatus, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImage, request.getStartDate(), request.getEndDate());
+        // 현재 시간 생성
+        LocalDateTime now = LocalDateTime.now();
+
+        productPost.update(category, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImage, request.getStartDate(), request.getEndDate(), now);
 
         return ProductPostUpdateResponse.from(productPost);
     }

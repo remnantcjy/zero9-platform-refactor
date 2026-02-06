@@ -14,7 +14,6 @@ import java.util.List;
 public class ProductPostCreateRequest {
 
     private Category category;
-    private ProgressStatus progressStatus;
     private String title;
     private String name;
     private String content;
