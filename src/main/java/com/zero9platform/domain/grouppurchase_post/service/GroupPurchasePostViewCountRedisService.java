@@ -21,6 +21,18 @@ public class GroupPurchasePostViewCountRedisService {
         redisTemplate.opsForValue().increment(key); // INCR는 Redis atomic (원자성이므로, 동시성을 제어)
     }
 
+    /**
+     * 조회수 조회 (Redis)
+     * - 아직 DB에 반영되지 않은 값(Delta) 읽기
+     */
+    public long getViewCountDelta(Long gppId) {
+        String key = VIEW_COUNT_KEY_PREFIX + gppId;
+        String value = redisTemplate.opsForValue().get(key);
+
+        // Redis에 value가 없으면 0 반환
+        return value != null ? Long.parseLong(value) : 0L;
+    }
+
 //    /**
 //     * 조회수 증가 (중복 조회 방지 ver)
 //     */
