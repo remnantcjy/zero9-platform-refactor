@@ -45,8 +45,8 @@ public class RankingService {
         AtomicInteger rank = new AtomicInteger(1);
         List<SearchLogRankingListResponse> search = List.of();
 
-        // 현재 진행 중인 데이터 (REALTIME, DAILY) -> Redis 조회
-        if (resolved == RankingPeriod.REALTIME || resolved == RankingPeriod.DAILY) {
+        // REALTIME/DAILY/WEEKLY/MONTHLY 모두 Redis 우선 조회
+        if (resolved == RankingPeriod.REALTIME || resolved == RankingPeriod.DAILY || resolved == RankingPeriod.WEEKLY || resolved == RankingPeriod.MONTHLY) {
             search = redisRankingCounter.topRankings("SEARCH", resolved, 10).stream()
                     .map(tuple -> SearchLogRankingListResponse.of(
                             rank.getAndIncrement(),
@@ -54,7 +54,7 @@ public class RankingService {
                             tuple.getScore().longValue()))
                     .toList();
         }
-        // DAILY / WEEKLY / MONTHLY → DB
+        // Redis가 비었으면(=스냅샷 전 단계) DB 스냅샷으로 fallback
         if (search.isEmpty()) {
             return keywordRankingSnapshotRepository.findByPeriodOrderByKeywordCountDesc(resolved, PageRequest.of(0, 10))
                     .stream()
@@ -83,7 +83,7 @@ public class RankingService {
         List<ProductPostFavoriteRankingListResponse> favorite = List.of();
 
         // REALTIME → 캐시
-        if (resolved == RankingPeriod.REALTIME || resolved == RankingPeriod.DAILY) {
+        if (resolved == RankingPeriod.REALTIME || resolved == RankingPeriod.DAILY || resolved == RankingPeriod.WEEKLY || resolved == RankingPeriod.MONTHLY) {
             favorite = redisRankingCounter.topRankings("FAVORITE", resolved, 10).stream()
                     .map(tuple -> {
                         Long productId = Long.parseLong(tuple.getValue());
