@@ -8,5 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FavoriteRankingSnapshotRepository extends JpaRepository<FavoriteRankingSnapshot, Long> {
 
-    Page<FavoriteRankingSnapshot> findByPeriodOrderByFavoriteCountDesc(RankingPeriod period, Pageable pageable);
+    // 상품 찜 랭킹 조회
+    Page<FavoriteRankingSnapshot> findByPeriodAndTargetDateOrderByFavoriteCountDesc(RankingPeriod period, String targetDate, Pageable pageable);
 }

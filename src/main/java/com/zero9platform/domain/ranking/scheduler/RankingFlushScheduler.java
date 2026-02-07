@@ -5,20 +5,24 @@ import com.zero9platform.domain.ranking.entity.FavoriteRankingSnapshot;
 import com.zero9platform.domain.ranking.entity.KeywordRankingSnapshot;
 import com.zero9platform.domain.ranking.repository.FavoriteRankingSnapshotRepository;
 import com.zero9platform.domain.ranking.repository.KeywordRankingSnapshotRepository;
-import com.zero9platform.domain.ranking.service.RedisRankingCounter;
+import com.zero9platform.domain.ranking.service.RankingCounter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Log4j2
 @Component
 @RequiredArgsConstructor
 public class RankingFlushScheduler {
 
-    private final RedisRankingCounter redisRankingCounter;
+    private final RankingCounter rankingCounter;
     private final FavoriteRankingSnapshotRepository favoriteRankingSnapshotRepository;
     private final KeywordRankingSnapshotRepository keywordRankingSnapshotRepository;
 
@@ -27,9 +31,9 @@ public class RankingFlushScheduler {
      */
     @Transactional
     @Scheduled(cron = "0 5 0 * * *")
-    public void flushDailyRanking() {
+    public void snapshotDaily() {
 
-        processFlush(RankingPeriod.DAILY, LocalDateTime.now().minusDays(1));
+        saveSnapshotAndClear(RankingPeriod.DAILY, LocalDateTime.now().minusDays(1));
     }
 
     /**
@@ -37,9 +41,9 @@ public class RankingFlushScheduler {
      */
     @Transactional
     @Scheduled(cron = "0 5 0 * * MON")
-    public void flushWeeklyRanking() {
+    public void snapshotWeekly() {
 
-        processFlush(RankingPeriod.WEEKLY, LocalDateTime.now().minusWeeks(1));
+        saveSnapshotAndClear(RankingPeriod.WEEKLY, LocalDateTime.now().minusWeeks(1));
     }
 
     /**
@@ -47,61 +51,50 @@ public class RankingFlushScheduler {
      */
     @Transactional
     @Scheduled(cron = "0 15 0 1 * *") // 매월 1일 00:15
-    public void flushMonthlyRanking() {
+    public void snapshotMonthly() {
 
-        processFlush(RankingPeriod.MONTHLY, LocalDateTime.now().minusMonths(1));
+        saveSnapshotAndClear(RankingPeriod.MONTHLY, LocalDateTime.now().minusMonths(1));
     }
 
-    private void processFlush(RankingPeriod period, LocalDateTime targetTime) {
+    /**
+     * 스냅샷 저장 및 캐시 초기화
+     */
+    private void saveSnapshotAndClear(RankingPeriod period, LocalDateTime targetTime) {
 
-        String favoriteKey = redisRankingCounter.generateKey("FAVORITE", period, targetTime);
-        String searchKey = redisRankingCounter.generateKey("SEARCH", period, targetTime);
+        String favoriteRedisKey = rankingCounter.buildRedisKey("FAVORITE", period, targetTime);
+        String searchRedisKey = rankingCounter.buildRedisKey("SEARCH", period, targetTime);
+
+        // 이 시점의 날짜 패턴 미리 추출 (중복 호출 방지)
+        String targetDate = rankingCounter.dateRedisKey(period, targetTime);
 
         // 상품 찜 랭킹 스냅샷 저장
-        redisRankingCounter.getRankingsBySpecificKey(favoriteKey).forEach(tuple -> {
-            favoriteRankingSnapshotRepository.save(new FavoriteRankingSnapshot(
-                    Long.parseLong(tuple.getValue()),
-                    period,
-                    tuple.getScore().longValue()));
-        });
-        redisRankingCounter.deleteKey(favoriteKey);
-
+        Set<ZSetOperations.TypedTuple<String>> favoriteRankings = rankingCounter.findSnapshotKey(favoriteRedisKey);
+        if (!favoriteRankings.isEmpty()) {
+            List<FavoriteRankingSnapshot> favoriteSnapshotList = favoriteRankings.stream()
+                    .map(tuple -> new FavoriteRankingSnapshot(
+                            Long.parseLong(tuple.getValue()),
+                            period,
+                            tuple.getScore().longValue(),
+                            targetDate))
+                    .toList();
+            favoriteRankingSnapshotRepository.saveAll(favoriteSnapshotList);
+            rankingCounter.deleteKey(favoriteRedisKey);
+        }
 
         // 검색어 랭킹 스냅샷 저장
-        redisRankingCounter.getRankingsBySpecificKey(searchKey).forEach(tuple -> {
-            keywordRankingSnapshotRepository.save(new KeywordRankingSnapshot(
-                    tuple.getValue(),
-                    period,
-                    tuple.getScore().longValue()));
-        });
-        redisRankingCounter.deleteKey(searchKey);
+        Set<ZSetOperations.TypedTuple<String>> keywordRankings = rankingCounter.findSnapshotKey(searchRedisKey);
+        if (!keywordRankings.isEmpty()) {
+            List<KeywordRankingSnapshot> keywordSnapshotList = keywordRankings.stream()
+                    .map(tuple -> new KeywordRankingSnapshot(
+                            tuple.getValue(),
+                            period,
+                            tuple.getScore().longValue(),
+                            targetDate))
+                    .toList();
+            keywordRankingSnapshotRepository.saveAll(keywordSnapshotList);
+            rankingCounter.deleteKey(searchRedisKey);
+        }
 
-
-        log.info("[RANKING-FLUSH] {} data for {} has been moved to DB and deleted from Redis", period, targetTime);
-
+        log.info("[RANKING-FLUSH] {} 정산 완료. 대상: {}, 저장건수: (찜:{}, 검색:{})", period, targetDate, favoriteRankings.size(), keywordRankings.size());
     }
-
-//    /**
-//     * 상품 찜(FAVORITE) 랭킹 스냅샷 저장
-//     * period에 해당하는 캐시 데이터를 조회
-//     * DB에 스냅샷 형태로 그대로 저장
-//     */
-//    private void saveFavorite(RankingPeriod period) {
-//        redisRankingCounter.favoriteCounters(period).forEach((k, v) ->
-//                favoriteRankingSnapshotRepository.save(new FavoriteRankingSnapshot(redisRankingCounter.extractProductPostId(k), period, v))
-//        );
-//        log.info("[SNAPSHOT][FAVORITE] {} saved", period);
-//    }
-//
-//    /**
-//     * 검색어(KEYWORD) 랭킹 스냅샷 저장
-//     * period별 검색어 캐시 데이터 조회
-//     * DB에 스냅샷 형태로 그대로 저장
-//     */
-//    private void saveKeyword(RankingPeriod period) {
-//        redisRankingCounter.searchCounters(period).forEach((k, v) ->
-//                keywordRankingSnapshotRepository.save(new KeywordRankingSnapshot(redisRankingCounter.extractKeyword(k), period, v))
-//        );
-//        log.info("[SNAPSHOT][KEYWORD] {} saved", period);
-//    }
 }

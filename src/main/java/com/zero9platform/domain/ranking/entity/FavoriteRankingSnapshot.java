@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "favorite_ranking_snapshots")
+@Table(name = "keyword_ranking_snapshots", uniqueConstraints = {
+                @UniqueConstraint(name = "uk_keyword_period_date", columnNames = {"keyword", "period", "target_date"})}
+)
 public class FavoriteRankingSnapshot {
 
     @Id
@@ -30,14 +32,18 @@ public class FavoriteRankingSnapshot {
     @Column(nullable = false)
     private Long favoriteCount;
 
+    @Column(name = "target_date", nullable = false)
+    private String targetDate;
+
     // 스냅샷 생성 시각
     @Column(nullable = false)
     private LocalDateTime snapshotAt;
 
-    public FavoriteRankingSnapshot(Long productPostId, RankingPeriod period, Long favoriteCount) {
+    public FavoriteRankingSnapshot(Long productPostId, RankingPeriod period, Long favoriteCount, String targetDate) {
         this.productPostId = productPostId;
         this.period = period;
         this.favoriteCount = favoriteCount;
+        this.targetDate = targetDate;
         this.snapshotAt = LocalDateTime.now();
     }
 }

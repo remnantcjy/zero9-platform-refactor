@@ -30,15 +30,6 @@ spring:
         format_sql: false
     show-sql: true
 
-# Redis 설정
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      database: ${REDIS_DB_RANKING}
-      password: ${REDIS_PASSWORD}
-
-
 # JWT 설정
 jwt:
   secret:

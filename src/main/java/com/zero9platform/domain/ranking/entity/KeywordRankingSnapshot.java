@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "keyword_ranking_snapshots")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "keyword_ranking_snapshots", uniqueConstraints = {
+                @UniqueConstraint(name = "uk_keyword_period_date", columnNames = {"keyword", "period", "target_date"})}
+)
 public class KeywordRankingSnapshot {
 
     @Id
@@ -30,14 +32,18 @@ public class KeywordRankingSnapshot {
     @Column(nullable = false)
     private Long keywordCount;
 
+    @Column(name = "target_date", nullable = false)
+    private String targetDate;
+
     // 스냅샷 생성 시각
     @Column(nullable = false)
     private LocalDateTime snapshotAt;
 
-    public KeywordRankingSnapshot(String keyword, RankingPeriod period, Long keywordCount) {
+    public KeywordRankingSnapshot(String keyword, RankingPeriod period, Long keywordCount, String targetDate) {
         this.keyword = keyword;
         this.period = period;
         this.keywordCount = keywordCount;
+        this.targetDate = targetDate;
         this.snapshotAt = LocalDateTime.now();
     }
 }

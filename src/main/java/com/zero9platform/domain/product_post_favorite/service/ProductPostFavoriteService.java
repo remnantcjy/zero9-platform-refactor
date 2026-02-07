@@ -11,7 +11,7 @@ import com.zero9platform.domain.product_post_favorite.entity.ProductPostFavorite
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteCreateResponse;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteGetResponse;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
-import com.zero9platform.domain.ranking.service.RedisRankingCounter;
+import com.zero9platform.domain.ranking.service.RankingCounter;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class ProductPostFavoriteService {
     private final UserRepository userRepository;
     private final ProductPostRepository productPostRepository;
     private final ActivityFeedService activityFeedService;
-    private final RedisRankingCounter redisRankingCounter;
+    private final RankingCounter rankingCounter;
 
     /**
      * 찜 등록
@@ -59,7 +59,7 @@ public class ProductPostFavoriteService {
         productPostFavoriteRepository.save(productPostFavorite);
 
         // 캐시 저장
-        redisRankingCounter.increaseFavorite(productPostFavorite.getProductPost().getId());
+        rankingCounter.increaseFavorite(productPostFavorite.getProductPost().getId());
 
         // 현재 게시물의 찜 개수 확인
         long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
@@ -97,7 +97,7 @@ public class ProductPostFavoriteService {
         productPostFavoriteRepository.deleteById(productPostFavorite.get().getId());
 
         // 캐시 삭제
-        redisRankingCounter.decreaseFavorite(productPost.getId());
+        rankingCounter.decreaseFavorite(productPost.getId());
     }
 
     /**

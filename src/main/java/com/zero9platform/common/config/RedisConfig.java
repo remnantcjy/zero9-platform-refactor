@@ -26,8 +26,8 @@ public class RedisConfig {
         return new StringRedisTemplate(factory);
     }
 
-    @Bean
-    public StringRedisTemplate redisTemplate(RedisConnectionFactory connectionFactory) {
-        return new StringRedisTemplate(connectionFactory);
-    }
+//    @Bean
+//    public StringRedisTemplate redisTemplate(RedisConnectionFactory connectionFactory) {
+//        return new StringRedisTemplate(connectionFactory);
+//    }
 }
