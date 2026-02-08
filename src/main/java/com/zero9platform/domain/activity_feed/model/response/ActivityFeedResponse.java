@@ -14,6 +14,7 @@ public class ActivityFeedResponse {
     private final String message;
     private final Long targetId;
     private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
 
     public static ActivityFeedResponse from(ActivityFeed feed) {
         return new ActivityFeedResponse(
@@ -21,7 +22,8 @@ public class ActivityFeedResponse {
                 feed.getType(),
                 feed.getMessage(),
                 feed.getTargetId(),
-                feed.getCreatedAt()
+                feed.getCreatedAt(),
+                feed.getUpdatedAt()
         );
     }
 }

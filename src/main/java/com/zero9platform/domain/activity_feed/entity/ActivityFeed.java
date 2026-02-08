@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "activity_feed",
         indexes = {
-        @Index(name = "idx_activity_feed_target_id", columnList = "target_id")
+                @Index(name = "idx_user_updated", columnList = "user_id, updated_at DESC")
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
