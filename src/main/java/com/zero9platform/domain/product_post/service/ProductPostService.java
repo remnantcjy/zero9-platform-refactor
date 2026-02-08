@@ -142,16 +142,15 @@ public class ProductPostService {
         // 이미지 교체 로직
         String finalImageKey = newImageKey != null ? newImageKey : oldImageKey;
 
-        productPost.update(category, progressStatus, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), finalImageKey, request.getStartDate(), request.getEndDate());
-
         // 기존 이미지 삭제 (새 이미지가 있을 때만)
         if (newImageKey != null && oldImageKey != null) {
             s3Service.s3Delete(oldImageKey);
         }
+
         // 현재 시간 생성
         LocalDateTime now = LocalDateTime.now();
 
-        productPost.update(category, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImage, request.getStartDate(), request.getEndDate(), now);
+        productPost.update(category, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), finalImageKey, request.getStartDate(), request.getEndDate(), now);
 
         return ProductPostUpdateResponse.from(productPost);
     }
