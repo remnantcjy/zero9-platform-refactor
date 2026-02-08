@@ -31,7 +31,7 @@ public class ActivityFeedService {
     public void feedUpsert(FeedType type, Long targetId, String title, Long userId, Object... args) {
 
         // 집계형(isAggregation=true)인 경우 기존 피드 존재 여부 확인
-        if (type.isAggregation()) {
+        if (type.isUpsert()) {
             Optional<ActivityFeed> existingFeed = feedRepository.findFirstByTypeAndTargetIdAndUserIdOrderByUpdatedAtDesc(type.name(), targetId, userId);
 
             if (existingFeed.isPresent()) {

@@ -21,7 +21,7 @@ public enum FeedType {
     private final String messageFormat;
 
     // true : 기존 데이터 수정, false : 새로 생성
-    private final boolean isAggregation;
+    private final boolean isUpsert;
 
     /**
      * 주차공간에 들어갈 실제 내용
