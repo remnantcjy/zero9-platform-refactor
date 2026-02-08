@@ -28,15 +28,15 @@ public class ActivityFeedService {
      * 통합 피드 처리 로직 (Upsert)
      */
     @Transactional
-    public void upsertFeed(FeedType type, Long targetId, String title, Object... args) {
+    public void feedUpsert(FeedType type, Long targetId, String title, Long userId, Object... args) {
 
         // 집계형(isAggregation=true)인 경우 기존 피드 존재 여부 확인
         if (type.isAggregation()) {
-            Optional<ActivityFeed> existingFeed = feedRepository.findFirstByTypeAndTargetIdOrderByCreatedAtDesc(type.name(), targetId);
+            Optional<ActivityFeed> existingFeed = feedRepository.findFirstByTypeAndTargetIdAndUserIdOrderByCreatedAtDesc(type.name(), targetId, userId);
 
             if (existingFeed.isPresent()) {
-                // 기존 피드가 있으면 메시지만 갱신 (Dirty Checking)
                 ActivityFeed feed = existingFeed.get();
+                // 메시지 업데이트 시 combineArgs가 title과 args(숫자 등)를 합쳐줌
                 feed.updateMessage(type.toMessage(combineArgs(title, args)));
                 return;
             }
@@ -44,21 +44,8 @@ public class ActivityFeedService {
 
         // 집계형이 아니거나 기존 데이터가 없으면 신규 생성
         String message = type.toMessage(combineArgs(title, args));
-        ActivityFeed feed = new ActivityFeed(type.name(), message, targetId, null);
+        ActivityFeed feed = new ActivityFeed(type.name(), message, targetId, userId);
         feedRepository.save(feed);
-    }
-
-    /**
-     * 타이틀과 가변 인자를 하나의 배열로 합치는 헬퍼 메소드
-     */
-    private Object[] combineArgs(String title, Object... args) {
-        if (args == null || args.length == 0) {
-            return new Object[]{title};
-        }
-        Object[] combined = new Object[args.length + 1];
-        combined[0] = title;
-        System.arraycopy(args, 0, combined, 1, args.length);
-        return combined;
     }
 
     /**
@@ -82,13 +69,26 @@ public class ActivityFeedService {
         // 유저가 찜한 상품 리스트 가져오기
         List<Long> favoriteList = favoriteRepository.findProductPostIdsByUserId(userId);
 
-        // 찜한 상품이 없다면 빈 페이지 반환 (현재는 찜만)
         if (favoriteList.isEmpty()) {
-            return Page.<ActivityFeed>empty(pageable).map(ActivityFeedResponse::from);
+            return feedRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+                    .map(ActivityFeedResponse::from);
         }
 
-        // 찜한 상품들에 대한 피드만 조회
-        return feedRepository.findFeedsByFavoriteList(favoriteList, pageable)
+        // 찜관련 피드 + 개인 알림 합치기
+        return feedRepository.findFeedsByFavoriteListOrUserId(favoriteList, userId, pageable)
                 .map(ActivityFeedResponse::from);
+    }
+
+    /**
+     * 타이틀과 가변 인자를 하나의 배열로 합치는 헬퍼 메소드
+     */
+    private Object[] combineArgs(String title, Object... args) {
+        if (args == null || args.length == 0) {
+            return new Object[]{title};
+        }
+        Object[] combined = new Object[args.length + 1];
+        combined[0] = title;
+        System.arraycopy(args, 0, combined, 1, args.length);
+        return combined;
     }
 }

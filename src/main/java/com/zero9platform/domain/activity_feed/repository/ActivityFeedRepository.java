@@ -11,11 +11,21 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ActivityFeedRepository extends JpaRepository<ActivityFeed, Long> {
-    // 타입과 대상 ID로 가장 최근 피드 1건 조회
-    Optional<ActivityFeed> findFirstByTypeAndTargetIdOrderByCreatedAtDesc(String type, Long targetId);
+    // 공용인지 개인피드인지 구분
+    Optional<ActivityFeed> findFirstByTypeAndTargetIdAndUserIdOrderByCreatedAtDesc(String type, Long targetId, Long userId);
+
+    // 찜이 없는 유저
+    Page<ActivityFeed> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
     // 피드 개인화
     // 내 피드 조회
-    @Query("SELECT f FROM ActivityFeed f WHERE f.targetId IN :favoriteList ORDER BY f.createdAt DESC")
-    Page<ActivityFeed> findFeedsByFavoriteList(@Param("favoriteList") List<Long> favoriteList, Pageable pageable);
+    @Query("SELECT f FROM ActivityFeed f " +
+            "WHERE (f.targetId IN :favoriteList AND f.userId IS NULL) " +
+            "OR (f.userId = :userId) " +
+            "ORDER BY f.createdAt DESC")
+    Page<ActivityFeed> findFeedsByFavoriteListOrUserId(
+            @Param("favoriteList") List<Long> favoriteList,
+            @Param("userId") Long userId,
+            Pageable pageable
+    );
 }
