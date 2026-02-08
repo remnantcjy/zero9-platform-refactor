@@ -2,6 +2,7 @@ package com.zero9platform.domain.order.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.OrderStatus;
+import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
 import com.zero9platform.common.util.payment.toss.TossPaymentClient;
@@ -154,8 +155,10 @@ public class OrderService {
         // 주문 권한 체크
         Order order = checkOrderPermission(orderRepository.findById(orderId), userId);
 
-        // 결제 상태 변경
-        OrderStatus.CANCELED.name();
+        // 주문 번호 (orderNo, paymentKey) 일치 확인 로직 추가
+
+        // 결제 취소 (상태 변경)
+        order.cancel();
 
         // 재고 증가
         OrderItem orderItem = orderItemRepository.findById(order.getOrderItem().getId())
@@ -169,7 +172,10 @@ public class OrderService {
 
         option.increaseStock(orderQuantity);
 
-        order.cancel();
+        // 해당 옵션 상태가 "SOLD_OUT"일 시, "IN_STOCK"으로 변경
+        if (option.getStockStatus().equals(StockStatus.SOLD_OUT.name())) {
+            option.setStockStatus(StockStatus.IN_STOCK.name());
+        }
 
         return OrderCancelResponse.from(order);
     }
