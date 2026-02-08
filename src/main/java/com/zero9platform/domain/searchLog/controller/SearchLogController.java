@@ -25,15 +25,21 @@ public class SearchLogController {
      * 검색 대상 - 공동구매 상품명, 인플루언서 활동 닉네임
      */
     @GetMapping("/searchLog")
-    public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String searchCondition, Pageable pageable, @AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String postType, Pageable pageable, @AuthenticationPrincipal AuthUser authUser) {
 
         // 검색 서비스 호출
-        Page<SearchLogItemResponse> page = searchLogService.searchLog(keyword.trim(), searchCondition, pageable, authUser);
+        Page<SearchLogItemResponse> page = searchLogService.searchLog(keyword.trim(), postType, pageable, authUser);
 
         // PageResponse로 변환
         PageResponse<SearchLogItemResponse> pageResponse = PageResponse.from(page);
 
         // 공통 응답 포맷으로 반환
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("통합 검색 결과 조회 성공", pageResponse));
+    }
+
+    @PostMapping("/api/search/reindex")
+    public String reindex() {
+        searchLogService.bulkIndexing();
+        return "Indexing Started!";
     }
 }
