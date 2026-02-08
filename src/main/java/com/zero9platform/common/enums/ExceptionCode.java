@@ -36,6 +36,9 @@ public enum ExceptionCode {
     PRODUCT_POST_NOT_FOUND(HttpStatus.NOT_FOUND, "상품 게시물이 존재하지 않습니다."),
     PRODUCT_POST_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "상품 게시물 옵션을 찾을 수 없습니다."),
 
+    // 상품 판매 게시물
+    PP_CANNOT_UPDATE_ALREADY_STARTED(HttpStatus.BAD_REQUEST, "판매가 이미 시작되었거나 종료된 게시물은 수정할 수 없습니다."),
+
     // jwt
     TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "토큰을 찾을 수 없습니다."),
 
@@ -93,6 +96,7 @@ public enum ExceptionCode {
     CANNOT_CREATE_AN_ORDERITEM(HttpStatus.NOT_FOUND, "상품 게시물이 비활성화 상태라 주문 상품을 생성할 수 없습니다."),
     OPTION_CHANGE_NOT_ALLOWED_AFTER_SALE_START(HttpStatus.BAD_REQUEST,  "진행 중이거나 종료된 상품 판매 게시물의 옵션은 추가하거나 삭제할 수 없습니다."),
     SALE_NOT_IN_PROGRESS(HttpStatus.BAD_REQUEST, "판매가 진행 중인 상품만 주문할 수 있습니다."),
+
 
     // 주문
     ALREADY_ORDERED_ORDERITEM(HttpStatus.CONFLICT, "이미 주문된 주문 상품입니다."),
