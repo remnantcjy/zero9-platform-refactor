@@ -32,7 +32,7 @@ public class ActivityFeedService {
 
         // 집계형(isAggregation=true)인 경우 기존 피드 존재 여부 확인
         if (type.isAggregation()) {
-            Optional<ActivityFeed> existingFeed = feedRepository.findFirstByTypeAndTargetIdAndUserIdOrderByCreatedAtDesc(type.name(), targetId, userId);
+            Optional<ActivityFeed> existingFeed = feedRepository.findFirstByTypeAndTargetIdAndUserIdOrderByUpdatedAtDesc(type.name(), targetId, userId);
 
             if (existingFeed.isPresent()) {
                 ActivityFeed feed = existingFeed.get();
@@ -70,7 +70,7 @@ public class ActivityFeedService {
         List<Long> favoriteList = favoriteRepository.findProductPostIdsByUserId(userId);
 
         if (favoriteList.isEmpty()) {
-            return feedRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+            return feedRepository.findByUserIdOrderByUpdatedAtDesc(userId, pageable)
                     .map(ActivityFeedResponse::from);
         }
 
