@@ -13,7 +13,7 @@ public class TossPaymentClient {
 
     private static final String CONFIRM_URL = "https://api.tosspayments.com/v1/payments/confirm";
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    private static final String SECRET_KEY = "test_sk_5OWRapdA8dQk67BBBmKn3o1zEqZK"; // 환경 변수로 지정 해야함.
+    private static final String SECRET_KEY = "test_sk_yL0qZ4G1VO7Yye9OXG1vVoWb2MQY"; // 환경 변수로 지정 해야함.
 
     public void tossPayment(String paymentKey, String orderId, int amount) {
 
