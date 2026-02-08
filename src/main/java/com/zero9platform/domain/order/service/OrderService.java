@@ -1,10 +1,13 @@
 package com.zero9platform.domain.order.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.common.enums.OrderStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
 import com.zero9platform.common.util.payment.toss.TossPaymentClient;
+import com.zero9platform.domain.activity_feed.event.FeedCreateEvent;
+import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.order.model.request.OrderPaymentRequest;
 import com.zero9platform.domain.order.model.response.OrderCancelResponse;
@@ -18,6 +21,7 @@ import com.zero9platform.domain.product_post_option.repository.ProductPostOption
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,6 +39,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductPostOptionRepository productPostOptionRepository;
     private final TossPaymentClient tossPaymentClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 주문 생성
@@ -90,8 +95,15 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // 피드 생성
-        //activityFeedService.feedCreate("PAYMENT", savedOrder.getOrderItem().getProductPost().getId(), savedOrder.getOrderItem().getProductPost().getTitle());
+        // 피드 생성을 위한 데이터 준비
+        Long productId = savedOrder.getOrderItem().getProductPost().getId();
+        String title = savedOrder.getOrderItem().getProductPost().getTitle();
+
+        // 해당 상품(productId)으로 생성된 전체 주문 건수를 조회
+        long realOrderCount = orderRepository.countByOrderItem_ProductPost_Id(productId);
+
+        // 이벤트 던지기
+        eventPublisher.publishEvent(new FeedCreateEvent(FeedType.PAYMENT, productId, title, null, new Object[]{realOrderCount}));
 
         return OrderCreateResponse.from(savedOrder);
     }
