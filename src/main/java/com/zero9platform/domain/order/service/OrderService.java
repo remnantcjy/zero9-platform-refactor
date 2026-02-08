@@ -9,11 +9,13 @@ import com.zero9platform.common.util.payment.toss.TossPaymentClient;
 import com.zero9platform.domain.activity_feed.event.FeedCreateEvent;
 import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.order.entity.Order;
+import com.zero9platform.domain.order.entity.Payment;
 import com.zero9platform.domain.order.model.request.OrderPaymentRequest;
 import com.zero9platform.domain.order.model.response.OrderCancelResponse;
 import com.zero9platform.domain.order.model.response.OrderCreateResponse;
 import com.zero9platform.domain.order.model.response.OrderGetDetailResponse;
 import com.zero9platform.domain.order.repository.OrderRepository;
+import com.zero9platform.domain.order.repository.PaymentRepository;
 import com.zero9platform.domain.orderitem.entity.OrderItem;
 import com.zero9platform.domain.orderitem.repository.OrderItemRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
@@ -39,6 +41,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProductPostOptionRepository productPostOptionRepository;
     private final TossPaymentClient tossPaymentClient;
+    private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     /**
@@ -62,30 +65,11 @@ public class OrderService {
         // 총 결제 금액
         ProductPostOption option = orderItem.getProductPostOption();
         Long salePrice = option.getSalePrice(); // 옵션가
-        Integer stockQuantity = option.getStockQuantity();    // 재고 수량
         Integer orderQuantity = orderItem.getOrderQuantity(); // 주문 수량
         Long totalAmount = salePrice * orderQuantity; // 총 결제 금액
 
-        // 재고 검증
-        // 재고보다 선택한 수량이 많을 때 예외 처리 및 남아있는 재고 반환
-//        if (orderQuantity > stockQuantity) {
-//            throw new CustomException(ExceptionCode.INSUFFICIENT_STOCK, stockQuantity);
-//        }
-
         // 결제 상태 변경
-        // 현재는 페이먼츠와 연동 전이므로 "결제 완료"로 상태로 처리
         String orderStatus = OrderStatus.PENDING.name();
-
-        // 재고 차감
-        option.decreaseStock(orderQuantity);
-
-//        if (productPost.getStock() == 0) {
-//            // 품절 = 재고가 0개
-//            activityFeedService.feedCreate("SOLD_OUT", productPost.getId(), productPost.getTitle());
-//        } else if (productPost.getStock() <= 10) {
-//            // 재고가 10개 이하
-//            activityFeedService.feedCreate("LOW_STOCK", productPost.getId(), productPost.getTitle());
-//        }
 
         // 주문 고유번호 생성
         String orderNo = OrderCodeGenerator.generate();
@@ -146,6 +130,11 @@ public class OrderService {
         orderRepository.findByOrderNo(request.getOrderNo())
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
 
+//        주문 상태가 대기인 것만 가능한 방어로직 ??
+//        if (!order.getOrderStatus().equals(OrderStatus.PENDING.name())) {
+//            throw new CustomException(ExceptionCode.);
+//        }
+
         // 결제 금액 검증
         if (request.getAmount() != order.getTotalAmount()) {
             throw new CustomException(ExceptionCode.ORDER_AMOUNT_MISMATCH);
@@ -159,6 +148,16 @@ public class OrderService {
         );
 
         order.paymentStatusUpdate(OrderStatus.PAID);
+
+        Payment payment = new Payment(order, request.getPaymentKey());
+
+        paymentRepository.save(payment);
+
+        ProductPostOption option = order.getOrderItem().getProductPostOption();
+        Integer orderQuantity = order.getOrderItem().getOrderQuantity();
+
+        // 재고 차감
+        option.decreaseStock(orderQuantity);
     }
 
     /**
