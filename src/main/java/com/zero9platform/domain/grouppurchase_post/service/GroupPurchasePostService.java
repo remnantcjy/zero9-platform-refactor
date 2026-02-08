@@ -1,19 +1,21 @@
 package com.zero9platform.domain.grouppurchase_post.service;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.zero9platform.common.aws.s3.S3Service;
 import com.zero9platform.common.enums.Category;
 import com.zero9platform.common.enums.ExceptionCode;
-import com.zero9platform.common.enums.GppProgressStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostCreateRequest;
 import com.zero9platform.domain.grouppurchase_post.model.request.GroupPurchasePostUpdateRequest;
 import com.zero9platform.domain.grouppurchase_post.model.response.GroupPurchasePostDetailResponse;
 import com.zero9platform.domain.grouppurchase_post.model.response.GroupPurchasePostListResponse;
+import com.zero9platform.domain.grouppurchase_post.model.response.GroupPurchasePostReadResponse;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,8 +31,15 @@ public class GroupPurchasePostService {
 
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final UserRepository userRepository;
-    private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
+//    private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
+    private final GroupPurchasePostViewCountRedisService groupPurchasePostViewCountRedisService;
     private final S3Service s3Service;
+    private final AmazonS3 amazonS3;
+
+    private static final String S3_FOLDER = "gp_post";
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     /**
      * 공동구매 게시물 작성
@@ -63,7 +72,7 @@ public class GroupPurchasePostService {
         // 4. 이미지 파일 업로드 S3 서비스 호출
         String contentImage = "";
         if (file != null && !file.isEmpty()) {
-            contentImage = s3Service.upload(file);
+            contentImage = s3Service.upload(file, S3_FOLDER);
         }
 
         // 5. Entity 생성
@@ -86,7 +95,7 @@ public class GroupPurchasePostService {
         GroupPurchasePost savedGpp = groupPurchasePostRepository.save(gpp);
 
         // 6️. Response 변환
-        return GroupPurchasePostDetailResponse.from(savedGpp);
+        return GroupPurchasePostDetailResponse.from(savedGpp, contentImage);
     }
 
     /**
@@ -99,27 +108,37 @@ public class GroupPurchasePostService {
         Page<GroupPurchasePost> page = groupPurchasePostRepository.findAllByDeletedAtIsNull(pageable);
 
         // 2. 응답객체 매핑 후 반환
-        return page.map(GroupPurchasePostListResponse::from);
+        return page.map(gpp -> GroupPurchasePostListResponse.from(
+                gpp,
+                gpp.getImage() != null ? amazonS3.getUrl(bucket, gpp.getImage()).toString() : null
+        ));
     }
     
     /**
      * 공동구매 게시물 상세 조회
      */
     @Transactional(readOnly = true)
-    public GroupPurchasePostDetailResponse gpPostReadDetail(Long gppId) {
+    public GroupPurchasePostReadResponse gpPostReadDetail(Long gppId) {
 
         // 1. 공동구매 게시물 조회 [삭제처리 제외 + 유효성 검사]
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
 
-        // 2. 조회수 증가 (아직 동시성 문제 고려 안했음, 추후 고민할 것)
-        groupPurchasePostViewCountService.increaseViewCount(gppId);
+        // 2. 조회수 증가 V1 (아트래픽 문제 고려 X, Redis를 사용하지 못하는 환경에서 사용 가능)
+//        groupPurchasePostViewCountService.increaseViewCount(gppId);
+        // 2. 조회수 증가 V2 (Redis)
+        groupPurchasePostViewCountRedisService.increaseViewCountRedis(gppId);
 
-        // 3. 저장 (영속 상태라 사실상 생략 가능)
-//        groupPurchasePostRepository.save(gpp);
+        // 3. 실시간 조회수 조회 (DB + Redis-delta)
+        // 아직 반영되지 않은 조회수 delta 조회
+        long redisDelta = groupPurchasePostViewCountRedisService.getViewCountDelta(gppId);
+        // DB 조회수 + Redis 조회수 = 실시간 조회수 (사용자가 보는 화면)
+        long realtimeViewCount = gpp.getViewCount() + redisDelta;
+
+        String imgUrl = gpp.getImage() != null ? amazonS3.getUrl(bucket, gpp.getImage()).toString() : null;
 
         // 4. Response 변환
-        return GroupPurchasePostDetailResponse.from(gpp);
+        return GroupPurchasePostReadResponse.from(gpp, imgUrl, realtimeViewCount);
     }
 
     /**
@@ -145,21 +164,26 @@ public class GroupPurchasePostService {
         }
 
         // 4. 이미지 파일 업로드 S3 서비스 호출
-        String contentImage = "";
+        String oldImageKey = gpp.getImage();
+        String newImageKey = null;
+
         if (file != null && !file.isEmpty()) {
-            contentImage = s3Service.upload(file);
+            newImageKey = s3Service.upload(file, S3_FOLDER);
         }
 
         // 5. Enum 변환 - 카테고리, 진행상태
         Category category = request.getCategory();
 //        GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
 
+        // 이미지 교체 로직
+        String finalImageKey = newImageKey != null ? newImageKey : oldImageKey;
+
         // 6. 엔티티 수정
         LocalDateTime now = LocalDateTime.now();
         gpp.update(
                 request.getProductName(),
                 request.getContent(),
-                contentImage,
+                finalImageKey,
                 request.getPrice(),
                 request.getLinkUrl(),
                 category.name(),
@@ -169,8 +193,13 @@ public class GroupPurchasePostService {
                 now
         );
 
+        // 기존 이미지 삭제 (새 이미지가 있을 때만)
+        if (newImageKey != null && oldImageKey != null) {
+            s3Service.s3Delete(oldImageKey);
+        }
+
         // 6. 응답 변환
-        return GroupPurchasePostDetailResponse.from(gpp);
+        return GroupPurchasePostDetailResponse.from(gpp, finalImageKey);
     }
 
 

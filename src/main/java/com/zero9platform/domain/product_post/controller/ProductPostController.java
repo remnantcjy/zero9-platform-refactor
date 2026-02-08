@@ -12,6 +12,7 @@ import com.zero9platform.domain.product_post.model.response.ProductPostUpdateRes
 import com.zero9platform.domain.product_post.service.ProductPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,11 +54,12 @@ public class ProductPostController {
      * 상품 게시물 목록 조회
      */
     @GetMapping("/product-posts")
-    public ResponseEntity<CommonResponse<PageResponse<ProductPostGetListResponse>>> productPostGetListHandler(Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<ProductPostGetListResponse>>>
+    productPostGetListHandler(Pageable pageable) {
 
-        PageResponse<ProductPostGetListResponse> responsePage = productPostService.productPostGetList(pageable);
+        PageResponse<ProductPostGetListResponse> response = PageResponse.from(productPostService.productPostGetList(pageable));
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 게시물 목록 조회 성공", responsePage));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 게시물 목록 조회 성공", response));
     }
 
     /**
