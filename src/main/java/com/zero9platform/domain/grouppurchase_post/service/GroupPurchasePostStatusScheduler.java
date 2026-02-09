@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class GroupPurchasePostScheduler {
+public class GroupPurchasePostStatusScheduler {
 
     private final GroupPurchasePostRepository groupPurchasePostRepository;
 
