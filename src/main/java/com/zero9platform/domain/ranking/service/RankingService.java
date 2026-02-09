@@ -31,6 +31,8 @@ public class RankingService {
     private static final String GPP_TOTAL_RANKING_KEY = "gpp:ranking:total";
     private static final String GPP_DAILY_RANKING_KEY_PREFIX = "gpp:ranking:daily:";
     private static final int RANKING_LIMIT = 10;
+    private static final String GPP_WEEKLY_RANKING_KEY_PREFIX = "gpp:ranking:weekly:";
+    private static final int WEEK_DAYS = 7;
     
     /**
      * 공동구매 게시물 랭킹 (조회수 기준)
@@ -190,6 +192,77 @@ public class RankingService {
                             rank++,
                             gpp.getId(),
                             gpp.getProductName(),
+                            tuple.getScore().longValue()
+                    )
+            );
+        }
+
+        return result;
+    }
+
+    /**
+     * 공동구매 게시물 주간 랭킹 TOP10 (ZUNIONSTORE 기반)
+     */
+    @Transactional(readOnly = true)
+    public List<GroupPurchasePostTodayRankingResponse> groupPurchasePostWeeklyRanking() {
+
+        // 최근 7일 key 생성
+        List<String> last7DaysKeys = new ArrayList<>();
+
+        for (int i = 0; i < WEEK_DAYS; i++) {
+            String key = GPP_DAILY_RANKING_KEY_PREFIX + LocalDate.now().minusDays(i);
+            last7DaysKeys.add(key);
+        }
+
+        String weeklyKey = GPP_WEEKLY_RANKING_KEY_PREFIX + LocalDate.now();
+
+        // ZUNIONSTORE 실행
+        // 최근 7일 daily ZSet을 합산하여 weeklyKey에 저장
+        redisTemplate.opsForZSet().unionAndStore(
+                last7DaysKeys.get(0),
+                last7DaysKeys.subList(1, last7DaysKeys.size()),
+                weeklyKey
+        );
+
+        // 상위 10개 조회
+        Set<ZSetOperations.TypedTuple<String>> rankingSet =
+                redisTemplate.opsForZSet()
+                        .reverseRangeWithScores(weeklyKey, 0, RANKING_LIMIT - 1);
+
+        if (rankingSet == null || rankingSet.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> gppIds = rankingSet.stream()
+                .map(ZSetOperations.TypedTuple::getValue)
+                .filter(Objects::nonNull)
+                .map(Long::valueOf)
+                .toList();
+
+        List<GroupPurchasePost> gppLists = groupPurchasePostRepository.findAllByIdInAndDeletedAtIsNull(gppIds);
+
+        Map<Long, GroupPurchasePost> gppMap =
+                gppLists.stream()
+                        .collect(Collectors.toMap(GroupPurchasePost::getId, p -> p));
+
+        List<GroupPurchasePostTodayRankingResponse> result = new ArrayList<>();
+
+        int rank = 1;
+
+        for (ZSetOperations.TypedTuple<String> tuple : rankingSet) {
+
+            if (tuple.getValue() == null || tuple.getScore() == null) continue;
+
+            Long gppId = Long.valueOf(tuple.getValue());
+            GroupPurchasePost post = gppMap.get(gppId);
+
+            if (post == null) continue;
+
+            result.add(
+                    GroupPurchasePostTodayRankingResponse.from(
+                            rank++,
+                            post.getId(),
+                            post.getProductName(),
                             tuple.getScore().longValue()
                     )
             );
