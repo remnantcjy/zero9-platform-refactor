@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +15,8 @@ public class GroupPurchasePostViewCountRedisService {
     private final StringRedisTemplate redisTemplate;
 
     private static final String VIEW_COUNT_KEY_PREFIX = "gpp:view_count:";
+    private static final String VIEW_COUNT_KEY_SET = "gpp:view_count:keys";
+
     private static final String TOTAL_RANKING_KEY = "gpp:ranking:total";
     private static final String DAILY_RANKING_KEY_PREFIX = "gpp:ranking:daily:";
 
@@ -21,11 +24,16 @@ public class GroupPurchasePostViewCountRedisService {
      * 조회수 증가 (Redis)
      * - 쓰기 캐싱 (개념적으로는 버퍼링과 유사하지만 다름)
      */
-    public void increaseViewCountRedisCache(Long gppId) {
-        // 조회수 쓰기 캐싱
+    public long increaseViewCountRedisCache(Long gppId) {
+
         String key = VIEW_COUNT_KEY_PREFIX + gppId;
-        redisTemplate.opsForValue().increment(key); // INCR는 Redis atomic (원자성이므로, 동시성을 제어)
-        
+//        redisTemplate.opsForValue().increment(key); // INCR는 Redis atomic (원자성이므로, 동시성을 제어)
+        // 조회수 증가 (증가 후 값 반환)
+        Long incrementedValue = redisTemplate.opsForValue().increment(key);
+
+        // 스케줄러가 찾을 수 있도록 gppId를 집합에 등록
+        redisTemplate.opsForSet().add(VIEW_COUNT_KEY_SET, gppId.toString());
+
         // 전체 누적 랭킹 증가
         redisTemplate.opsForZSet().incrementScore(TOTAL_RANKING_KEY, gppId.toString(), 1);
 
@@ -34,12 +42,20 @@ public class GroupPurchasePostViewCountRedisService {
         redisTemplate.opsForZSet().incrementScore(dailyKey, gppId.toString(), 1);
 
         // 오늘의 실시간 랭킹 TTL 설정
-        redisTemplate.expire(dailyKey, Duration.ofHours(24)); // 48?
+        // TTL이 없을 때만 설정
+        Long ttl = redisTemplate.getExpire(dailyKey);
+        if (ttl == null || ttl == -1) {
+            setDailyRankingTTL(dailyKey);
+        }
+
+        // 조회수 증가값 반환
+        return incrementedValue != null ? incrementedValue : 0L;
     }
 
     /**
      * 조회수 조회 (Redis)
      * - 아직 DB에 반영되지 않은 값(cached) 읽기
+     * 조회수 증가 구조변경에 의해 사용안함.
      */
     public long getCachedViewCount(Long gppId) {
         String key = VIEW_COUNT_KEY_PREFIX + gppId;
@@ -57,25 +73,22 @@ public class GroupPurchasePostViewCountRedisService {
         return DAILY_RANKING_KEY_PREFIX + LocalDate.now();
     }
 
-//    /**
-//     * 조회수 증가 (중복 조회 방지 ver)
-//     */
-//    public void increaseViewCountRedis(Long gppId, Long userId) {
-//        // DB에 접근 하지않으며, 원자적으로 조회수를 증가(동시성 발생 X)
-//
-//        // 어떤 gpp를 누가 봤는지
-//        String viewedKey = VIEWED_KEY_PREFIX + ":" + gppId + ":" + userId;
-//
-//        // 중복 조회 방지
-//        Boolean isFirstView = redisTemplate.opsForValue().setIfAbsent(viewedKey, "1", Duration.ofHours(24));
-//
-//        // 이미 조회한 사용자의 경우
-//        if (Boolean.FALSE.equals(isFirstView)) {
-//            return;
-//        }
-//        // 그렇지 않은 경우
-//        redisTemplate.opsForValue().increment(VIEW_COUNT_KEY_PREFIX + ":" + gppId);
-//
-//    }
+    /**
+     * 일일 실시간 랭킹 TTL
+     * 항상 내일 00시에 만료
+     */
+    private void setDailyRankingTTL(String dailyKey) {
+
+        // 현재 시각
+        LocalDateTime now = LocalDateTime.now();
+        // 내일 시각 = 내일 00시
+        LocalDateTime tomorrow = now.toLocalDate().plusDays(1).atStartOfDay();
+
+        // 남은 만료 시간 = 현재 ~ 내일 00시
+        long secondsUntilMidnight = Duration.between(now, tomorrow).getSeconds();
+
+        // 일일 키값당 만료시간 설정
+        redisTemplate.expire(dailyKey, Duration.ofSeconds(secondsUntilMidnight));
+    }
 
 }
