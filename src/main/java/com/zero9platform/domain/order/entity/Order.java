@@ -38,6 +38,9 @@ public class Order extends BaseEntity {
     @Column
     private LocalDateTime canceledAt;
 
+    @Column
+    private String canceledReason;
+
     public Order(OrderItem orderItem, String orderNo, Long totalAmount, String orderStatus) {
         this.orderItem = orderItem;
         this.orderNo = orderNo;
@@ -66,5 +69,12 @@ public class Order extends BaseEntity {
      */
     public void paymentStatusUpdate(OrderStatus status) {
         this.orderStatus = status.toString();
+    }
+
+    /**
+     * 취소 사유 업데이트
+     */
+    public void canceledReasonUpdate(String reason) {
+        this.canceledReason = reason;
     }
 }

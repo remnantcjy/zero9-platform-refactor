@@ -2,12 +2,12 @@ package com.zero9platform.domain.order.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.OrderStatus;
-import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
 import com.zero9platform.common.util.payment.toss.TossPaymentClient;
 import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.order.entity.Payment;
+import com.zero9platform.domain.order.model.request.OrderPaymentCancelReasonRequest;
 import com.zero9platform.domain.order.model.request.OrderPaymentRequest;
 import com.zero9platform.domain.order.model.response.OrderCancelResponse;
 import com.zero9platform.domain.order.model.response.OrderCreateResponse;
@@ -135,25 +135,20 @@ public class OrderService {
         }
 
         // TossPayments 결제 승인
-        tossPaymentClient.tossPayment(
-                request.getPaymentKey(),
-                request.getOrderNo(),
-                request.getAmount()
-        );
+        tossPaymentClient.tossPayment(request.getPaymentKey(), request.getOrderNo(), request.getAmount());
 
         order.paymentStatusUpdate(OrderStatus.PAID);
 
         Payment payment = new Payment(order, request.getPaymentKey());
 
         paymentRepository.save(payment);
-
     }
 
     /**
      * 주문 취소
      */
     @Transactional
-    public OrderCancelResponse orderCancel(Long userId, Long orderId) {
+    public OrderCancelResponse orderCancel(Long userId, Long orderId, OrderPaymentCancelReasonRequest request) {
 
         // 주문 권한 체크
         Order order = checkOrderPermission(orderRepository.findById(orderId), userId);
@@ -176,6 +171,12 @@ public class OrderService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.OPTION_NOT_FOUND));
 
         option.increaseStock(orderQuantity);
+
+        // 결제 키 찾을 수 없음
+        Payment payment = paymentRepository.findPaymentKeyByOrder_Id(orderId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.PAYMENT_KEY_NOT_FOUND));
+
+        tossPaymentClient.cancelPayment(payment.getPaymentKey(), request.getCanceledReason());
 
         // 결제 취소 (상태 변경)
         order.cancel();
