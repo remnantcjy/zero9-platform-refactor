@@ -8,10 +8,15 @@ import com.zero9platform.domain.ranking.model.response.*;
 import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -21,7 +26,13 @@ public class RankingService {
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final SearchLogRepository searchLogRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
+    private final StringRedisTemplate redisTemplate;
 
+    // gpp 랭킹용 상수값 선언
+    private static final String GPP_TOTAL_RANKING_KEY = "gpp:ranking:total";
+    private static final String GPP_DAILY_RANKING_KEY_PREFIX = "gpp:ranking:daily:";
+    private static final int RANKING_LIMIT = 10;
+    
     /**
      * 공동구매 게시물 랭킹 (조회수 기준)
      */
@@ -45,6 +56,116 @@ public class RankingService {
                 .toList();
     }
 
+    /**
+     * 공동구매 게시물 전체 누적 랭킹 (Redis)
+     */
+    @Transactional(readOnly = true)
+    public List<GroupPurchasePostTotalRankingResponse> groupPurchasePostTotalRanking() {
+
+        // Redis ZSet에서 상위 N개 조회
+        Set<ZSetOperations.TypedTuple<String>> rankingSet =
+                redisTemplate.opsForZSet().reverseRangeWithScores(GPP_TOTAL_RANKING_KEY, 0, RANKING_LIMIT - 1);
+
+        // Redis 데이터가 없으면 빈 리스트 반환
+        if (rankingSet == null || rankingSet.isEmpty()) {
+            return List.of();
+        }
+
+        // Redis에 있는 게시물 ID만 추출
+        List<Long> gppIds = rankingSet.stream()
+                .map(tuple -> Long.valueOf(tuple.getValue()))
+                .toList();
+
+        // 삭제되지 않은 게시물만 조회
+        List<GroupPurchasePost> posts =
+                groupPurchasePostRepository.findAllById(gppIds).stream()
+                        .filter(g -> g.getDeletedAt() == null)
+                        .toList();
+
+        // 순위용 카운터
+        AtomicInteger rank = new AtomicInteger(1);
+
+        // Redis 순서 그대로 DTO 변환
+        return rankingSet.stream()
+                .map(tuple -> {
+                    Long gppId = Long.valueOf(tuple.getValue());
+
+                    // Redis ID -> DB 객체 매칭
+                    GroupPurchasePost gpp = posts.stream()
+                            .filter(p -> p.getId().equals(gppId))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (gpp == null) return null;
+
+                    // DTO 생성
+                    return GroupPurchasePostTotalRankingResponse.from(
+                            rank.getAndIncrement(),
+                            gpp.getId(),
+                            gpp.getProductName(),
+                            tuple.getScore().longValue()
+                    );
+                })
+                .filter(dto -> dto != null)
+                .toList();
+    }
+
+    /**
+     * 공동구매 게시물 오늘의 실시간 랭킹 (Redis)
+     */
+    @Transactional(readOnly = true)
+    public List<GroupPurchasePostTodayRankingResponse> groupPurchasePostTodayRanking() {
+
+        // 오늘 날짜 기반 key 생성
+        String todayKey = GPP_DAILY_RANKING_KEY_PREFIX + LocalDate.now();
+
+        // 오늘 ZSet에서 상위 N개 조회 (오늘 증가된 조회수 기준)
+        Set<ZSetOperations.TypedTuple<String>> rankingSet =
+                redisTemplate.opsForZSet().reverseRangeWithScores(todayKey, 0, RANKING_LIMIT - 1);
+
+        // 값이 없다면 빈리스트 반환
+        if (rankingSet == null || rankingSet.isEmpty()) {
+            return List.of();
+        }
+
+        // Redis에 있는 게시물 ID만 추출
+        List<Long> gppIds = rankingSet.stream()
+                .map(tuple -> Long.valueOf(tuple.getValue()))
+                .toList();
+
+        // 삭제되지 않은 게시물만 조회
+        List<GroupPurchasePost> posts =
+                groupPurchasePostRepository.findAllById(gppIds).stream()
+                        .filter(g -> g.getDeletedAt() == null)
+                        .toList();
+
+        // 순위용 카운터
+        AtomicInteger rank = new AtomicInteger(1);
+
+        // Redis 순서 그대로 DTO 변환
+        return rankingSet.stream()
+                .map(tuple -> {
+                    Long gppId = Long.valueOf(tuple.getValue());
+
+                    // Redis ID -> DB 객체 매칭
+                    GroupPurchasePost post = posts.stream()
+                            .filter(p -> p.getId().equals(gppId))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (post == null) return null;
+
+                    // DTO 생성
+                    return GroupPurchasePostTodayRankingResponse.from(
+                            rank.getAndIncrement(),
+                            post.getId(),
+                            post.getProductName(),
+                            tuple.getScore().longValue()
+                    );
+                })
+                .filter(dto -> dto != null)
+                .toList();
+    }
 
     /**
      * 상품판매 게시물 랭킹 (찜 기준)

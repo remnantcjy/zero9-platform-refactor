@@ -34,11 +34,11 @@ public class GroupPurchasePostViewCountScheduler {
             String value = redisTemplate.opsForValue().get(key);
             if (value == null) continue;
 
-            Long delta = Long.valueOf(value);
+            Long cached = Long.valueOf(value);
             Long gppId = Long.valueOf(key.replace(VIEW_COUNT_KEY_PREFIX, ""));
 
             // DB 반영
-            groupPurchasePostRepository.increaseViewCountBatch(gppId, delta);
+            groupPurchasePostRepository.increaseViewCountBatch(gppId, cached);
 
             // Redis 초기화
             redisTemplate.delete(key);
