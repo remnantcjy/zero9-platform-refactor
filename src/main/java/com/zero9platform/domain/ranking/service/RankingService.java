@@ -14,10 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -73,41 +72,57 @@ public class RankingService {
 
         // Redis에 있는 게시물 ID만 추출
         List<Long> gppIds = rankingSet.stream()
-                .map(tuple -> Long.valueOf(tuple.getValue()))
+                .map(ZSetOperations.TypedTuple::getValue)
+                .filter(Objects::nonNull)
+                .map(Long::valueOf)
                 .toList();
 
         // 삭제되지 않은 게시물만 조회
-        List<GroupPurchasePost> posts =
-                groupPurchasePostRepository.findAllById(gppIds).stream()
-                        .filter(g -> g.getDeletedAt() == null)
-                        .toList();
+        List<GroupPurchasePost> gppLists =
+                groupPurchasePostRepository.findAllByIdInAndDeletedAtIsNull(gppIds);
 
-        // 순위용 카운터
-        AtomicInteger rank = new AtomicInteger(1);
+        // ID -> Entity 매핑 (O(1) 조회용)
+        Map<Long, GroupPurchasePost> gppMap =
+                gppLists.stream()
+                        .collect(Collectors.toMap(GroupPurchasePost::getId, p -> p));
 
-        // Redis 순서 그대로 DTO 변환
-        return rankingSet.stream()
-                .map(tuple -> {
-                    Long gppId = Long.valueOf(tuple.getValue());
+        // Redis 순서 유지하면서 DTO 생성
+        List<GroupPurchasePostTotalRankingResponse> result = new ArrayList<>();
 
-                    // Redis ID -> DB 객체 매칭
-                    GroupPurchasePost gpp = posts.stream()
-                            .filter(p -> p.getId().equals(gppId))
-                            .findFirst()
-                            .orElse(null);
+        // 랭킹 카운터용
+        // 메서드 내부에서 멀티스레드처리(카운터 공유) 안함, atomicInteger 안써도 된다고 판단
+        int rank = 1;
 
-                    if (gpp == null) return null;
+        // Redis ZSet에서 가져온 데이터를 하나씩 꺼내는 반복문
+        // tuple 내부에 [ value:gppId(String), score:조회수(Double) ]
+        for (ZSetOperations.TypedTuple<String> tuple : rankingSet) {
 
-                    // DTO 생성
-                    return GroupPurchasePostTotalRankingResponse.from(
-                            rank.getAndIncrement(),
+            // null 방어 코드 - null이면 건너뜀
+            if (tuple.getValue() == null || tuple.getScore() == null) {
+                continue;
+            }
+
+            // Redis ZSet의 튜플안에 String으로 저장했기 때문에 Long으로 변환
+            Long gppId = Long.valueOf(tuple.getValue());
+            // Map에서 id로 엔티티 가져옴
+            GroupPurchasePost gpp = gppMap.get(gppId);
+
+            // 삭제된 게시물이거나 DB에 없는 경우 스킵
+            if (gpp == null) {
+                continue;
+            }
+
+            result.add(
+                    GroupPurchasePostTotalRankingResponse.from(
+                            rank++,
                             gpp.getId(),
                             gpp.getProductName(),
                             tuple.getScore().longValue()
-                    );
-                })
-                .filter(dto -> dto != null)
-                .toList();
+                    )
+            );
+        }
+
+        return result;
     }
 
     /**
@@ -116,55 +131,71 @@ public class RankingService {
     @Transactional(readOnly = true)
     public List<GroupPurchasePostTodayRankingResponse> groupPurchasePostTodayRanking() {
 
-        // 오늘 날짜 기반 key 생성
+        // 일일 키값
         String todayKey = GPP_DAILY_RANKING_KEY_PREFIX + LocalDate.now();
 
-        // 오늘 ZSet에서 상위 N개 조회 (오늘 증가된 조회수 기준)
+        // Redis ZSet 조회
         Set<ZSetOperations.TypedTuple<String>> rankingSet =
-                redisTemplate.opsForZSet().reverseRangeWithScores(todayKey, 0, RANKING_LIMIT - 1);
+                redisTemplate.opsForZSet()
+                        .reverseRangeWithScores(todayKey, 0, RANKING_LIMIT - 1);
 
-        // 값이 없다면 빈리스트 반환
         if (rankingSet == null || rankingSet.isEmpty()) {
             return List.of();
         }
 
-        // Redis에 있는 게시물 ID만 추출
+        // ID 추출
         List<Long> gppIds = rankingSet.stream()
-                .map(tuple -> Long.valueOf(tuple.getValue()))
+                .map(ZSetOperations.TypedTuple::getValue)
+                .filter(Objects::nonNull)
+                .map(Long::valueOf)
                 .toList();
 
-        // 삭제되지 않은 게시물만 조회
-        List<GroupPurchasePost> posts =
-                groupPurchasePostRepository.findAllById(gppIds).stream()
-                        .filter(g -> g.getDeletedAt() == null)
-                        .toList();
+        // 삭제되지 않은 게시물 조회
+        List<GroupPurchasePost> gppLists =
+                groupPurchasePostRepository.findAllByIdInAndDeletedAtIsNull(gppIds);
 
-        // 순위용 카운터
-        AtomicInteger rank = new AtomicInteger(1);
+        // Map 변환 (O(1) 조회)
+        Map<Long, GroupPurchasePost> gppMap =
+                gppLists.stream()
+                        .collect(Collectors.toMap(GroupPurchasePost::getId, p -> p));
 
-        // Redis 순서 그대로 DTO 변환
-        return rankingSet.stream()
-                .map(tuple -> {
-                    Long gppId = Long.valueOf(tuple.getValue());
+        // DTO 생성
+        List<GroupPurchasePostTodayRankingResponse> result = new ArrayList<>();
 
-                    // Redis ID -> DB 객체 매칭
-                    GroupPurchasePost post = posts.stream()
-                            .filter(p -> p.getId().equals(gppId))
-                            .findFirst()
-                            .orElse(null);
+        // 랭킹 카운터용
+        // 메서드 내부에서 멀티스레드처리(카운터 공유) 안함, atomicInteger 안써도 된다고 판단
+        int rank = 1;
 
-                    if (post == null) return null;
+        // Redis ZSet에서 가져온 데이터를 하나씩 꺼내는 반복문
+        // tuple 내부에 [ value:gppId(String), score:조회수(Double) ]
+        for (ZSetOperations.TypedTuple<String> tuple : rankingSet) {
 
-                    // DTO 생성
-                    return GroupPurchasePostTodayRankingResponse.from(
-                            rank.getAndIncrement(),
-                            post.getId(),
-                            post.getProductName(),
+            // null 방어 코드 - null이면 건너뜀
+            if (tuple.getValue() == null || tuple.getScore() == null) {
+                continue;
+            }
+
+            // Redis ZSet의 튜플안에 String으로 저장했기 때문에 Long으로 변환
+            Long gppId = Long.valueOf(tuple.getValue());
+            // Map에서 id로 엔티티 가져옴
+            GroupPurchasePost gpp = gppMap.get(gppId);
+
+            // 삭제된 게시물이거나 DB에 없는 경우 스킵
+            if (gpp == null) {
+                continue;
+            }
+
+            result.add(
+                    GroupPurchasePostTodayRankingResponse.from(
+                            rank++,
+                            gpp.getId(),
+                            gpp.getProductName(),
                             tuple.getScore().longValue()
-                    );
-                })
-                .filter(dto -> dto != null)
-                .toList();
+                    )
+            );
+        }
+
+        return result;
     }
 
     /**

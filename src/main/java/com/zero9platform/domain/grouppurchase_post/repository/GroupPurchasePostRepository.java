@@ -29,7 +29,7 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
             """)
     int increaseViewCount(@Param("gppId") Long gppId);
 
-    // 조회수 일괄 증가
+    // 조회수 일괄 증가 - [삭제처리 제외]
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
                 update GroupPurchasePost g
@@ -76,6 +76,9 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                   and g.endDate <= :now
 """)
     int updateDoingToEnd(@Param("now") LocalDateTime now);
+
+    // id에 대응되는 GPP 리스트 조회 - [삭제처리 제외]
+    List<GroupPurchasePost> findAllByIdInAndDeletedAtIsNull(List<Long> ids);
 
     // ViewCount 랭킹 조회
     List<GroupPurchasePost> findTop10ByDeletedAtIsNullOrderByViewCountDesc();
