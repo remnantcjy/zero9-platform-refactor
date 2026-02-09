@@ -2,6 +2,7 @@ package com.zero9platform.domain.order.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.OrderStatus;
+import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
 import com.zero9platform.common.util.payment.toss.TossPaymentClient;
@@ -58,10 +59,18 @@ public class OrderService {
         }
 
         // 총 결제 금액
-        ProductPostOption option = orderItem.getProductPostOption();
+        Long optionId = orderItem.getProductPostOption().getId();
+
+        // 비관락으로 재고 조회
+        ProductPostOption option = productPostOptionRepository.findByIdWithLock(optionId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.OPTION_NOT_FOUND));
+
         Long salePrice = option.getSalePrice(); // 옵션가
         Integer orderQuantity = orderItem.getOrderQuantity(); // 주문 수량
         Long totalAmount = salePrice * orderQuantity; // 총 결제 금액
+
+        // 재고 차감
+        option.decreaseStock(orderQuantity);
 
         // 결제 상태 변경
         String orderStatus = OrderStatus.PENDING.name();
@@ -138,11 +147,6 @@ public class OrderService {
 
         paymentRepository.save(payment);
 
-        ProductPostOption option = order.getOrderItem().getProductPostOption();
-        Integer orderQuantity = order.getOrderItem().getOrderQuantity();
-
-        // 재고 차감
-        option.decreaseStock(orderQuantity);
     }
 
     /**
@@ -154,21 +158,26 @@ public class OrderService {
         // 주문 권한 체크
         Order order = checkOrderPermission(orderRepository.findById(orderId), userId);
 
-        // 결제 상태 변경
-        OrderStatus.CANCELED.name();
+        // 이미 취소된 주문일 시, 예외 처리
+        if (order.getOrderStatus().equals(OrderStatus.CANCELED.name())) {
+            throw new CustomException(ExceptionCode.ALREADY_CANCELLED);
+        }
 
-        // 재고 증가
+        // 주문의 상태가 "결제 완료"시 - 주문 번호 (orderNo, paymentKey) 일치 확인 로직 추가 / 결제 대기시는 방어 로직 x
+
         OrderItem orderItem = orderItemRepository.findById(order.getOrderItem().getId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDERITEM_NOT_FOUND));
 
         Integer orderQuantity = orderItem.getOrderQuantity(); // 구매 수량
         Long optionId = orderItem.getProductPostOption().getId();
 
-        ProductPostOption option = productPostOptionRepository.findById(optionId)
+        // 재고 복구
+        ProductPostOption option = productPostOptionRepository.findByIdWithLock(optionId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.OPTION_NOT_FOUND));
 
         option.increaseStock(orderQuantity);
 
+        // 결제 취소 (상태 변경)
         order.cancel();
 
         return OrderCancelResponse.from(order);
