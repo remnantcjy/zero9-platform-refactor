@@ -3,6 +3,7 @@ package com.zero9platform.domain.product_post.service;
 import com.amazonaws.services.s3.AmazonS3;
 import com.zero9platform.common.aws.s3.S3Service;
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.ProgressStatus;
 import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
@@ -64,8 +65,11 @@ public class ProductPostService {
             contentImageKey = s3Service.upload(file, S3_FOLDER);
         }
 
+        // 현재 시간 생성
+        LocalDateTime now = LocalDateTime.now();
+
         // 상품판매 게시물 생성
-        ProductPost productPost = new ProductPost(user, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImageKey, request.getCategory().name(), request.getProgressStatus().name(), request.getStartDate(), request.getEndDate());
+        ProductPost productPost = new ProductPost(user, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), contentImageKey, request.getCategory().name(), request.getStartDate(), request.getEndDate(), now);
 
         // 옵션 생성
         for (ProductPostOptionCreateRequest optionRequest: request.getOptionList()) {
@@ -75,9 +79,6 @@ public class ProductPostService {
         }
 
         ProductPost savedProductPost = productPostRepository.save(productPost);
-
-        // 피드 생성 호출
-        //activityFeedService.feedCreate("SOON", savedProductPost.getId(), savedProductPost.getTitle());
 
         return ProductPostCreateResponse.from(savedProductPost);
     }
@@ -120,6 +121,11 @@ public class ProductPostService {
         ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
+        // 상품판매 게시물의 상태가 'READY'일 때만 수정 가능
+        if (!productPost.getProgressStatus().equals(ProgressStatus.READY.name())) {
+            throw new CustomException(ExceptionCode.PP_CANNOT_UPDATE_ALREADY_STARTED);
+        }
+
         // 본인만 수정 가능
         validProductPostOwner(user, productPost);
 
@@ -132,17 +138,19 @@ public class ProductPostService {
         }
 
         String category = request.getCategory() != null ? request.getCategory().name() : null;
-        String progressStatus = request.getProgressStatus() != null ? request.getProgressStatus().name() : null;
 
         // 이미지 교체 로직
         String finalImageKey = newImageKey != null ? newImageKey : oldImageKey;
-
-        productPost.update(category, progressStatus, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), finalImageKey, request.getStartDate(), request.getEndDate());
 
         // 기존 이미지 삭제 (새 이미지가 있을 때만)
         if (newImageKey != null && oldImageKey != null) {
             s3Service.s3Delete(oldImageKey);
         }
+
+        // 현재 시간 생성
+        LocalDateTime now = LocalDateTime.now();
+
+        productPost.update(category, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), finalImageKey, request.getStartDate(), request.getEndDate(), now);
 
         return ProductPostUpdateResponse.from(productPost);
     }
