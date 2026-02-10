@@ -25,14 +25,16 @@ public enum FeedType {
     /**
      * 주차공간에 들어갈 실제 내용
      */
-    public String toMessage(Object... args) {
-        if (args == null || args.length == 0) {
-            return this.messageFormat;
-        }
+    public String toMessage(String targetName, long count) {
         try {
-            return String.format(this.messageFormat, args);
+            // 실시간 카운트가 필요한 경우 (PAYMENT 등)
+            if (this.hasCounter) {
+                return String.format(this.messageFormat, targetName, count);
+            }
+            // 이름만 갈아끼우면 되는 경우
+            return String.format(this.messageFormat, targetName);
         } catch (Exception e) {
-            // 인자 갯수가 안 맞을 경우를 대비한 방어 로직
+            // 포맷팅 에러 시 원문 반환 (방어 로직)
             return this.messageFormat;
         }
     }

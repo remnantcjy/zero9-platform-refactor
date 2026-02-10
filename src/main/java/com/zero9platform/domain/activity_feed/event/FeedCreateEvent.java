@@ -11,5 +11,4 @@ public class FeedCreateEvent {
     private final Long targetId;
     private final String title;
     private final Long userId;
-    private final Object[] args;
 }
