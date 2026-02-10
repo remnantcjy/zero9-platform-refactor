@@ -6,6 +6,7 @@ import com.zero9platform.common.util.SearchProfanityFilter;
 import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.searchLog.model.response.RecentSearchResponse;
 import com.zero9platform.domain.searchLog.model.response.SearchLogItemResponse;
+import com.zero9platform.domain.searchLog.service.SearchIndexer;
 import com.zero9platform.domain.searchLog.service.SearchLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.List;
 public class SearchLogController {
 
     private final SearchLogService searchLogService;
+    private final SearchIndexer searchIndexer;
     private final SearchProfanityFilter profanityFilter;
 
     /**
@@ -101,7 +103,7 @@ public class SearchLogController {
     @PostMapping("/admin/search/bulkreindex")
     public ResponseEntity<CommonResponse<String>> reindex() {
 
-        searchLogService.bulkIndexingAll();
+        searchIndexer.bulkIndexingAll();
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(CommonResponse.success("전체 데이터 재인덱싱 작업을 시작했습니다", null));
     }

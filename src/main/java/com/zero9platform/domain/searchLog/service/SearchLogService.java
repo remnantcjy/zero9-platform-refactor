@@ -7,63 +7,46 @@ import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.SearchProfanityFilter;
 import com.zero9platform.domain.auth.model.AuthUser;
-import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
-import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
-import com.zero9platform.domain.product_post.entity.ProductPost;
-import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
-import com.zero9platform.domain.ranking.service.RankingCounter;
 import com.zero9platform.domain.searchLog.model.response.RecentSearchResponse;
 import com.zero9platform.domain.searchLog.elasticsearch.SearchDocument;
-import com.zero9platform.domain.searchLog.entity.SearchLog;
 import com.zero9platform.domain.searchLog.model.response.SearchLogItemResponse;
-import com.zero9platform.domain.searchLog.repository.SearchDocumentRepository;
-import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.elasticsearch.annotations.IndexOptions;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static org.springframework.data.elasticsearch.annotations.IndexOptions.docs;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class SearchLogService {
 
-    private final SearchLogRepository searchLogRepository;
-    private final ProductPostRepository productPostRepository;
-    private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
-    private final SearchDocumentRepository searchDocumentRepository;
     private final ElasticsearchOperations elasticsearchOperations;
-    private final RankingCounter rankingCounter;
     private final SearchProfanityFilter searchProfanityFilter;
     private final StringRedisTemplate redisTemplate;
+    private final SearchLogManager searchLogManager;
     private final ObjectMapper objectMapper;
 
     /**
      * 통합 검색 API
      * 검색 대상 - 공동구매 상품명, 인플루언서 활동 닉네임
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<SearchLogItemResponse> searchLog(String cleanKeyword, String postType, Pageable pageable, AuthUser authUser, HttpServletRequest request) {
 
         // 검색 조건 검증 (허용되지 않은 조건 차단)
@@ -80,10 +63,9 @@ public class SearchLogService {
             throw new CustomException(ExceptionCode.PROFANITY_NOT_ALLOWED, cleanKeyword);
         }
 
-        // 식별자 결정: 로그인 유저 ID 또는 비회원 IP (동일 키워드를 1분 내 재검색 시 로그/랭킹 제외)
+        // 식별자 및 어뷰징 체크: 로그인 유저 ID 또는 비회원 IP (동일 키워드를 1분 내 재검색 시 로그/랭킹 제외)
         String identifier = (authUser != null) ? String.valueOf(authUser.getId()) : getClientIp(request);
         boolean isAbuse = isDuplicateSearch(cleanKeyword, identifier);
-
 
         // ES용 쿼리 빌드 (DB 레포지토리 호출 대신)
         NativeQuery query = NativeQuery.builder()
@@ -125,14 +107,9 @@ public class SearchLogService {
                 .toList();
 
         // 검색 로그 저장 및 검색 랭킹 카운터 증가
-        if (!isAbuse) {
-            Long userId = (authUser != null) ? authUser.getId() : null;
-            saveSearchLogs(cleanKeyword, userId);              // 검색로그 저장
-            rankingCounter.increaseKeyword(cleanKeyword); // 정제된 키워드로 랭킹 반영
-            saveRecentSearch(cleanKeyword, identifier, userId);   // 개별 유저 최근 검색어용
-        } else {
-            log.info("어뷰징 의심으로 랭킹 반영 생략: id={}, keyword={}", identifier, cleanKeyword);
-        }
+        Long userId = (authUser != null) ? authUser.getId() : null;
+        searchLogManager.record(cleanKeyword, userId, identifier, isAbuse);   // 개별 유저 최근 검색어용
+
         return new PageImpl<>(contents, pageable, hits.getTotalHits());
     }
 
@@ -148,7 +125,6 @@ public class SearchLogService {
         List<String> rawHistory = redisTemplate.opsForList().range(key, 0, 9);
         if (rawHistory == null) return List.of();
 
-        // "키워드|날짜"를 분리하여 DTO로 변환
         return rawHistory.stream()
                 .map(item -> {
                     try {
@@ -206,56 +182,6 @@ public class SearchLogService {
     }
 
     /**
-     * 검색 로그 저장
-     */
-    @Transactional
-    public void saveSearchLogs(String cleanKeyword, Long userId) {
-
-        // 검색어가 없으면 로그 저장하지 않음
-        if (cleanKeyword == null || cleanKeyword.isBlank()) {
-            return;
-        }
-        // 검색어 로그 저장
-        searchLogRepository.save(new SearchLog(cleanKeyword, userId));
-    }
-
-    /**
-     * 최근 검색어 저장
-     */
-    public void saveRecentSearch(String cleanKeyword, String identifier, Long userId) {
-
-        // 키 결정: 로그인 유저면 'USER:ID', 비회원이면 'IP:IP주소'
-        String key = (userId != null) ? "ZERO9:SEARCH:RECENT:USER:" + userId : "ZERO9:SEARCH:RECENT:IP:" + identifier;
-
-        try {
-            RecentSearchResponse newLog = new RecentSearchResponse(cleanKeyword, LocalDateTime.now());
-
-            String jsonValue = objectMapper.writeValueAsString(newLog);
-
-            List<String> currentList = redisTemplate.opsForList().range(key, 0, -1);
-            if (currentList != null) {
-                for (String item : currentList) {
-                    RecentSearchResponse oldLog = objectMapper.readValue(item, RecentSearchResponse.class);
-                    if (oldLog.getKeyword().equals(cleanKeyword)) {
-                        redisTemplate.opsForList().remove(key, 1, item);
-                    }
-                }
-            }
-
-            // 리스트의 맨 앞에 추가
-            redisTemplate.opsForList().leftPush(key, jsonValue);
-
-            // 최근 검색어를 10개까지만 유지
-            redisTemplate.opsForList().trim(key, 0, 9);
-
-            // 최근 검색어 데이터도 7일 정도 지나면 자동 삭제(TTL)
-            redisTemplate.expire(key, Duration.ofDays(7));
-        } catch (JsonProcessingException e) {
-            log.error("최근 검색어 직렬화 실패: {}", e.getMessage());
-        }
-    }
-
-    /**
      * 찜 개수 조회
      */
     @Transactional(readOnly = true)
@@ -268,12 +194,14 @@ public class SearchLogService {
                 .stream()
                 .collect(Collectors.toMap(
                         row -> (Long) row[0],  // productPostId
-                        row -> (Long) row[1]));   // favoriteCount
+                        row -> (Long) row[1])  // favoriteCount
+                );
     }
 
     /**
      * 검색 조건 검증
      */
+    @Transactional(readOnly = true)
     public void validateSearchCondition(String condition) {
         if (condition == null || condition.isBlank()) return;
         List<String> allowedConditions = List.of("product_title", "product_name", "influencer", "content");
@@ -282,116 +210,4 @@ public class SearchLogService {
         }
     }
 
-    /**
-     * [수동 실행용] DB의 모든 데이터를 ES로 전송 (Full Indexing)
-     */
-    @Async("SEARCH_LOG")
-    @Transactional(readOnly = true)
-    public void bulkIndexingAll() {
-        log.info("[Bulk Indexing - FULL] 전체 인덱싱 시작");
-        performIndexing(null); // 날짜 제한 없이 전체 조회
-        log.info("[Bulk Indexing - FULL] 전체 인덱싱 완료");
-    }
-
-    /**
-     * [스케줄러용] 최근 24시간 내 변경된 데이터만 전송 (Incremental Indexing)
-     */
-    @Async("SEARCH_LOG")
-    @Transactional(readOnly = true)
-    public void bulkIndexingIncremental() {
-        LocalDateTime targetTime = LocalDateTime.now().minusDays(1);
-        log.info("[Bulk Indexing - INCREMENTAL] {} 이후 변경분 인덱싱 시작", targetTime);
-        performIndexing(targetTime);
-        log.info("[Bulk Indexing - INCREMENTAL] 변경분 인덱싱 완료");
-    }
-
-
-    /**
-     * 공통 역 벌크 인덱싱 (중복 제거)
-     */
-    @Transactional(readOnly = true)
-    public void performIndexing(LocalDateTime modifiedAfter) {
-
-        log.info("[Bulk Indexing] 시작");
-
-        int pageSize = 1000;
-
-        // ProductPost 인덱싱 처리
-        int productPage = 0;
-        long totalProducts = 0;
-
-        while (true) {
-            Page<ProductPost> slice = (modifiedAfter == null)
-                    ? productPostRepository.findAll(PageRequest.of(productPage, pageSize))
-                    : productPostRepository.findAllByUpdatedAtAfter(modifiedAfter, PageRequest.of(productPage, pageSize));
-
-                    if (slice.isEmpty()) break;
-
-            List<SearchDocument> productDocs = slice.getContent().stream()
-                    .filter(product -> product.getUser().getDeletedAt() == null)
-                    .filter(product -> product.getId() != null)
-                    .map(product -> SearchDocument.builder()
-                            .id("PRODUCT_POST_" + product.getId())
-                            .postType("PRODUCT_POST")
-                            .title(product.getTitle())
-                            .content(product.getContent())
-                            .nickname(product.getUser().getNickname())
-                            .price(product.getOriginalPrice())
-                            .image(product.getImage())
-                            .startDate(product.getStartDate())
-                            .endDate(product.getEndDate())
-                            .userId(product.getUser().getId())
-                            .build())
-                    .toList();
-
-            saveDocs(productDocs, "ProductPost", productPage++);
-        }
-
-        // GroupPurchasePost 페이징 처리
-        int gppPage = 0;
-        long totalGpps = 0;
-        while (true) {
-            Page<GroupPurchasePost> slice = (modifiedAfter == null)
-                    ? groupPurchasePostRepository.findAll(PageRequest.of(gppPage, pageSize))
-                    : groupPurchasePostRepository.findAllByUpdatedAtAfter(modifiedAfter, PageRequest.of(gppPage, pageSize));
-            if (slice.isEmpty()) break;
-
-            List<SearchDocument> gppDocs = slice.getContent().stream()
-                    .filter(gpp -> gpp.getUser() != null && gpp.getUser().getDeletedAt() == null)
-                    .filter(gpp -> gpp.getId() != null && gpp.getDeletedAt() == null)
-                    .map(gpp -> SearchDocument.builder()
-                            .id("GROUP_PURCHASE_POST_" + gpp.getId())
-                            .postType("GROUP_PURCHASE_POST")
-                            .title(gpp.getProductName())
-                            .content(gpp.getContent())
-                            .nickname(gpp.getUser().getNickname())
-                            .price(gpp.getPrice())
-                            .image(gpp.getImage())
-                            .startDate(gpp.getStartDate())
-                            .endDate(gpp.getEndDate())
-                            .userId(gpp.getUser().getId())
-                            .build())
-                    .toList();
-
-            saveDocs(gppDocs, "GroupPurchasePost", gppPage++);
-        }
-        log.info("[Bulk Indexing] 완료! (총합: {} 건)", (totalProducts + totalGpps));
-    }
-
-    /**
-     * 인덱싱 결과 저장
-     */
-    private void saveDocs(List<SearchDocument> docs, String type, int page) {
-        try {
-            if (!docs.isEmpty()) {
-                searchDocumentRepository.saveAll(docs);
-                log.info("[GroupPurchasePost] {} 건 인덱싱 중...", docs);
-            }
-        } catch (Exception e) {
-            log.error("[{}] {} {}번 페이지 저장 실패: {}",
-                    type.equals("ProductPost") ? ExceptionCode.BULK_INDEXING_PRODUCT_FAILED.name() : ExceptionCode.BULK_INDEXING_GPP_FAILED.name(),
-                    type, page, e.getMessage());
-        }
-
-    }
 }
