@@ -17,6 +17,7 @@ import com.zero9platform.domain.product_post.model.response.ProductPostGetDetail
 import com.zero9platform.domain.product_post.model.response.ProductPostGetListResponse;
 import com.zero9platform.domain.product_post.model.response.ProductPostUpdateResponse;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
+import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
 import com.zero9platform.domain.user.entity.User;
@@ -43,6 +44,7 @@ public class ProductPostService {
     private final AmazonS3 amazonS3;
 
     private static final String S3_FOLDER = "product_post";
+    private final ProductPostFavoriteRepository productPostFavoriteRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -92,9 +94,11 @@ public class ProductPostService {
         ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
+        Long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
+
         String productImage = productPost.getImage() != null ? amazonS3.getUrl(bucket, productPost.getImage()).toString() : null;
 
-        return ProductPostGetDetailResponse.from(productPost, productImage);
+        return ProductPostGetDetailResponse.from(productPost, productImage, favoriteCount);
     }
 
     @Transactional(readOnly = true)
@@ -102,11 +106,16 @@ public class ProductPostService {
 
         Page<ProductPost> productPostsPage = productPostRepository.findAllByOrderByUpdatedAtDesc(pageable);
 
-        return productPostsPage.map(productPost -> ProductPostGetListResponse.from(
-                        productPost,
-                        productPost.getImage() != null ? amazonS3.getUrl(bucket, productPost.getImage()).toString() : null
-                )
-        );
+        return productPostsPage.map(productPost ->
+        {
+            // 찜 개수 조회
+            Long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
+
+            // 이미지 URL 생성
+            String imageUrl = (productPost.getImage() != null) ? amazonS3.getUrl(bucket, productPost.getImage()).toString() : null;
+
+            return ProductPostGetListResponse.from(productPost, imageUrl, favoriteCount);
+        });
     }
 
     /**

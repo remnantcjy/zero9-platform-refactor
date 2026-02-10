@@ -25,6 +25,6 @@ public class ProductPostScheduler {
         int doingCount = productPostRepository.updateToDoing(now);
         int endCount = productPostRepository.updateToEnd(now);
 
-        log.info("스케줄러 작동 완료 - 진행 중 변경: {}건, 종료 변경: {}건", doingCount, endCount);
+        log.info("ProductPost 스케줄러 작동 완료 - 진행 중 변경: {}건, 종료 변경: {}건", doingCount, endCount);
     }
 }
