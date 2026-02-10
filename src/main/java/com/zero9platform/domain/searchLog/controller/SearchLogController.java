@@ -32,17 +32,20 @@ public class SearchLogController {
     @GetMapping("/search-logs")
     public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String postType, Pageable pageable, @AuthenticationPrincipal AuthUser authUser, HttpServletRequest request) {
 
+        // 검색어 존재 여부에 따라 메시지 결정
+        boolean isKeywordEmpty = keyword == null || keyword.isBlank();
+        String message = isKeywordEmpty ? "검색어를 입력해주세요." : "통합 검색 결과 조회 성공";
+
         // keyword가 null이면 빈 문자열로 대체해서 NPE 방지
         String cleanKeyword = (keyword == null) ? "" : keyword.trim();
 
-        // 검색 서비스 호출
-        Page<SearchLogItemResponse> page = searchLogService.searchLog(cleanKeyword, postType, pageable, authUser, request);
-
-        // PageResponse로 변환
-        PageResponse<SearchLogItemResponse> pageResponse = PageResponse.from(page);
+        // 검색어가 없으면 빈 페이지를, 있으면 검색 수행
+        Page<SearchLogItemResponse> page = isKeywordEmpty
+                ? Page.empty(pageable)
+                : searchLogService.searchLog(cleanKeyword, postType, pageable, authUser, request);
 
         // 공통 응답 포맷으로 반환
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("통합 검색 결과 조회 성공", pageResponse));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(message, PageResponse.from(page)));
     }
 
     /**
@@ -60,7 +63,7 @@ public class SearchLogController {
     }
 
     /**
-     * 비속어 업로드
+     * 비속어 단어 목록 최신화
      */
     @PostMapping("/admin/profanity/refresh")
     public ResponseEntity<CommonResponse<String>> refreshFilter() {
@@ -93,12 +96,12 @@ public class SearchLogController {
     }
 
     /**
-     * DB 데이터를 ES로 전송 (데이터 보정용)
+     * DB 데이터를 ES로 전송 (수동 전체 데이터 보정용)
      */
-    @PostMapping("/admin/search/reindex")
+    @PostMapping("/admin/search/bulkreindex")
     public ResponseEntity<CommonResponse<String>> reindex() {
 
-        searchLogService.bulkIndexing();
+        searchLogService.bulkIndexingAll();
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(CommonResponse.success("전체 데이터 재인덱싱 작업을 시작했습니다", null));
     }

@@ -3,6 +3,8 @@ package com.zero9platform.common.enums;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+
 @Getter
 public enum ExceptionCode {
 
@@ -70,6 +72,8 @@ public enum ExceptionCode {
     PROFANITY_ALREADY_EXISTS(HttpStatus.CONFLICT, "[%s]은(는) 이미 등록된 단어입니다."),
     PROFANITY_NOT_FOUND(HttpStatus.NOT_FOUND, "[%s]은(는) 등록되지 않은 단어입니다."),
     PROFANITY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, " 입력하신 [%s]은(는) 비속어 단어 입니다."),
+    BULK_INDEXING_PRODUCT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "상품 게시글 벌크 인덱싱 중 오류가 발생했습니다."),
+    BULK_INDEXING_GPP_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "공동구매 게시글 벌크 인덱싱 중 오류가 발생했습니다."),
 
     //찜
     ALREADY_FAVORITE(HttpStatus.BAD_REQUEST, "이미 찜한 상품입니다."),
@@ -93,7 +97,7 @@ public enum ExceptionCode {
     ALREADY_SUBSCRIBED_GPP(HttpStatus.CONFLICT, "이미 팔로우한 공동구매 게시물입니다."),
 
     // FILE
-    FILE_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+    FILE_UPLOAD_FAIL(INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
     FILE_NOT_FOUND(HttpStatus.BAD_REQUEST,"업로드할 파일이 존재하지 않습니다."),
 
     // 옵션

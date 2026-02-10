@@ -2,6 +2,7 @@ package com.zero9platform.domain.grouppurchase_post.repository;
 
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -90,4 +91,9 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
         OR(:condition IS NULL OR :condition = '' AND (g.productName LIKE %:keyword% OR g.content LIKE %:keyword% OR u.nickname LIKE %:keyword%)))
     """)
     Page<GroupPurchasePost> searchByKeyword(@Param("keyword") String keyword, @Param("condition") String condition, Pageable pageable);
+
+    Page<GroupPurchasePost> findAllByDeletedAtIsNullAndUserIdDeletedAtIsNull(LocalDateTime deletedAt);
+
+    // 엘라스틱서치 역 벌크인덱싱 업데이트용
+    Page<GroupPurchasePost> findAllByUpdatedAtAfter(LocalDateTime modifiedAfter, PageRequest of);
 }

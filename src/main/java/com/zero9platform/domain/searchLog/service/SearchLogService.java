@@ -26,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.annotations.IndexOptions;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -33,15 +34,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static org.springframework.data.elasticsearch.annotations.IndexOptions.docs;
 
 @Log4j2
 @Service
@@ -283,11 +283,34 @@ public class SearchLogService {
     }
 
     /**
-     * DB의 모든 데이터를 ES로 전송 (Bulk Indexing)
+     * [수동 실행용] DB의 모든 데이터를 ES로 전송 (Full Indexing)
      */
     @Async("SEARCH_LOG")
     @Transactional(readOnly = true)
-    public void bulkIndexing() {
+    public void bulkIndexingAll() {
+        log.info("[Bulk Indexing - FULL] 전체 인덱싱 시작");
+        performIndexing(null); // 날짜 제한 없이 전체 조회
+        log.info("[Bulk Indexing - FULL] 전체 인덱싱 완료");
+    }
+
+    /**
+     * [스케줄러용] 최근 24시간 내 변경된 데이터만 전송 (Incremental Indexing)
+     */
+    @Async("SEARCH_LOG")
+    @Transactional(readOnly = true)
+    public void bulkIndexingIncremental() {
+        LocalDateTime targetTime = LocalDateTime.now().minusDays(1);
+        log.info("[Bulk Indexing - INCREMENTAL] {} 이후 변경분 인덱싱 시작", targetTime);
+        performIndexing(targetTime);
+        log.info("[Bulk Indexing - INCREMENTAL] 변경분 인덱싱 완료");
+    }
+
+
+    /**
+     * 공통 역 벌크 인덱싱 (중복 제거)
+     */
+    @Transactional(readOnly = true)
+    public void performIndexing(LocalDateTime modifiedAfter) {
 
         log.info("[Bulk Indexing] 시작");
 
@@ -298,48 +321,44 @@ public class SearchLogService {
         long totalProducts = 0;
 
         while (true) {
-            Page<ProductPost> productSlice = productPostRepository.findAll(PageRequest.of(productPage, pageSize));
+            Page<ProductPost> slice = (modifiedAfter == null)
+                    ? productPostRepository.findAll(PageRequest.of(productPage, pageSize))
+                    : productPostRepository.findAllByUpdatedAtAfter(modifiedAfter, PageRequest.of(productPage, pageSize));
 
-            if (productSlice.isEmpty()) break;
+                    if (slice.isEmpty()) break;
 
-            List<SearchDocument> productDocs = productSlice.getContent().stream()
-                    .filter(productPost -> productPost.getUser().getDeletedAt() == null)
-                    .filter(productPost -> productPost.getId() != null)
-                    .map(post -> SearchDocument.builder()
-                            .id("PRODUCT_POST_" + post.getId())
+            List<SearchDocument> productDocs = slice.getContent().stream()
+                    .filter(product -> product.getUser().getDeletedAt() == null)
+                    .filter(product -> product.getId() != null)
+                    .map(product -> SearchDocument.builder()
+                            .id("PRODUCT_POST_" + product.getId())
                             .postType("PRODUCT_POST")
-                            .title(post.getTitle())
-                            .content(post.getContent())
-                            .nickname(post.getUser().getNickname())
-                            .price(post.getOriginalPrice())
-                            .image(post.getImage())
-                            .startDate(post.getStartDate())
-                            .endDate(post.getEndDate())
-                            .userId(post.getUser().getId())
+                            .title(product.getTitle())
+                            .content(product.getContent())
+                            .nickname(product.getUser().getNickname())
+                            .price(product.getOriginalPrice())
+                            .image(product.getImage())
+                            .startDate(product.getStartDate())
+                            .endDate(product.getEndDate())
+                            .userId(product.getUser().getId())
                             .build())
                     .toList();
 
-            try {
-                searchDocumentRepository.saveAll(productDocs);
-                totalProducts += productDocs.size();
-                log.info("[ProductPost] {} 건 인덱싱 중...", totalProducts);
-            } catch (Exception e) {
-                log.error("{}번 페이지 인덱싱 실패: {}", productPage, e.getMessage());
-            }
-            productPage++;
+            saveDocs(productDocs, "ProductPost", productPage++);
         }
 
         // GroupPurchasePost 페이징 처리
         int gppPage = 0;
         long totalGpps = 0;
         while (true) {
-            Page<GroupPurchasePost> gppSlice = groupPurchasePostRepository.findAll(PageRequest.of(gppPage, pageSize));
+            Page<GroupPurchasePost> slice = (modifiedAfter == null)
+                    ? groupPurchasePostRepository.findAll(PageRequest.of(gppPage, pageSize))
+                    : groupPurchasePostRepository.findAllByUpdatedAtAfter(modifiedAfter, PageRequest.of(gppPage, pageSize));
+            if (slice.isEmpty()) break;
 
-            if (gppSlice.isEmpty()) break;
-
-            List<SearchDocument> gppDocs = gppSlice.getContent().stream()
-                    .filter(groupPurchasePost -> groupPurchasePost.getUser() != null && groupPurchasePost.getUser().getDeletedAt() == null)
-                    .filter(groupPurchasePost -> groupPurchasePost.getId() != null && groupPurchasePost.getDeletedAt() == null)
+            List<SearchDocument> gppDocs = slice.getContent().stream()
+                    .filter(gpp -> gpp.getUser() != null && gpp.getUser().getDeletedAt() == null)
+                    .filter(gpp -> gpp.getId() != null && gpp.getDeletedAt() == null)
                     .map(gpp -> SearchDocument.builder()
                             .id("GROUP_PURCHASE_POST_" + gpp.getId())
                             .postType("GROUP_PURCHASE_POST")
@@ -354,17 +373,25 @@ public class SearchLogService {
                             .build())
                     .toList();
 
-            try {
-                searchDocumentRepository.saveAll(gppDocs);
-                totalGpps += gppDocs.size();
-                log.info("[GroupPurchasePost] {} 건 인덱싱 중...", totalGpps);
-            } catch (Exception e) {
-                log.error("{}번 GPP 페이지 인덱싱 실패: {}", gppPage, e.getMessage());
-            }
-            gppPage++;
+            saveDocs(gppDocs, "GroupPurchasePost", gppPage++);
         }
         log.info("[Bulk Indexing] 완료! (총합: {} 건)", (totalProducts + totalGpps));
     }
+
+    /**
+     * 인덱싱 결과 저장
+     */
+    private void saveDocs(List<SearchDocument> docs, String type, int page) {
+        try {
+            if (!docs.isEmpty()) {
+                searchDocumentRepository.saveAll(docs);
+                log.info("[GroupPurchasePost] {} 건 인덱싱 중...", docs);
+            }
+        } catch (Exception e) {
+            log.error("[{}] {} {}번 페이지 저장 실패: {}",
+                    type.equals("ProductPost") ? ExceptionCode.BULK_INDEXING_PRODUCT_FAILED.name() : ExceptionCode.BULK_INDEXING_GPP_FAILED.name(),
+                    type, page, e.getMessage());
+        }
 
 
 }
