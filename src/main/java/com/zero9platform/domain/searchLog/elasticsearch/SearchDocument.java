@@ -1,5 +1,7 @@
 package com.zero9platform.domain.searchLog.elasticsearch;
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +15,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
-@Document(indexName = "zero9_searchLog")
-//@Setting(settingPath = "elasticsearch/settings.json") // 나중에 비속어 필터 넣을 곳
+@Document(indexName = "zero9_search_logs_v1")
 public class SearchDocument {
 
     @Id
@@ -32,7 +33,7 @@ public class SearchDocument {
     @Field(type = FieldType.Text, analyzer = "nori")
     private String content;   // 선택: 내용 검색 필요할 때만
 
-    @Field(type = FieldType.Keyword)
+    @Field(type = FieldType.Text, analyzer = "nori")
     private String nickname;  // influencer 닉네임 (Keyword 말고 Text 추천)
 
     @Field(type = FieldType.Long)
@@ -62,7 +63,14 @@ public class SearchDocument {
         this.startDate = startDate;
         this.endDate = endDate;
     }
+
+    public Long getNumericId() {
+        if (this.id == null) return null;
+        try {
+            String[] parts = this.id.split("_");
+            return Long.parseLong(parts[parts.length - 1]);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
-
-
-

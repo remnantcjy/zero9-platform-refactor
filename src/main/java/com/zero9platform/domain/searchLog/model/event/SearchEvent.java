@@ -1,4 +1,4 @@
-package com.zero9platform.domain.searchLog.model;
+package com.zero9platform.domain.searchLog.model.event;
 
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.product_post.entity.ProductPost;
@@ -21,10 +21,10 @@ public class SearchEvent {
     private final LocalDateTime startDate;
     private final LocalDateTime endDate;
     private final Long userId;
-    private final boolean isDelete;
+    private final boolean deleted;
 
     // ProductPost -> Event 변환
-    public static SearchEvent from(ProductPost post, boolean isDelete){
+    public static SearchEvent from(ProductPost post, boolean deleted){
         return new SearchEvent(
                 "PRODUCT_POST_"+ post.getId().toString(),
                 "PRODUCT_POST",
@@ -36,7 +36,8 @@ public class SearchEvent {
                 post.getStartDate(),
                 post.getEndDate(),
                 post.getUser().getId(),
-                isDelete
+                deleted
+
         );
     }
 

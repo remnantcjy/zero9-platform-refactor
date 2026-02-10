@@ -1,7 +1,7 @@
 package com.zero9platform.domain.searchLog.service;
 
 import com.zero9platform.domain.searchLog.elasticsearch.SearchDocument;
-import com.zero9platform.domain.searchLog.model.SearchEvent;
+import com.zero9platform.domain.searchLog.model.event.SearchEvent;
 import com.zero9platform.domain.searchLog.repository.SearchDocumentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -13,7 +13,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Log4j2
 @Component
 @RequiredArgsConstructor
-public class SearchSyncListener {
+public class SearchEventListener {
 
     private final SearchDocumentRepository searchDocumentRepository;
 
@@ -22,10 +22,10 @@ public class SearchSyncListener {
      */
     @Async("SEARCH_LOG")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT) // DB 저장 성공 시에만 실행
-    public void handleSearchSyncEvent (SearchEvent event){
+    public void searchEventHandle(SearchEvent event){
 
         try {
-            if (event.isDelete()) {
+            if (event.isDeleted()) {
                 searchDocumentRepository.deleteById(event.getId());
                 log.info("[ES Sync] 문서 삭제 완료: {}", event.getId());
                 return;
