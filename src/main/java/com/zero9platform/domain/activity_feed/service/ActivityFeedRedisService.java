@@ -36,8 +36,7 @@ public class ActivityFeedRedisService {
     private static final String ORDER_COUNT_KEY_PREFIX = "product:order:count:";
 
     /**
-     * [전략 1] 피드 목록 캐시 조회 (역직렬화)
-     * - Redis에 저장된 JSON 문자열을 Java 객체 리스트로 변환합니다.
+     * 피드 목록 캐시 조회 (역직렬화)
      */
     public List<ActivityFeedResponse> getCachedFeeds(String key) {
         String json = redisTemplate.opsForValue().get(FEED_LIST_KEY_PREFIX + key);
@@ -52,8 +51,7 @@ public class ActivityFeedRedisService {
     }
 
     /**
-     * [전략 1] 피드 목록 캐시 저장 (직렬화)
-     * - 9초 소요되던 조회 결과를 Redis에 10분간 보관합니다.
+     * 피드 목록 캐시 저장 (직렬화)
      */
     public void saveFeedCache(String key, List<ActivityFeedResponse> feeds) {
         try {
@@ -65,9 +63,7 @@ public class ActivityFeedRedisService {
     }
 
     /**
-     * [전략 2] 실시간 주문 카운팅 (Atomic INCR)
-     * - 'Purchase' 대신 'Order' 명칭 사용.
-     * - 동시성 이슈 없이 숫자를 올리고, 당일 자정에 자동 소멸되도록 설정합니다.
+     * 실시간 주문 카운팅 (Atomic INCR)
      */
     public void incrementOrderCount(Long productId) {
         String key = ORDER_COUNT_KEY_PREFIX + productId;
@@ -81,8 +77,7 @@ public class ActivityFeedRedisService {
     }
 
     /**
-     * [전략 2] 실시간 주문 카운트 조회
-     * - Redis에 저장된 최신 주문 수치를 가져옵니다.
+     * 실시간 주문 카운트 조회
      */
     public long getOrderCount(Long productId) {
         String key = ORDER_COUNT_KEY_PREFIX + productId;
@@ -91,8 +86,7 @@ public class ActivityFeedRedisService {
     }
 
     /**
-     * [전략 3] 피드 캐시 삭제 (Evict)
-     * - 새로운 피드가 생성되면 기존 캐시를 삭제하여 데이터 정합성을 유지합니다.
+     * 피드 캐시 삭제 (Evict)
      */
     public void deleteFeedCache(String key) {
         redisTemplate.delete(FEED_LIST_KEY_PREFIX + key);
