@@ -39,16 +39,20 @@ public class GroupPurchasePostStatusScheduler {
      * 매일 00시에 모집 상태 자동 변경
      */
     @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
+    // 서버 시작 1분 후 첫 실행 시간 / 이전 작업 끝난 뒤 24시간 후 실행
+    @Scheduled(initialDelay = 60_000, fixedDelay = 86_400_000)
+//    @Scheduled(cron = "0 0 0 * * *")
 //    @Scheduled(cron = "0 */10 * * * *") // 10분마다
     public void updateGppProgressStatus() {
+
+        log.info("실행 스레드명 : {}", Thread.currentThread().getName());
 
         LocalDateTime now = LocalDateTime.now();
 
         int readyToDoing = groupPurchasePostRepository.updateReadyToDoing(now);
         int doingToEnd = groupPurchasePostRepository.updateDoingToEnd(now);
 
-        log.info("GPP 상태 변경 - READY->DOING: {}, DOING->END: {}", readyToDoing, doingToEnd);
+        log.info("GPP 모집상태 변경 - READY->DOING: {}, DOING->END: {}", readyToDoing, doingToEnd);
     }
 
 }
