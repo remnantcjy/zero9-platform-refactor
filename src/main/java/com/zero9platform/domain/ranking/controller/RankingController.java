@@ -33,7 +33,7 @@ public class RankingController {
     }
 
     /**
-     * 공동구매 게시물 전체 누적 랭킹 TOP10 (조회수 기준)
+     * 공동구매 게시물 전체 누적 랭킹 TOP10 (전체 조회수 기준)
      */
     @GetMapping("/ranking/gpp/total")
     public ResponseEntity<CommonResponse<List<GroupPurchasePostTotalRankingResponse>>> groupPurchasePostTotalRankingHandler() {
@@ -44,7 +44,7 @@ public class RankingController {
     }
 
     /**
-     * 공동구매 게시물 오늘의 실시간 랭킹 TOP10 (조회수 기준)
+     * 공동구매 게시물 오늘의 실시간 랭킹 TOP10 (오늘 00시~ 조회수 기준)
      */
     @GetMapping("/ranking/gpp/today")
     public ResponseEntity<CommonResponse<List<GroupPurchasePostTodayRankingResponse>>> groupPurchasePostTodayRankingHandler() {
@@ -52,6 +52,17 @@ public class RankingController {
         List<GroupPurchasePostTodayRankingResponse> response = rankingService.groupPurchasePostTodayRanking();
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 실시간 랭킹 조회 성공", response));
+    }
+
+    /**
+     * 공동구매 게시물 주간 랭킹 TOP10 (최근 7일간의 조회수 기준)
+     */
+    @GetMapping("/ranking/gpp/week")
+    public ResponseEntity<CommonResponse<List<GroupPurchasePostTodayRankingResponse>>> groupPurchasePostWeeklyRankingHandler() {
+
+        List<GroupPurchasePostTodayRankingResponse> response = rankingService.groupPurchasePostWeeklyRanking();
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 주간 랭킹 조회 성공", response));
     }
 
     /**
