@@ -393,5 +393,5 @@ public class SearchLogService {
                     type, page, e.getMessage());
         }
 
-
+    }
 }
