@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ActivityFeedRepository extends JpaRepository<ActivityFeed, Long> {
+
+    // 피드 중복 생성 방지를 위한 존재 확인
+    boolean existsByTypeAndTargetIdAndUserId(String type, Long targetId, Long userId);
+
     // 공용인지 개인피드인지 구분
     Optional<ActivityFeed> findFirstByTypeAndTargetIdAndUserIdOrderByUpdatedAtDesc(String type, Long targetId, Long userId);
 

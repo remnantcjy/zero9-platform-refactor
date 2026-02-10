@@ -24,7 +24,7 @@ public class ActivityFeed extends BaseEntity {
     private String type;
 
     @Column(nullable = false, length = 255)
-    private String message;
+    private String targetName;
 
     // 상품판매게시물ID, 공지사항 ID 등 모든 목적지 ID를 담는 필드
     @Column(nullable = true)
@@ -34,14 +34,10 @@ public class ActivityFeed extends BaseEntity {
     @Column(nullable = true)
     private Long userId;
 
-    public ActivityFeed(String type, String message, Long targetId, Long userId) {
+    public ActivityFeed(String type, String targetName, Long targetId, Long userId) {
         this.type = type;
-        this.message = message;
+        this.targetName = targetName;
         this.targetId = targetId;
         this.userId = userId;
-    }
-
-    public void updateMessage(String newMessage) {
-        this.message = newMessage;
     }
 }

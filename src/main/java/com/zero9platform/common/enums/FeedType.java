@@ -20,9 +20,8 @@ public enum FeedType {
     // 양식
     private final String messageFormat;
 
-    // true : 기존 데이터 수정, false : 새로 생성
-    private final boolean isUpsert;
-
+    // Redis에서 실시간 카운트(OrderCount 등)를 조회해야 하는 타입인지 여부
+    private final boolean hasCounter;
     /**
      * 주차공간에 들어갈 실제 내용
      */
@@ -30,6 +29,11 @@ public enum FeedType {
         if (args == null || args.length == 0) {
             return this.messageFormat;
         }
-        return String.format(this.messageFormat, args);
+        try {
+            return String.format(this.messageFormat, args);
+        } catch (Exception e) {
+            // 인자 갯수가 안 맞을 경우를 대비한 방어 로직
+            return this.messageFormat;
+        }
     }
 }

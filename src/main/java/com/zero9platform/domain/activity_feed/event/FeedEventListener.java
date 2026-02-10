@@ -16,12 +16,11 @@ public class FeedEventListener {
     @Async("FEED_TASK_EXECUTOR")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT) // 메인 실행 후 실행해라
     public void handleFeedEvent(FeedCreateEvent event) {
-        activityFeedService.feedUpsert(
+        activityFeedService.feedCreate(
                 event.getType(),
                 event.getTargetId(),
                 event.getTitle(),
-                event.getUserId(),
-                event.getArgs()
+                event.getUserId()
         );
     }
 }

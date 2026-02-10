@@ -64,7 +64,7 @@ public class ProductPostFavoriteService {
 
         // 3개가 되는 순간 피드 생성 및 이미 있다면 패스
         if (favoriteCount >= 3) {
-            activityFeedService.feedCreate(FeedType.DEADLINE, productPost.getId(), productPost.getTitle());
+            activityFeedService.feedCreate(FeedType.DEADLINE, productPost.getId(), productPost.getTitle(), null);
         }
 
         return ProductPostFavoriteCreateResponse.from(productPostFavorite);
