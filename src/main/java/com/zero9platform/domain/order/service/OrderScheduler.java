@@ -23,8 +23,7 @@ public class OrderScheduler {
     @Transactional
     public void updateOrderStatus() {
 
-        // 추후 30분으로 변경 예정
-        LocalDateTime limitTime = LocalDateTime.now().minusMinutes(5);
+        LocalDateTime limitTime = LocalDateTime.now().minusMinutes(30);
 
         // 30분이 지난 미결제 주문들을 가져옴
         List<Order> orderList = orderRepository.findAllByOrderStatusAndCreatedAtBefore("PENDING", limitTime);
