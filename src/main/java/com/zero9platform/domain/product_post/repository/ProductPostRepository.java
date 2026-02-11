@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface ProductPostRepository extends JpaRepository<ProductPost, Long> {
@@ -52,4 +53,25 @@ public interface ProductPostRepository extends JpaRepository<ProductPost, Long> 
     and p.endDate <= :now
     """)
     int updateToEnd(@Param("now") LocalDateTime now);
+
+    // 상태별로 가장 최근 업데이트된 상품 하나만 가져오는 쿼리 메서드
+    Optional<ProductPost> findFirstByProgressStatusOrderByUpdatedAtDesc(String progressStatus);
+
+    // 내일 마감예정
+    @Query("""
+        SELECT p FROM ProductPost p
+        WHERE p.progressStatus = 'DOING'
+        AND p.endDate > :now
+        AND p.endDate <= :tomorrow
+    """)
+    List<ProductPost> findDeadlinePosts(@Param("now") LocalDateTime now, @Param("tomorrow") LocalDateTime tomorrow);
+
+    // 내일 오픈예정
+    @Query("""
+        SELECT p FROM ProductPost p
+        WHERE p.progressStatus = 'READY'
+        AND p.startDate > :now
+        AND p.startDate <= :tomorrow
+    """)
+    List<ProductPost> findUpcomingPosts(@Param("now") LocalDateTime now, @Param("tomorrow") LocalDateTime tomorrow);
 }

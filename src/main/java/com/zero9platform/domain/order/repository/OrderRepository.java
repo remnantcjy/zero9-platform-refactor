@@ -27,6 +27,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     Optional<Order> findByOrderNo(String orderNo);
 
+    // 특정 상품 ID를 가진 주문 아이템의 전체 개수를 셉니다.
+    long countByOrderItem_ProductPost_Id(Long productId);
+
 
     /**
      * 결제 대기 및 limitTime 이상인 Order 조회
