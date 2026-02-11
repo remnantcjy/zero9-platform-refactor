@@ -47,9 +47,6 @@ dependencies {
     // AWS Java SDK For Amazon S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 
-    // caffeine
-    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
-
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
