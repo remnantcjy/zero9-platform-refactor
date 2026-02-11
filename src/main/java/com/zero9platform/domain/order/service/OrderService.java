@@ -194,8 +194,6 @@ public class OrderService {
             throw new CustomException(ExceptionCode.ALREADY_CANCELLED);
         }
 
-        // 주문의 상태가 "결제 완료"시 - 주문 번호 (orderNo, paymentKey) 일치 확인 로직 추가 / 결제 대기시는 방어 로직 x
-
         OrderItem orderItem = orderItemRepository.findById(order.getOrderItem().getId())
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDERITEM_NOT_FOUND));
 
@@ -211,11 +209,15 @@ public class OrderService {
         // 결제 취소 (상태 변경)
         order.cancel();
 
-        // 결제 키 찾을 수 없음
-        Payment payment = paymentRepository.findPaymentKeyByOrder_Id(orderId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.PAYMENT_KEY_NOT_FOUND));
+        // "결제 완료" 상태일 때 결제 키 확인
+        if (OrderStatus.PAID.name().equals(order.getOrderStatus())) {
 
-        tossPaymentClient.cancelPayment(payment.getPaymentKey(), request.getCanceledReason());
+            // 결제 키 찾을 수 없음
+            Payment payment = paymentRepository.findPaymentKeyByOrder_Id(orderId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.PAYMENT_KEY_NOT_FOUND));
+
+            tossPaymentClient.cancelPayment(payment.getPaymentKey(), request.getCanceledReason());
+        }
 
         return OrderCancelResponse.from(order);
     }

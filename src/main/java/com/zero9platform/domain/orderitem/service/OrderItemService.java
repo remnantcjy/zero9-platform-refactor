@@ -111,18 +111,12 @@ public class OrderItemService {
         // 주문 상품 권한 체크
         OrderItem orderItem = checkOrderItemPermission(orderItemId, user);
 
-        // 결제 완료 & 취소 상태 -> 주문 상품 삭제 불가
+        // 주문 상품이 주문됐을 때, 삭제 불가
         Order order = orderItem.getOrder();
 
         if (order != null) {
 
-            // 결제 완료된 주문이면 주문 상품 삭제 불가
-            if (OrderStatus.PAID.name().equals(order.getOrderStatus()) || OrderStatus.CANCELED.name().equals(order.getOrderStatus())) {
-                throw new CustomException(ExceptionCode.ALREADY_ORDERED_ORDERITEM);
-            }
-
-            // PENDING 또는 CANCELED라면 삭제 가능, 연관 끊기
-            order.setOrderItem(null);  // 양방향 관계 끊기
+            throw new CustomException(ExceptionCode.ALREADY_ORDERED_ORDERITEM);
         }
 
         // 결제 대기 상태인 주문이면 주문 상품 삭제 가능
