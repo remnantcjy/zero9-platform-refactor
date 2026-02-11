@@ -172,14 +172,14 @@ public class OrderService {
 
         option.increaseStock(orderQuantity);
 
+        // 결제 취소 (상태 변경)
+        order.cancel();
+
         // 결제 키 찾을 수 없음
         Payment payment = paymentRepository.findPaymentKeyByOrder_Id(orderId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PAYMENT_KEY_NOT_FOUND));
 
         tossPaymentClient.cancelPayment(payment.getPaymentKey(), request.getCanceledReason());
-
-        // 결제 취소 (상태 변경)
-        order.cancel();
 
         return OrderCancelResponse.from(order);
     }
