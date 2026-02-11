@@ -16,7 +16,7 @@ public class ProductPostScheduler {
 
     private final ProductPostRepository productPostRepository;
 
-    @Scheduled(cron = "0 0/1 * * * *")  // 추후 00시 변경 예정
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void updateProductPostProgress() {
 

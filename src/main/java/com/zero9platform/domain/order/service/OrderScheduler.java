@@ -1,4 +1,4 @@
-package com.zero9platform.domain.orderitem.service;
+package com.zero9platform.domain.order.service;
 
 import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.order.repository.OrderRepository;
@@ -44,6 +44,5 @@ public class OrderScheduler {
                 log.info("[자동취소 실패] 주문 ID: {} | 사유: {}", order.getId(), e.getMessage());
             }
         }
-
     }
 }
