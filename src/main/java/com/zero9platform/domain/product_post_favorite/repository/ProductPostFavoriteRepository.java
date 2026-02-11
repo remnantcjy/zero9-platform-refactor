@@ -43,7 +43,7 @@ public interface ProductPostFavoriteRepository extends JpaRepository<ProductPost
     //    GROUP BY gpp_id;
 
     // 현재 게시물의 찜 개수 확인용
-    long countByProductPost_Id(Long productPostId);
+    Long countByProductPost_Id(Long productPostId);
 
     //찜 랭킹 조회용
     @Query("""

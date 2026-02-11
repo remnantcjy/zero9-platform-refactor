@@ -1,5 +1,6 @@
 package com.zero9platform.domain.order.service;
 
+import com.zero9platform.common.enums.*;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.OrderStatus;
 import com.zero9platform.common.exception.CustomException;
@@ -16,6 +17,7 @@ import com.zero9platform.domain.order.repository.OrderRepository;
 import com.zero9platform.domain.order.repository.PaymentRepository;
 import com.zero9platform.domain.orderitem.entity.OrderItem;
 import com.zero9platform.domain.orderitem.repository.OrderItemRepository;
+import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.repository.ProductPostOptionRepository;
 import com.zero9platform.domain.user.entity.User;
@@ -50,10 +52,19 @@ public class OrderService {
         OrderItem orderItem = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDERITEM_NOT_FOUND));
 
+        ProductPost productPost = orderItem.getProductPost();
+
+        // 상품판매 게시물이 "DOING"일 때만 주문 생성 가능
+        if (!ProgressStatus.DOING.name().equals(productPost.getProgressStatus())) {
+            throw new CustomException(ExceptionCode.SALE_NOT_IN_PROGRESS);
+        }
+
+        // 본인의 주문 상품이 맞는지 검증
         if (!Objects.equals(userId, orderItem.getUser().getId())) {
             throw new CustomException(ExceptionCode.NO_PERMISSION);
         }
 
+        // 이미 주문한 상품이라면 예외처리
         if (orderItem.getOrder() != null) {
             throw new CustomException(ExceptionCode.ALREADY_ORDERED);
         }
@@ -194,7 +205,12 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        // 본인 인증
+        // 권한 체크 (관리자면 즉시 통과)
+        if (user.getRole().equals(UserRole.ADMIN.name())) {
+            return order;
+        }
+
+        // 본인 여부 확인
         if (!Objects.equals(order.getOrderItem().getUser().getId(), user.getId())) {
             throw new CustomException(ExceptionCode.NO_PERMISSION);
         }
