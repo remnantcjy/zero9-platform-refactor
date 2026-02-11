@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -32,7 +33,7 @@ public class SearchLogController {
      * 검색 대상 - 공동구매 상품명, 인플루언서 활동 닉네임
      */
     @GetMapping("/search-logs")
-    public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String postType, Pageable pageable, @AuthenticationPrincipal AuthUser authUser, HttpServletRequest request) {
+    public ResponseEntity<CommonResponse<PageResponse<SearchLogItemResponse>>> searchLogGetPageHandler(@RequestParam(required = false) String keyword, @RequestParam(required = false) String postType, Pageable pageable, Authentication authentication, HttpServletRequest request) {
 
         // 검색어 존재 여부에 따라 메시지 결정
         boolean isKeywordEmpty = keyword == null || keyword.isBlank();
@@ -40,6 +41,12 @@ public class SearchLogController {
 
         // keyword가 null이면 빈 문자열로 대체해서 NPE 방지
         String cleanKeyword = (keyword == null) ? "" : keyword.trim();
+
+        // AuthUser 추출
+        AuthUser authUser = null;
+        if (authentication != null && authentication.getPrincipal() instanceof AuthUser) {
+            authUser = (AuthUser) authentication.getPrincipal();
+        }
 
         // 검색어가 없으면 빈 페이지를, 있으면 검색 수행
         Page<SearchLogItemResponse> page = isKeywordEmpty
