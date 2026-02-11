@@ -40,8 +40,8 @@ public class GroupPurchasePostStatusScheduler {
      */
     @Transactional
     // 서버 시작 1분 후 첫 실행 시간 / 이전 작업 끝난 뒤 24시간 후 실행
-    @Scheduled(initialDelay = 60_000, fixedDelay = 86_400_000)
-//    @Scheduled(cron = "0 0 0 * * *")
+//    @Scheduled(initialDelay = 60_000, fixedDelay = 86_400_000)
+    @Scheduled(cron = "0 0 0 * * *") // cron도 내부적으로 이전 실행이 끝난 후 다음 스케줄을 처리
 //    @Scheduled(cron = "0 */10 * * * *") // 10분마다
     public void updateGppProgressStatus() {
 

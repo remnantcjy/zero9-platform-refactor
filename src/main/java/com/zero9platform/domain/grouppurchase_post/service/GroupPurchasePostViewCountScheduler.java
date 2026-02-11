@@ -23,6 +23,9 @@ public class GroupPurchasePostViewCountScheduler {
     // 추가 : 조회수 관리용 key 집합
     private static final String VIEW_COUNT_KEY_SET = "gpp:view_count:keys";
 
+    /**
+     * 조회수를 DB에 실제 반영 -> 일괄로 업데이트 하도록 스케줄링
+     */
     @Transactional
     @Scheduled(fixedDelay = 60_000) // 1분
     public void syncViewCountToDb() {
