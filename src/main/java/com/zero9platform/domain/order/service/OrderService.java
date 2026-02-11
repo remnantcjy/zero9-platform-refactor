@@ -88,6 +88,19 @@ public class OrderService {
         // 재고 차감
         option.decreaseStock(orderQuantity);
 
+        Long productId = productPost.getId();
+        String title = productPost.getTitle();
+
+        // 피드 생성
+        // 1. 품절 완료 피드 (SOLD_OUT)
+        if (option.getStockQuantity() == 0) {
+            eventPublisher.publishEvent(new FeedCreateEvent(FeedType.SOLD_OUT, productId, title, null));
+        }
+        // 2. 품절 임박 피드 (LOW_STOCK) - 기준: 5개 이하일 때
+        else if (option.getStockQuantity() <= 5) {
+            eventPublisher.publishEvent(new FeedCreateEvent(FeedType.LOW_STOCK, productId, title, null));
+        }
+
         // 결제 상태 변경
         String orderStatus = OrderStatus.PENDING.name();
 
@@ -98,16 +111,6 @@ public class OrderService {
         Order order = new Order(orderItem, orderNo, totalAmount, orderStatus);
 
         Order savedOrder = orderRepository.save(order);
-
-        // 피드 생성을 위한 데이터 준비
-        Long productId = savedOrder.getOrderItem().getProductPost().getId();
-        String title = savedOrder.getOrderItem().getProductPost().getTitle();
-
-        // 해당 상품(productId)으로 생성된 전체 주문 건수를 조회
-        long realOrderCount = orderRepository.countByOrderItem_ProductPost_Id(productId);
-
-        // 이벤트 던지기
-        eventPublisher.publishEvent(new FeedCreateEvent(FeedType.PAYMENT_COUNT, productId, title, userId));
 
         return OrderCreateResponse.from(savedOrder);
     }
@@ -166,6 +169,13 @@ public class OrderService {
         order.paymentStatusUpdate(OrderStatus.PAID);
 
         Payment payment = new Payment(order, request.getPaymentKey());
+
+        // 피드 생성을 위한 데이터 준비
+        Long productId = order.getOrderItem().getProductPost().getId();
+        String title = order.getOrderItem().getProductPost().getTitle();
+
+        // 이벤트 던지기
+        eventPublisher.publishEvent(new FeedCreateEvent(FeedType.PAYMENT_COUNT, productId, title, userId));
 
         paymentRepository.save(payment);
     }

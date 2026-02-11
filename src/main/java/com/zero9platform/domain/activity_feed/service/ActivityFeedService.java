@@ -35,8 +35,8 @@ public class ActivityFeedService {
         log.info("[ActivityFeed] 개인 피드 생성 시도 - 유저: {}, 상품: {}", userId, targetId);
 
         // 개인 피드  동일 유저에게 동일 타입/대상의 피드가 중복 생성되지 않도록 체크 후 저장
-        if (!feedRepository.existsByTypeAndTargetIdAndUserId(FeedType.PAYMENT_USER.name(), targetId, userId)) {
-            feedRepository.save(new ActivityFeed(FeedType.PAYMENT_USER.name(), targetName, targetId, userId));
+        if (!feedRepository.existsByTypeAndTargetIdAndUserId(type.name(), targetId, userId)) {
+            feedRepository.save(new ActivityFeed(type.name(), targetName, targetId, userId));
             log.info("[ActivityFeed] 개인 피드 저장 완료");
         }
         // 실시간 카운팅: Redis의 Atomic INCR 연산을 사용하여 동시성 이슈 없이 구매자 수를 집계
