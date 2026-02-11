@@ -3,12 +3,15 @@ package com.zero9platform.domain.ranking.service;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.RankingPeriod;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
+import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingListResponse;
 import com.zero9platform.domain.ranking.model.response.SearchLogRankingListResponse;
 import com.zero9platform.domain.ranking.repository.FavoriteRankingSnapshotRepository;
 import com.zero9platform.domain.ranking.repository.KeywordRankingSnapshotRepository;
+import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.PageRequest;
@@ -16,36 +19,27 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class RankingService {
 
-    private final GroupPurchasePostRepository groupPurchasePostRepository;
-    private final SearchLogRepository searchLogRepository;
-    private final ProductPostFavoriteRepository productPostFavoriteRepository;
-    private final StringRedisTemplate redisTemplate;
     private final RankingCounter rankingCounter;
     private final ProductPostRepository productPostRepository;
     private final FavoriteRankingSnapshotRepository favoriteSnapshotRepository;
     private final KeywordRankingSnapshotRepository keywordRankingSnapshotRepository;
-//    private final GroupPurchasePostRepository groupPurchasePostRepository;
-//    private final SearchLogRepository searchLogRepository;
 
     // gpp 랭킹용 상수값 선언
-    private static final String GPP_TOTAL_RANKING_KEY = "gpp:ranking:total";
-    private static final String GPP_DAILY_RANKING_KEY_PREFIX = "gpp:ranking:daily:";
-    private static final int RANKING_LIMIT = 10;
-    private static final String GPP_WEEKLY_RANKING_KEY_PREFIX = "gpp:ranking:weekly:";
-    private static final int WEEK_DAYS = 7;
+//    private static final String GPP_TOTAL_RANKING_KEY = "gpp:ranking:total";
+//    private static final String GPP_DAILY_RANKING_KEY_PREFIX = "gpp:ranking:daily:";
+//    private static final int RANKING_LIMIT = 10;
+//    private static final String GPP_WEEKLY_RANKING_KEY_PREFIX = "gpp:ranking:weekly:";
+//    private static final int WEEK_DAYS = 7;
 
     /**
      * 인기 검색어 랭킹 조회
