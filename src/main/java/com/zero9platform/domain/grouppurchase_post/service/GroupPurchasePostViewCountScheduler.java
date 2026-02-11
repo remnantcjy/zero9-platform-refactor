@@ -23,9 +23,14 @@ public class GroupPurchasePostViewCountScheduler {
     // 추가 : 조회수 관리용 key 집합
     private static final String VIEW_COUNT_KEY_SET = "gpp:view_count:keys";
 
+    /**
+     * 조회수를 DB에 실제 반영 -> 일괄로 업데이트 하도록 스케줄링
+     */
     @Transactional
     @Scheduled(fixedDelay = 60_000) // 1분
     public void syncViewCountToDb() {
+
+        log.info("실행 스레드명 : {}", Thread.currentThread().getName());
 
         // 기존 get() + delete() 방식은 중간에 증가하면 유실 가능
         // getAndSet으로 0으로 초기화하면서 기존 값 가져옴 (원자적 처리)
@@ -77,7 +82,7 @@ public class GroupPurchasePostViewCountScheduler {
             redisTemplate.opsForSet().remove(VIEW_COUNT_KEY_SET, gppIdStr);
         }
 
-        log.info("GPP ViewCount batch sync 완료 - 대상 수: {}", gppIds.size());
+        log.info("GPP 조회수 동기화 완료 - 대상 수: {}", gppIds.size());
     }
 
 }

@@ -214,6 +214,7 @@ public class RankingService {
             last7DaysKeys.add(key);
         }
 
+        // 주간 랭킹 저장용 key
         String weeklyKey = GPP_WEEKLY_RANKING_KEY_PREFIX + LocalDate.now();
 
         // ZUNIONSTORE 실행
@@ -224,31 +225,38 @@ public class RankingService {
                 weeklyKey
         );
 
+        // TTL 설정할 것
+
         // 상위 10개 조회
         Set<ZSetOperations.TypedTuple<String>> rankingSet =
-                redisTemplate.opsForZSet()
-                        .reverseRangeWithScores(weeklyKey, 0, RANKING_LIMIT - 1);
+                redisTemplate.opsForZSet().reverseRangeWithScores(weeklyKey, 0, RANKING_LIMIT - 1);
 
         if (rankingSet == null || rankingSet.isEmpty()) {
             return List.of();
         }
 
+        // TOP10 ZSet(rankingSet)에서 gppId 추출
         List<Long> gppIds = rankingSet.stream()
                 .map(ZSetOperations.TypedTuple::getValue)
                 .filter(Objects::nonNull)
                 .map(Long::valueOf)
                 .toList();
 
+        // 리스트에 담긴 gppId들에 대응되는 객체리스트 조회
         List<GroupPurchasePost> gppLists = groupPurchasePostRepository.findAllByIdInAndDeletedAtIsNull(gppIds);
 
+        // 조회한 객체 리스트의 gppId들을 매핑
         Map<Long, GroupPurchasePost> gppMap =
                 gppLists.stream()
                         .collect(Collectors.toMap(GroupPurchasePost::getId, p -> p));
 
+        // 반환용 리스트 선언
         List<GroupPurchasePostTodayRankingResponse> result = new ArrayList<>();
 
+        // 순위 카운터
         int rank = 1;
 
+        // 순위 정렬 + DTO 변환
         for (ZSetOperations.TypedTuple<String> tuple : rankingSet) {
 
             if (tuple.getValue() == null || tuple.getScore() == null) continue;
