@@ -18,7 +18,7 @@ public class SchedulerConfig {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 
         // 동시에 실행 가능한 스케줄러 스레드풀
-        // 현재 GPP 3개 + PP 1개 + 여분 1개(대기-지연 방지)
+        // 현재 GPP 3개 + PP 2개 + 여분 1개(대기-지연 방지)
         scheduler.setPoolSize(5);
 
         // 스레드명 앞문장 프리픽스 - 로그 사용시 구분용
