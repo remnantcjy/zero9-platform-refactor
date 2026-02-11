@@ -78,6 +78,7 @@ public class RankingController {
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 판매 게시물 랭킹 조회 성공", productPostFavoriteRankingListResponse));
     }
+
 }
 
 
