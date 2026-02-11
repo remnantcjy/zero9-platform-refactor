@@ -3,7 +3,7 @@ package com.zero9platform.domain.product_post_favorite.service;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.activity_feed.event.FeedCreateEvent;
 import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.product_post.entity.ProductPost;
@@ -32,7 +32,6 @@ public class ProductPostFavoriteService {
     private final UserRepository userRepository;
     private final ProductPostRepository productPostRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final ActivityFeedService activityFeedService;
     private final RankingCounter rankingCounter;
 
     /**
