@@ -3,6 +3,7 @@ package com.zero9platform.domain.product_post_favorite.service;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.auth.model.AuthUser;
 import com.zero9platform.domain.product_post.entity.ProductPost;
@@ -15,6 +16,7 @@ import com.zero9platform.domain.ranking.service.RankingCounter;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ public class ProductPostFavoriteService {
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
     private final UserRepository userRepository;
     private final ProductPostRepository productPostRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final ActivityFeedService activityFeedService;
     private final RankingCounter rankingCounter;
 
@@ -64,9 +67,8 @@ public class ProductPostFavoriteService {
         // 현재 게시물의 찜 개수 확인
         long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
 
-        // 3개가 되는 순간 피드 생성 및 이미 있다면 패스
-        if (favoriteCount >= 3) {
-            activityFeedService.feedCreate(FeedType.DEADLINE, productPost.getId(), productPost.getTitle());
+        // 초기 서비스 규모에 최적화된 3건을 기준으로 인기 상품 피드 생성
+        if (favoriteCount >= 3) {eventPublisher.publishEvent(new FeedCreateEvent(FeedType.POPULAR, productPost.getId(), productPost.getTitle(), null));
         }
 
         return ProductPostFavoriteCreateResponse.from(productPostFavorite);

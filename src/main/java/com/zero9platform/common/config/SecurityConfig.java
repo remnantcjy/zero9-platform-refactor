@@ -91,7 +91,6 @@ public class SecurityConfig {
                                 "/zero9/comments",
                                 "/zero9/influencers/*/follows",
                                 "/zero9/feeds/all",
-                                "/zero9/feeds",
                                 "/zero9/ranking/**"
                         ).permitAll()
                         .requestMatchers("/zero9/admin/**").hasRole(UserRole.ADMIN.name())
