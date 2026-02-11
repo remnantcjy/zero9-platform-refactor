@@ -15,6 +15,14 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    listener:
+      simple:
+        prefetch: 10   # 한 번에 처리할 메시지 개수
   jpa:
     open-in-view: false #트랜잭션을 컨트롤러에서 끊고, 영속성 컨텍스트를 서비스까지만 열어두는 설정
     hibernate:
