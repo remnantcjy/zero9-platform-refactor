@@ -46,7 +46,7 @@ public class OrderController {
 
         OrderGetDetailResponse response = orderService.orderGetDetail(userId, orderId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("주문 상세 조회 성공", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("주문 상세 조회 성공", response));
     }
 
     /**
@@ -61,7 +61,7 @@ public class OrderController {
 
         PageResponse<OrderGetDetailResponse> response = PageResponse.from(page);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("사용자의 주문 목록 조회 성공", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("사용자의 주문 목록 조회 성공", response));
     }
 
     /**
@@ -87,6 +87,6 @@ public class OrderController {
 
         OrderCancelResponse response = orderService.orderCancel(userId, orderId, request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(CommonResponse.success("주문 취소 성공", response));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("주문 취소 성공", response));
     }
 }
