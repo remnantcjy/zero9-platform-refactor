@@ -1,9 +1,9 @@
 package com.zero9platform.domain.order.service;
 
+import com.zero9platform.common.enums.*;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.common.enums.OrderStatus;
-import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
 import com.zero9platform.common.util.payment.toss.TossPaymentClient;
@@ -11,6 +11,7 @@ import com.zero9platform.domain.activity_feed.event.FeedCreateEvent;
 import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.order.entity.Payment;
+import com.zero9platform.domain.order.model.request.OrderPaymentCancelReasonRequest;
 import com.zero9platform.domain.order.model.request.OrderPaymentRequest;
 import com.zero9platform.domain.order.model.response.OrderCancelResponse;
 import com.zero9platform.domain.order.model.response.OrderCreateResponse;
@@ -19,6 +20,7 @@ import com.zero9platform.domain.order.repository.OrderRepository;
 import com.zero9platform.domain.order.repository.PaymentRepository;
 import com.zero9platform.domain.orderitem.entity.OrderItem;
 import com.zero9platform.domain.orderitem.repository.OrderItemRepository;
+import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.repository.ProductPostOptionRepository;
 import com.zero9platform.domain.user.entity.User;
@@ -55,10 +57,19 @@ public class OrderService {
         OrderItem orderItem = orderItemRepository.findById(orderItemId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDERITEM_NOT_FOUND));
 
+        ProductPost productPost = orderItem.getProductPost();
+
+        // 상품판매 게시물이 "DOING"일 때만 주문 생성 가능
+        if (!ProgressStatus.DOING.name().equals(productPost.getProgressStatus())) {
+            throw new CustomException(ExceptionCode.SALE_NOT_IN_PROGRESS);
+        }
+
+        // 본인의 주문 상품이 맞는지 검증
         if (!Objects.equals(userId, orderItem.getUser().getId())) {
             throw new CustomException(ExceptionCode.NO_PERMISSION);
         }
 
+        // 이미 주문한 상품이라면 예외처리
         if (orderItem.getOrder() != null) {
             throw new CustomException(ExceptionCode.ALREADY_ORDERED);
         }
@@ -150,25 +161,20 @@ public class OrderService {
         }
 
         // TossPayments 결제 승인
-        tossPaymentClient.tossPayment(
-                request.getPaymentKey(),
-                request.getOrderNo(),
-                request.getAmount()
-        );
+        tossPaymentClient.tossPayment(request.getPaymentKey(), request.getOrderNo(), request.getAmount());
 
         order.paymentStatusUpdate(OrderStatus.PAID);
 
         Payment payment = new Payment(order, request.getPaymentKey());
 
         paymentRepository.save(payment);
-
     }
 
     /**
      * 주문 취소
      */
     @Transactional
-    public OrderCancelResponse orderCancel(Long userId, Long orderId) {
+    public OrderCancelResponse orderCancel(Long userId, Long orderId, OrderPaymentCancelReasonRequest request) {
 
         // 주문 권한 체크
         Order order = checkOrderPermission(orderRepository.findById(orderId), userId);
@@ -195,6 +201,12 @@ public class OrderService {
         // 결제 취소 (상태 변경)
         order.cancel();
 
+        // 결제 키 찾을 수 없음
+        Payment payment = paymentRepository.findPaymentKeyByOrder_Id(orderId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.PAYMENT_KEY_NOT_FOUND));
+
+        tossPaymentClient.cancelPayment(payment.getPaymentKey(), request.getCanceledReason());
+
         return OrderCancelResponse.from(order);
     }
 
@@ -208,7 +220,12 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        // 본인 인증
+        // 권한 체크 (관리자면 즉시 통과)
+        if (user.getRole().equals(UserRole.ADMIN.name())) {
+            return order;
+        }
+
+        // 본인 여부 확인
         if (!Objects.equals(order.getOrderItem().getUser().getId(), user.getId())) {
             throw new CustomException(ExceptionCode.NO_PERMISSION);
         }
