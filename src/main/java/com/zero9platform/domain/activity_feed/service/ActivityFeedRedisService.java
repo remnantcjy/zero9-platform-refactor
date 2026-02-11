@@ -9,7 +9,6 @@ import com.zero9platform.domain.activity_feed.model.response.ActivityFeedRespons
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -24,6 +23,7 @@ public class ActivityFeedRedisService {
     private final ObjectMapper objectMapper;
 
     public ActivityFeedRedisService(StringRedisTemplate redisTemplate) {
+
         this.redisTemplate = redisTemplate;
 
         // Jackson 날짜 직렬화 에러 방지 설정
@@ -39,13 +39,19 @@ public class ActivityFeedRedisService {
      * 피드 목록 캐시 조회 (역직렬화)
      */
     public List<ActivityFeedResponse> getCachedFeeds(String key) {
+
         String json = redisTemplate.opsForValue().get(FEED_LIST_KEY_PREFIX + key);
-        if (json == null) return null;
+
+        if (json == null) {
+            return null;
+        }
 
         try {
             return objectMapper.readValue(json, new TypeReference<List<ActivityFeedResponse>>() {});
         } catch (JsonProcessingException e) {
+
             log.error("피드 캐시 역직렬화 실패: {}", e.getMessage());
+
             return null;
         }
     }
@@ -54,8 +60,11 @@ public class ActivityFeedRedisService {
      * 피드 목록 캐시 저장 (직렬화)
      */
     public void saveFeedCache(String key, List<ActivityFeedResponse> feeds) {
+
         try {
+
             String json = objectMapper.writeValueAsString(feeds);
+
             redisTemplate.opsForValue().set(FEED_LIST_KEY_PREFIX + key, json, Duration.ofMinutes(10));
         } catch (JsonProcessingException e) {
             log.error("피드 캐시 직렬화 실패: {}", e.getMessage());
@@ -66,12 +75,15 @@ public class ActivityFeedRedisService {
      * 실시간 주문 카운팅 (Atomic INCR)
      */
     public void incrementOrderCount(Long productId) {
+
         String key = ORDER_COUNT_KEY_PREFIX + productId;
         Long count = redisTemplate.opsForValue().increment(key);
 
         // 첫 카운트 발생 시 만료 시간 설정 (당일 23:59:59)
         if (count != null && count == 1) {
+
             LocalDateTime midnight = LocalDateTime.now().with(LocalTime.MAX);
+
             redisTemplate.expireAt(key, midnight.atZone(ZoneId.systemDefault()).toInstant());
         }
     }
@@ -80,8 +92,11 @@ public class ActivityFeedRedisService {
      * 실시간 주문 카운트 조회
      */
     public long getOrderCount(Long productId) {
+
         String key = ORDER_COUNT_KEY_PREFIX + productId;
+
         String countStr = redisTemplate.opsForValue().get(key);
+
         return countStr != null ? Long.parseLong(countStr) : 0L;
     }
 

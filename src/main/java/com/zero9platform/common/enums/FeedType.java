@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum FeedType {
+
     // [%s] 형식 지정자 - 주차공간
     POPULAR("[%s] 상품이 현재 많은 관심을 받고 있습니다.", false),
     PAYMENT_COUNT("[%s] 상품에 대해 최근 %d명이 주문했습니다!", true),
@@ -24,6 +25,7 @@ public enum FeedType {
 
     // Redis에서 실시간 카운트(OrderCount 등)를 조회해야 하는 타입인지 여부
     private final boolean hasCounter;
+
     /**
      * 주차공간에 들어갈 실제 내용
      */

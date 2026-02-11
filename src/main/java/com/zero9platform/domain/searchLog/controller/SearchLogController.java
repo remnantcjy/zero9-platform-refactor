@@ -36,15 +36,14 @@ public class SearchLogController {
 
         // 검색어 존재 여부에 따라 메시지 결정
         boolean isKeywordEmpty = keyword == null || keyword.isBlank();
+
         String message = isKeywordEmpty ? "검색어를 입력해주세요." : "통합 검색 결과 조회 성공";
 
         // keyword가 null이면 빈 문자열로 대체해서 NPE 방지
         String cleanKeyword = (keyword == null) ? "" : keyword.trim();
 
         // 검색어가 없으면 빈 페이지를, 있으면 검색 수행
-        Page<SearchLogItemResponse> page = isKeywordEmpty
-                ? Page.empty(pageable)
-                : searchLogService.searchLog(cleanKeyword, postType, pageable, authUser, request);
+        Page<SearchLogItemResponse> page = isKeywordEmpty ? Page.empty(pageable) : searchLogService.searchLog(cleanKeyword, postType, pageable, authUser, request);
 
         // 공통 응답 포맷으로 반환
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success(message, PageResponse.from(page)));
@@ -54,14 +53,11 @@ public class SearchLogController {
      * 나의 최근 검색 히스토리 조회 (최근 검색어 리스트)
      */
     @GetMapping("/search-logs/recent")
-    public ResponseEntity<CommonResponse<List<RecentSearchResponse>>> getRecentSearchHistory(
-            @AuthenticationPrincipal AuthUser authUser,
-            HttpServletRequest request) {
+    public ResponseEntity<CommonResponse<List<RecentSearchResponse>>> getRecentSearchHistory(@AuthenticationPrincipal AuthUser authUser, HttpServletRequest request) {
 
         List<RecentSearchResponse> history = searchLogService.getMySearchHistory(authUser, request);
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success("최근 검색어 조회 성공", history));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("최근 검색어 조회 성공", history));
     }
 
     /**
@@ -78,7 +74,6 @@ public class SearchLogController {
     /**
      * 비속어 단어 추가
      */
-//    @PostMapping("/search-logs/profanities/{word}")
     @PostMapping("/admin/profanities/{word}")
     public ResponseEntity<CommonResponse<String>> addWord(@PathVariable String word) {
 
@@ -102,7 +97,6 @@ public class SearchLogController {
      * DB 데이터를 ES로 전송 (수동 전체 데이터 보정용)
      */
     @PostMapping("/search-logs/bulkreindex")
-//    @PostMapping("/admin/search/bulkreindex")
     public ResponseEntity<CommonResponse<String>> reindex() {
 
         searchIndexer.bulkIndexingAll();

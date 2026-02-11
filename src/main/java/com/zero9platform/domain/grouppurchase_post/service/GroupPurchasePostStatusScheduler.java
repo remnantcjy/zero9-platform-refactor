@@ -54,5 +54,4 @@ public class GroupPurchasePostStatusScheduler {
 
         log.info("GPP 모집상태 변경 - READY->DOING: {}, DOING->END: {}", readyToDoing, doingToEnd);
     }
-
 }

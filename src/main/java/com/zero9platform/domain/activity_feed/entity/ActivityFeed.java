@@ -27,11 +27,11 @@ public class ActivityFeed extends BaseEntity {
     private String targetName;
 
     // 상품판매게시물ID, 공지사항 ID 등 모든 목적지 ID를 담는 필드
-    @Column(nullable = true)
+    @Column
     private Long targetId;
 
     // userId가 null이면 전체공개피드, 값이 있으면 해당하는 유저의 개인 알림피드
-    @Column(nullable = true)
+    @Column
     private Long userId;
 
     public ActivityFeed(String type, String targetName, Long targetId, Long userId) {

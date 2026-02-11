@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +28,7 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                 update GroupPurchasePost g
                 set g.viewCount = g.viewCount + 1
                 where g.id = :gppId and g.deletedAt is null
-            """)
+    """)
     int increaseViewCount(@Param("gppId") Long gppId);
 
     // 조회수 일괄 증가 - [삭제처리 제외]
@@ -38,7 +37,7 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                 update GroupPurchasePost g
                 set g.viewCount = g.viewCount + :cached
                 where g.id = :gppId and g.deletedAt is null
-""")
+    """)
     void increaseViewCountBatch(@Param("gppId") Long gppId, @Param("cached") Long cached);
 
 //    // 공동구매 게시물 모집상태 변경 대상(준비중->모집중 or 모집중->종료됨) 조회 - [삭제처리 제외]
@@ -65,7 +64,7 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                 where g.deletedAt is null
                   and g.gppProgressStatus = 'READY'
                   and g.startDate <= :now
-""")
+    """)
     // 벌크 업데이트 쿼리의 반환값은 조작 수(영향받은 row count), 따라서 데이터 타입은 int
     int updateReadyToDoing(@Param("now") LocalDateTime now);
 
@@ -77,7 +76,7 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
                 where g.deletedAt is null
                   and g.gppProgressStatus = 'DOING'
                   and g.endDate <= :now
-""")
+    """)
     int updateDoingToEnd(@Param("now") LocalDateTime now);
 
     // id에 대응되는 GPP 리스트 조회 - [삭제처리 제외]

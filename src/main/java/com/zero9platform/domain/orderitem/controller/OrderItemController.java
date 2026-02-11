@@ -2,7 +2,6 @@ package com.zero9platform.domain.orderitem.controller;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.domain.auth.model.AuthUser;
-import com.zero9platform.domain.comment.entity.Comment;
 import com.zero9platform.domain.orderitem.model.request.OrderItemCreateRequest;
 import com.zero9platform.domain.orderitem.model.response.OrderItemCreateResponse;
 import com.zero9platform.domain.orderitem.model.response.OrderItemGetDetailResponse;

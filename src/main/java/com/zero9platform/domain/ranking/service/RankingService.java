@@ -158,7 +158,7 @@ public class RankingService {
                 period != RankingPeriod.DAILY &&
                 period != RankingPeriod.WEEKLY &&
                 period != RankingPeriod.MONTHLY) {
-            throw new CustomException(ExceptionCode.INVALID_PERIOD);
+            throw new CustomException(ExceptionCode.RANKING_INVALID_PERIOD);
         }
     }
 

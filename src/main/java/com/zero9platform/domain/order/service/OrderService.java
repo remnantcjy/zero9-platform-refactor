@@ -8,7 +8,6 @@ import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.util.OrderCodeGenerator;
 import com.zero9platform.common.util.payment.toss.TossPaymentClient;
 import com.zero9platform.domain.activity_feed.event.FeedCreateEvent;
-import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.order.entity.Order;
 import com.zero9platform.domain.order.entity.Payment;
 import com.zero9platform.domain.order.model.request.OrderPaymentCancelReasonRequest;
@@ -55,23 +54,23 @@ public class OrderService {
 
         // 본인 인증 (orderItem의 userId만 주문 생성 가능)
         OrderItem orderItem = orderItemRepository.findById(orderItemId)
-                .orElseThrow(() -> new CustomException(ExceptionCode.ORDERITEM_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_ITEM_NOT_FOUND));
 
         ProductPost productPost = orderItem.getProductPost();
 
         // 상품판매 게시물이 "DOING"일 때만 주문 생성 가능
         if (!ProgressStatus.DOING.name().equals(productPost.getProgressStatus())) {
-            throw new CustomException(ExceptionCode.SALE_NOT_IN_PROGRESS);
+            throw new CustomException(ExceptionCode.PRODUCT_POST_NOT_IN_PROGRESS);
         }
 
         // 본인의 주문 상품이 맞는지 검증
         if (!Objects.equals(userId, orderItem.getUser().getId())) {
-            throw new CustomException(ExceptionCode.NO_PERMISSION);
+            throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
         }
 
         // 이미 주문한 상품이라면 예외처리
         if (orderItem.getOrder() != null) {
-            throw new CustomException(ExceptionCode.ALREADY_ORDERED);
+            throw new CustomException(ExceptionCode.ORDER_ALREADY_COMPLETED);
         }
 
         // 총 결제 금액
@@ -96,6 +95,7 @@ public class OrderService {
         if (option.getStockQuantity() == 0) {
             eventPublisher.publishEvent(new FeedCreateEvent(FeedType.SOLD_OUT, productId, title, null));
         }
+
         // 2. 품절 임박 피드 (LOW_STOCK) - 기준: 5개 이하일 때
         else if (option.getStockQuantity() <= 5) {
             eventPublisher.publishEvent(new FeedCreateEvent(FeedType.LOW_STOCK, productId, title, null));
@@ -153,11 +153,6 @@ public class OrderService {
         orderRepository.findByOrderNo(request.getOrderNo())
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
 
-//        주문 상태가 대기인 것만 가능한 방어로직 ??
-//        if (!order.getOrderStatus().equals(OrderStatus.PENDING.name())) {
-//            throw new CustomException(ExceptionCode.);
-//        }
-
         // 결제 금액 검증
         if (request.getAmount() != order.getTotalAmount()) {
             throw new CustomException(ExceptionCode.ORDER_AMOUNT_MISMATCH);
@@ -191,11 +186,11 @@ public class OrderService {
 
         // 이미 취소된 주문일 시, 예외 처리
         if (order.getOrderStatus().equals(OrderStatus.CANCELED.name())) {
-            throw new CustomException(ExceptionCode.ALREADY_CANCELLED);
+            throw new CustomException(ExceptionCode.ORDER_ALREADY_CANCELLED);
         }
 
         OrderItem orderItem = orderItemRepository.findById(order.getOrderItem().getId())
-                .orElseThrow(() -> new CustomException(ExceptionCode.ORDERITEM_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_ITEM_NOT_FOUND));
 
         Integer orderQuantity = orderItem.getOrderQuantity(); // 구매 수량
         Long optionId = orderItem.getProductPostOption().getId();
@@ -214,9 +209,11 @@ public class OrderService {
 
             // 결제 키 찾을 수 없음
             Payment payment = paymentRepository.findPaymentKeyByOrder_Id(orderId)
-                    .orElseThrow(() -> new CustomException(ExceptionCode.PAYMENT_KEY_NOT_FOUND));
+                    .orElseThrow(() -> new CustomException(ExceptionCode.TOSS_PAYMENT_KEY_NOT_FOUND));
 
             tossPaymentClient.cancelPayment(payment.getPaymentKey(), request.getCanceledReason());
+
+            order.canceledReasonUpdate(request.getCanceledReason());
         }
 
         return OrderCancelResponse.from(order);
@@ -226,6 +223,7 @@ public class OrderService {
      * 주문 권한 체크
      */
     private Order checkOrderPermission(Optional<Order> orderRepository, Long userId) {
+
         Order order = orderRepository
                 .orElseThrow(() -> new CustomException(ExceptionCode.ORDER_NOT_FOUND));
 
@@ -239,8 +237,9 @@ public class OrderService {
 
         // 본인 여부 확인
         if (!Objects.equals(order.getOrderItem().getUser().getId(), user.getId())) {
-            throw new CustomException(ExceptionCode.NO_PERMISSION);
+            throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
         }
+
         return order;
     }
 }
