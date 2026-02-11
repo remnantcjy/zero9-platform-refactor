@@ -52,17 +52,11 @@ public class SearchLogManager {
         String key = (userId != null) ? "ZERO9:SEARCH:RECENT:USER:" + userId : "ZERO9:SEARCH:RECENT:IP:" + identifier;
 
         try {
-//            RecentSearchResponse newLog = new RecentSearchResponse(keyword, LocalDateTime.now());
-//            String jsonValue = objectMapper.writeValueAsString(newLog);
-//
-//            List<String> currentList = redisTemplate.opsForList().range(key, 0, -1);
-
             RecentSearchResponse newLog = new RecentSearchResponse(keyword, LocalDateTime.now());
             String jsonValue = objectMapper.writeValueAsString(newLog);
             List<String> currentList = redisTemplate.opsForList().range(key, 0, 9);
             if (currentList != null) {
                 for (String item : currentList) {
-//                    RecentSearchResponse oldLog = objectMapper.readValue(item, RecentSearchResponse.class);
                     if (item.contains("\"keyword\":\"" + keyword + "\"")) {
                         redisTemplate.opsForList().remove(key, 1, item);
                     }
