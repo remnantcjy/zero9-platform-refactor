@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
@@ -29,7 +30,7 @@ public class SearchLogManager {
 
     // 검색 완료 후 호출되는 통합 기록 메서드
     @Async("SEARCH_LOG")
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(String keyword, Long userId, String identifier, boolean isAbuse) {
         if (isAbuse || keyword == null || keyword.isBlank()) return;
         // 1. DB 로그 저장
