@@ -24,10 +24,10 @@ public class SchedulerConfig {
         // 스레드명 앞문장 프리픽스 - 로그 사용시 구분용
         scheduler.setThreadNamePrefix("zero9-scheduler-");
 
-        // 최대 대기 시간
+        // 서버 종료 후, Scheduler shutdown 최대 대기 시간
         scheduler.setAwaitTerminationSeconds(30);
 
-        // 서버 종료 시 현재 작업 완료 대기
+        // 서버 종료 시, 현재 스레드의 작업 완료 대기
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
 
         scheduler.initialize();
