@@ -1,8 +1,9 @@
-package com.zero9platform.domain.product_post_favorite;
+package com.zero9platform.domain.product_post_favorite.controller;
 
 import com.zero9platform.common.model.CommonResponse;
 import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.auth.model.AuthUser;
+import com.zero9platform.domain.product_post_favorite.service.ProductPostFavoriteService;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteCreateResponse;
 import com.zero9platform.domain.product_post_favorite.model.response.ProductPostFavoriteGetResponse;
 import lombok.RequiredArgsConstructor;

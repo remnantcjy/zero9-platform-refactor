@@ -12,12 +12,7 @@ public class ProductPostFavoriteRankingListResponse {
     private final String title;
     private final Long favoriteCount;
 
-    public static ProductPostFavoriteRankingListResponse from(int rank, Long productPostId, String title, Long favoriteCount) {
-        return new ProductPostFavoriteRankingListResponse(
-                rank,
-                productPostId,
-                title,
-                favoriteCount
-        );
+    public static ProductPostFavoriteRankingListResponse of(int rank, Long productPostId, String title, Long favoriteCount) {
+        return new ProductPostFavoriteRankingListResponse(rank, productPostId, title, favoriteCount);
     }
 }

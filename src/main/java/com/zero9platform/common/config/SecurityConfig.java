@@ -17,7 +17,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 
 @Configuration
@@ -87,8 +86,7 @@ public class SecurityConfig {
                                 "/zero9/product-posts/*",
                                 "/zero9/gp-posts/**",
                                 "/zero9/posts/**",
-                                "/zero9/searchLog/**",
-                                "/zero9/click-log/**",
+                                "/zero9/search-logs/**",
                                 "/zero9/gpp-comments/**",
                                 "/zero9/comments",
                                 "/zero9/influencers/*/follows",

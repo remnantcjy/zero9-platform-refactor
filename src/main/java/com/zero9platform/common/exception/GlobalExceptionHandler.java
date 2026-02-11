@@ -1,6 +1,5 @@
 package com.zero9platform.common.exception;
 
-
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.zero9platform.common.enums.ExceptionCode;
 import com.zero9platform.common.model.CommonResponse;
@@ -10,6 +9,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -57,4 +57,10 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonResponse.fail("요청 형식(JSON)이 올바르지 않습니다."));
     }
+
+//    // 기간별 랭킹조회 날짜 형식 예외 처리
+//    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+//    public ResponseEntity<CommonResponse<Void>> handleDateFormatError() {
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonResponse.fail("날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)"));
+//    }
 }

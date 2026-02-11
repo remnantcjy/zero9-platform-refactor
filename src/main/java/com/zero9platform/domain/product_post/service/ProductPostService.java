@@ -7,7 +7,6 @@ import com.zero9platform.common.enums.ProgressStatus;
 import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.model.request.ProductPostCreateRequest;
@@ -20,10 +19,12 @@ import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
+import com.zero9platform.domain.searchLog.model.event.SearchEvent;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class ProductPostService {
     private final ActivityFeedService activityFeedService;
     private final S3Service s3Service;
     private final AmazonS3 amazonS3;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final String S3_FOLDER = "product_post";
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
@@ -81,6 +83,9 @@ public class ProductPostService {
         }
 
         ProductPost savedProductPost = productPostRepository.save(productPost);
+
+        //엘라스틱서치 비동기 업데이트
+        eventPublisher.publishEvent(SearchEvent.from(savedProductPost, false));
 
         return ProductPostCreateResponse.from(savedProductPost);
     }
@@ -150,6 +155,9 @@ public class ProductPostService {
 
         // 이미지 교체 로직
         String finalImageKey = newImageKey != null ? newImageKey : oldImageKey;
+
+        //엘라스틱서치 비동기 업데이트
+        eventPublisher.publishEvent(SearchEvent.from(productPost, false));
 
         // 기존 이미지 삭제 (새 이미지가 있을 때만)
         if (newImageKey != null && oldImageKey != null) {

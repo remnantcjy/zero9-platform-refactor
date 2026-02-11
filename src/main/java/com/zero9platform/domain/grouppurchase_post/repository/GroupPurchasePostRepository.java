@@ -2,11 +2,14 @@ package com.zero9platform.domain.grouppurchase_post.repository;
 
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -82,4 +85,26 @@ public interface GroupPurchasePostRepository extends JpaRepository<GroupPurchase
 
     // ViewCount 랭킹 조회
     List<GroupPurchasePost> findTop10ByDeletedAtIsNullOrderByViewCountDesc();
+
+    // 공동구매 게시물 통합 검색
+    @Query("""
+        SELECT g
+        FROM GroupPurchasePost g
+        JOIN g.user u
+        WHERE g.deletedAt IS NULL
+        AND ((:condition = 'product_name' AND g.productName LIKE CONCAT('%', :keyword, '%'))
+        OR(:condition = 'content' AND g.content LIKE CONCAT('%', :keyword, '%'))
+        OR(:condition = 'influencer' AND u.nickname LIKE CONCAT('%', :keyword, '%'))
+        OR(:condition IS NULL OR :condition = '' AND (g.productName LIKE %:keyword% OR g.content LIKE %:keyword% OR u.nickname LIKE %:keyword%)))
+    """)
+    Page<GroupPurchasePost> searchByKeyword(@Param("keyword") String keyword, @Param("condition") String condition, Pageable pageable);
+
+    // 엘라스틱서치 전체 역 벌크인덱싱용
+    @Override
+    @EntityGraph(attributePaths = {"user"})
+    Page<GroupPurchasePost> findAll(Pageable pageable);
+
+    // 엘라스틱서치 역 벌크인덱싱 업데이트용
+    @EntityGraph(attributePaths = {"user"})
+    Page<GroupPurchasePost> findAllByUpdatedAtAfter(LocalDateTime modifiedAfter, PageRequest of);
 }

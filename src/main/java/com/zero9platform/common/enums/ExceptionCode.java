@@ -70,10 +70,25 @@ public enum ExceptionCode {
     CATEGORY_FALSE(HttpStatus.NOT_FOUND, "category는 product_title, product_name 또는 influencer 둘 중 하나여야 합니다."),
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 상품이 없습니다."),
     NOT_FOUND_SEARCH_CONTEXT(HttpStatus.NOT_FOUND, "검색리스트가 없습니다."),
+    PROFANITY_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "비속어 설정 파일을 찾을 수 없습니다."),
+    PROFANITY_FILE_IO_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "비속어 파일 처리 중 오류가 발생했습니다."),
+    PROFANITY_ALREADY_EXISTS(HttpStatus.CONFLICT, "[%s]은(는) 이미 등록된 단어입니다."),
+    PROFANITY_NOT_FOUND(HttpStatus.NOT_FOUND, "[%s]은(는) 등록되지 않은 단어입니다."),
+    PROFANITY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, " 입력하신 [%s]은(는) 비속어 단어 입니다."),
+    BULK_INDEXING_PRODUCT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "상품 게시글 벌크 인덱싱 중 오류가 발생했습니다."),
+    BULK_INDEXING_GPP_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "공동구매 게시글 벌크 인덱싱 중 오류가 발생했습니다."),
 
     //찜
     ALREADY_FAVORITE(HttpStatus.BAD_REQUEST, "이미 찜한 상품입니다."),
     NOT_FOUND_FAVORITE(HttpStatus.NOT_FOUND, "이미 찜이 취소되었거나 존재하지 않습니다."),
+
+    //랭킹
+    INVALID_PERIOD(HttpStatus.BAD_REQUEST, "기간 랭킹은 DAILY / WEEKLY / MONTHLY 만 지원합니다."),
+    DUPLICATE_PERIOD(HttpStatus.BAD_REQUEST, "기간은 하나만 선택할 수 있습니다."),
+    PERIOD_REQUIRED(HttpStatus.BAD_REQUEST, "기간(period)은 필수 값입니다."),
+    INVALID_DATE_FORMAT(HttpStatus.BAD_REQUEST, "날짜 형식이 올바르지 않습니다. (yyyy-MM-dd)"),
+    INVALID_DATE_RANGE(HttpStatus.BAD_REQUEST, "조회 시작일은 종료일보다 이후일 수 없습니다."),
+    NOT_FOUND_RANKING_LIST(HttpStatus.NOT_FOUND, "랭킹리스트가 없습니다."),
 
     // GppComment - 404 NOT FOUND
     GPP_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "공동구매 게시물 댓글을 찾을 수 없습니다."),
@@ -98,7 +113,6 @@ public enum ExceptionCode {
     CANNOT_CREATE_AN_ORDERITEM(HttpStatus.NOT_FOUND, "상품 게시물이 비활성화 상태라 주문 상품을 생성할 수 없습니다."),
     OPTION_CHANGE_NOT_ALLOWED_AFTER_SALE_START(HttpStatus.BAD_REQUEST,  "진행 중이거나 종료된 상품 판매 게시물의 옵션은 추가하거나 삭제할 수 없습니다."),
     SALE_NOT_IN_PROGRESS(HttpStatus.BAD_REQUEST, "판매가 진행 중인 상품만 주문할 수 있습니다."),
-
 
     // 주문
     ALREADY_ORDERED_ORDERITEM(HttpStatus.CONFLICT, "이미 주문된 주문 상품입니다."),
