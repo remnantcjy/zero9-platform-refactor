@@ -12,6 +12,9 @@ import java.util.Optional;
 
 public interface ActivityFeedRepository extends JpaRepository<ActivityFeed, Long> {
 
+    // 공용 피드만 조회 (전체 피드 목록용)
+    Page<ActivityFeed> findByUserIdIsNull(Pageable pageable);
+
     // 피드 중복 생성 방지를 위한 존재 확인
     boolean existsByTypeAndTargetIdAndUserId(String type, Long targetId, Long userId);
 

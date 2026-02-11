@@ -96,7 +96,7 @@ public class OrderService {
         long realOrderCount = orderRepository.countByOrderItem_ProductPost_Id(productId);
 
         // 이벤트 던지기
-        eventPublisher.publishEvent(new FeedCreateEvent(FeedType.PAYMENT, productId, title, null, null));
+        eventPublisher.publishEvent(new FeedCreateEvent(FeedType.PAYMENT_COUNT, productId, title, userId));
 
         return OrderCreateResponse.from(savedOrder);
     }

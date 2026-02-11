@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum FeedType {
     // [%s] 형식 지정자 - 주차공간
     POPULAR("[%s] 상품이 현재 많은 관심을 받고 있습니다.", false),    // 찜 개인
-    PAYMENT("[%s] 상품에 대해 최근 %d명이 주문했습니다!", true),    // 결제 개인
+    PAYMENT_COUNT("[%s] 상품에 대해 최근 %d명이 주문했습니다!", true), // 결제 전체
+    PAYMENT_USER("[%s] 상품이 주문 완료되었습니다.", false),// 결제 개인
     DEADLINE("마감 안내: [%s] 상품의 판매가 곧 종료됩니다.", false),   // 마감 개인
     LOW_STOCK("[%s] 상품의 잔여 재고가 얼마 남지 않았습니다.", false),  // 재고 개인
     SOON("[%s] 상품외 여러 건이 곧 오픈 예정입니다.", false),    // 예정 전체,  요약
