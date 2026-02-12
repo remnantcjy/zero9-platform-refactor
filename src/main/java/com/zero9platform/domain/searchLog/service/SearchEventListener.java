@@ -26,10 +26,14 @@ public class SearchEventListener {
 
         try {
             if (event.isDeleted()) {
+
                 searchDocumentRepository.deleteById(event.getId());
+
                 log.info("[ES Sync] 문서 삭제 완료: {}", event.getId());
+
                 return;
             }
+
             SearchDocument doc = SearchDocument.builder()
                     .id(event.getId())
                     .postType(event.getPostType())
@@ -42,6 +46,7 @@ public class SearchEventListener {
                     .endDate(event.getEndDate())
                     .userId(event.getUserId())
                     .build();
+
             searchDocumentRepository.save(doc);
 
             log.info("[DB Sync] 문서 저장 완료: {}", event.getId());

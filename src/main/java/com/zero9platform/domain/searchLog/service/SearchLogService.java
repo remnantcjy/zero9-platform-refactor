@@ -70,11 +70,13 @@ public class SearchLogService {
         // 비속어 필터링 (원본 cleanKeyword로 사용자에게 피드백)
         if (searchProfanityFilter.isBadWord(cleanKeyword)) {
             log.warn("비속어 필터링에 걸린 검색어: [{}]", cleanKeyword);
-            throw new CustomException(ExceptionCode.PROFANITY_NOT_ALLOWED, cleanKeyword);
+
+            throw new CustomException(ExceptionCode.SEARCH_LOGS_PROFANITY_NOT_ALLOWED, cleanKeyword);
         }
 
         // 식별자 및 어뷰징 체크: 로그인 유저 ID 또는 비회원 IP (동일 키워드를 1분 내 재검색 시 로그/랭킹 제외)
         String identifier = (authUser != null) ? String.valueOf(authUser.getId()) : getClientIp(request);
+
         boolean isAbuse = isDuplicateSearch(cleanKeyword, identifier);
 
         // ES용 쿼리 빌드 (DB 레포지토리 호출 대신)
@@ -86,6 +88,7 @@ public class SearchLogService {
                         case "influencer" -> targetFields = List.of("nickname");
                         default -> List.of("title", "content", "nickname"); // 전체 검색
                     };
+
                     return m.fields(targetFields)
                             .query(cleanKeyword)
                             .fuzziness("1");
@@ -118,6 +121,7 @@ public class SearchLogService {
 
         // 검색 로그 저장 및 검색 랭킹 카운터 증가
         Long userId = (authUser != null) ? authUser.getId() : null;
+
         searchLogManager.record(cleanKeyword, userId, identifier, isAbuse);   // 개별 유저 최근 검색어용
 
         return new PageImpl<>(contents, pageable, hits.getTotalHits());
@@ -128,12 +132,16 @@ public class SearchLogService {
      */
     @Transactional(readOnly = true)
     public List<RecentSearchResponse> getMySearchHistory(AuthUser authUser, HttpServletRequest request) {
+
         // 저장할 때와 동일한 규칙으로 키를 생성
         String identifier = getClientIp(request);
         String key = (authUser != null) ? "ZERO9:SEARCH:RECENT:USER:" + authUser.getId() : "ZERO9:SEARCH:RECENT:IP:" + identifier;
 
         List<String> rawHistory = redisTemplate.opsForList().range(key, 0, 9);
-        if (rawHistory == null) return List.of();
+
+        if (rawHistory == null) {
+            return List.of();
+        }
 
         return rawHistory.stream()
                 .map(item -> {
@@ -152,13 +160,17 @@ public class SearchLogService {
      * IP 추출 유틸리티 (Nginx 등 프록시 환경 고려)
      */
     private String getClientIp(HttpServletRequest request) {
+
         String ip = request.getHeader("X-Forwarded-For");
+
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("Proxy-Client-IP");
         }
+
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
+
         return (ip != null && ip.contains(",")) ? ip.split(",")[0].trim() : ip;
     }
 
@@ -166,6 +178,7 @@ public class SearchLogService {
      * 어뷰징 체크 (회원 ID 또는 비회원 IP 활용)
      */
     private boolean isDuplicateSearch(String cleanKeyword, String identifier) {
+
         // 키 예시: CHECK:SEARCH:127.0.0.1:아이폰
         String checkKey = "ZERO9:SEARCH:CHECK:SEARCH:" + identifier + ":" + cleanKeyword;
 
@@ -180,14 +193,29 @@ public class SearchLogService {
      */
     private String determineMatchType(SearchDocument doc, String cleanKeyword, String postType) {
 
-        if ("influencer".equals(postType)) return "인플루언서 매칭";
-        if ("product_title".equals(postType)) return "제목 매칭";
-        if ("content".equals(postType)) return "내용 매칭";
+        if ("influencer".equals(postType)) {
+            return "인플루언서 매칭";
+        }
+
+        if ("product_title".equals(postType)) {
+            return "제목 매칭";
+        }
+
+        if ("content".equals(postType)) {
+            return "내용 매칭";
+        }
 
         String nickname = Objects.requireNonNullElse(doc.getNickname(), "");
         String title = Objects.requireNonNullElse(doc.getTitle(), "");
-        if (nickname.contains(cleanKeyword)) return "인플루언서 매칭";
-        if (title.contains(cleanKeyword)) return "제목 매칭";
+
+        if (nickname.contains(cleanKeyword)) {
+            return "인플루언서 매칭";
+        }
+
+        if (title.contains(cleanKeyword)) {
+            return "제목 매칭";
+        }
+
         return "내용 매칭";
     }
 
@@ -197,7 +225,9 @@ public class SearchLogService {
     @Transactional(readOnly = true)
     public Map<Long, Long> favoriteCountMap(List<Long> posts) {
 
-        if (posts.isEmpty()) return Map.of();
+        if (posts.isEmpty()) {
+            return Map.of();
+        }
 
         // DB 집계 결과를 Map 형태로 변환
         return productPostFavoriteRepository.countByGppIdList(posts)
@@ -213,11 +243,15 @@ public class SearchLogService {
      */
     @Transactional(readOnly = true)
     public void validateSearchCondition(String condition) {
-        if (condition == null || condition.isBlank()) return;
+
+        if (condition == null || condition.isBlank()) {
+            return;
+        }
+
         List<String> allowedConditions = List.of("product_title", "product_name", "influencer", "content");
+
         if (!allowedConditions.contains(condition)) {
-            throw new CustomException(ExceptionCode.CATEGORY_FALSE);
+            throw new CustomException(ExceptionCode.SEARCH_LOGS_INVALID_CATEGORY);
         }
     }
-
 }

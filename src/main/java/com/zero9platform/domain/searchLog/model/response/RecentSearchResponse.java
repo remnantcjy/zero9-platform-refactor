@@ -13,5 +13,4 @@ public class RecentSearchResponse {
 
     private final String keyword;
     private final LocalDateTime searchedAt;
-
 }

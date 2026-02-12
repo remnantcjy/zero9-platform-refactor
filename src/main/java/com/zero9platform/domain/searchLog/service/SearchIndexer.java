@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +33,11 @@ public class SearchIndexer {
     @Async("SEARCH_LOG")
     @Transactional(readOnly = true)
     public void bulkIndexingAll() {
+
         log.info("[Bulk Indexing - FULL] 전체 인덱싱 시작");
+
         performIndexing(null); // 날짜 제한 없이 전체 조회
+
         log.info("[Bulk Indexing - FULL] 전체 인덱싱 완료");
     }
 
@@ -45,9 +47,13 @@ public class SearchIndexer {
     @Async("SEARCH_LOG")
     @Transactional(readOnly = true)
     public void bulkIndexingIncremental() {
+
         LocalDateTime targetTime = LocalDateTime.now().minusDays(1);
+
         log.info("[Bulk Indexing - INCREMENTAL] {} 이후 변경분 인덱싱 시작", targetTime);
+
         performIndexing(targetTime);
+
         log.info("[Bulk Indexing - INCREMENTAL] 변경분 인덱싱 완료");
     }
 
@@ -67,11 +73,12 @@ public class SearchIndexer {
         long totalProducts = 0;
 
         while (true) {
-            Page<ProductPost> slice = (modifiedAfter == null)
-                    ? productPostRepository.findAll(PageRequest.of(productPage, pageSize))
-                    : productPostRepository.findAllByUpdatedAtAfter(modifiedAfter, PageRequest.of(productPage, pageSize));
 
-            if (slice.isEmpty()) break;
+            Page<ProductPost> slice = (modifiedAfter == null) ? productPostRepository.findAll(PageRequest.of(productPage, pageSize)) : productPostRepository.findAllByUpdatedAtAfter(modifiedAfter, PageRequest.of(productPage, pageSize));
+
+            if (slice.isEmpty()) {
+                break;
+            }
 
             List<SearchDocument> productDocs = slice.getContent().stream()
                     .filter(product -> product.getUser().getDeletedAt() == null)
@@ -96,11 +103,14 @@ public class SearchIndexer {
         // GroupPurchasePost 페이징 처리
         int gppPage = 0;
         long totalGpps = 0;
+
         while (true) {
-            Page<GroupPurchasePost> slice = (modifiedAfter == null)
-                    ? groupPurchasePostRepository.findAll(PageRequest.of(gppPage, pageSize))
-                    : groupPurchasePostRepository.findAllByUpdatedAtAfter(modifiedAfter, PageRequest.of(gppPage, pageSize));
-            if (slice.isEmpty()) break;
+
+            Page<GroupPurchasePost> slice = (modifiedAfter == null) ? groupPurchasePostRepository.findAll(PageRequest.of(gppPage, pageSize)) : groupPurchasePostRepository.findAllByUpdatedAtAfter(modifiedAfter, PageRequest.of(gppPage, pageSize));
+
+            if (slice.isEmpty()) {
+                break;
+            }
 
             List<SearchDocument> gppDocs = slice.getContent().stream()
                     .filter(gpp -> gpp.getUser() != null && gpp.getUser().getDeletedAt() == null)
@@ -121,6 +131,7 @@ public class SearchIndexer {
 
             saveDocs(gppDocs, "GroupPurchasePost", gppPage++);
         }
+
         log.info("[Bulk Indexing] 완료! (총합: {} 건)", (totalProducts + totalGpps));
     }
 
@@ -129,15 +140,14 @@ public class SearchIndexer {
      */
     private void saveDocs(List<SearchDocument> docs, String type, int page) {
         try {
+
             if (!docs.isEmpty()) {
                 searchDocumentRepository.saveAll(docs);
+
                 log.info("[{}] {} 건 인덱싱 중... (Page: {})", type, docs.size(), page);
             }
         } catch (Exception e) {
-            log.error("[{}] {} {}번 페이지 저장 실패: {}",
-                    type.equals("ProductPost") ? ExceptionCode.BULK_INDEXING_PRODUCT_FAILED.name() : ExceptionCode.BULK_INDEXING_GPP_FAILED.name(),
-                    type, page, e.getMessage());
+            log.error("[{}] {} {}번 페이지 저장 실패: {}", type.equals("ProductPost") ? ExceptionCode.SEARCH_LOGS_BULK_INDEXING_PRODUCT_FAILED.name() : ExceptionCode.SEARCH_LOGS_BULK_INDEXING_GPP_FAILED.name(), type, page, e.getMessage());
         }
-
     }
 }

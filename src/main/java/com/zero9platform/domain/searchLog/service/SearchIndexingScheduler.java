@@ -17,7 +17,9 @@ public class SearchIndexingScheduler {
      */
     @Scheduled(cron = "0 0 3 * * *")
     public void runDailyIncrementalIndexing() {
+
         log.info("정기 벌크 인덱싱 스케줄러 실행");
+
         searchIndexer.bulkIndexingIncremental();
     }
 }

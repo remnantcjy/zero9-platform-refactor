@@ -15,6 +15,7 @@ public class FeedEventListener {
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT) // 메인 실행 후 실행해라
     public void handleFeedEvent(FeedCreateEvent event) {
+
         // RabbitConfig에 정의한 Exchange와 RoutingKey를 사용해 JSON으로 전송
         rabbitTemplate.convertAndSend(
                 RabbitConfig.FEED_EXCHANGE,
