@@ -47,29 +47,6 @@ public class RankingService {
     private static final int WEEK_DAYS = 7;
 
     /**
-     * 공동구매 게시물 랭킹 (조회수 기준)
-     */
-    @Transactional(readOnly = true)
-    public List<GroupPurchasePostRankingListResponse> groupPurchasePostRanking() {
-
-        // 조회수 기준 상위 10개 공동구매 게시물 조회
-        List<GroupPurchasePost> posts = groupPurchasePostRepository.findTop10ByDeletedAtIsNullOrderByViewCountDesc();
-
-        AtomicInteger rank = new AtomicInteger(1);
-
-        // 집계 결과를 랭킹 응답 DTO로 변환
-        return posts.stream()
-                .map(aggregate -> GroupPurchasePostRankingListResponse.from(
-                                rank.getAndIncrement(),
-                                aggregate.getId(),
-                                aggregate.getProductName(),
-                                aggregate.getViewCount()
-                        )
-                )
-                .toList();
-    }
-
-    /**
      * 공동구매 게시물 전체 누적 랭킹 (Redis)
      */
     @Transactional(readOnly = true)
