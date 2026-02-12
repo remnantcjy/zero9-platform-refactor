@@ -36,7 +36,7 @@ public class RankingController {
     }
 
     /**
-     * 공동구매 게시물 오늘의 실시간 랭킹 TOP10 (오늘 00시~ 조회수 기준)
+     * 공동구매 게시물 오늘의 실시간 랭킹 TOP10 (오늘 ~00시 조회수 기준)
      */
     @GetMapping("/ranking/gpp/today")
     public ResponseEntity<CommonResponse<List<GroupPurchasePostTodayRankingResponse>>> groupPurchasePostTodayRankingHandler() {
