@@ -31,7 +31,7 @@ public class SchedulerConfig {
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
 
         scheduler.initialize();
+
         return scheduler;
     }
-
 }

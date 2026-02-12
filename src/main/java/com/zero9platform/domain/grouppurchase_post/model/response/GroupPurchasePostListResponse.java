@@ -42,5 +42,4 @@ public class GroupPurchasePostListResponse {
                 groupPurchasePost.getUpdatedAt()
         );
     }
-
 }

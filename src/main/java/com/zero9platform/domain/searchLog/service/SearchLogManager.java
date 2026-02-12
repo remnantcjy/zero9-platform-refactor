@@ -32,14 +32,18 @@ public class SearchLogManager {
     @Async("SEARCH_LOG")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(String keyword, Long userId, String identifier, boolean isAbuse) {
-        if (isAbuse || keyword == null || keyword.isBlank()) return;
-        // 1. DB 로그 저장
+
+        if (isAbuse || keyword == null || keyword.isBlank()) {
+            return;
+        }
+
+        // DB 로그 저장
         searchLogRepository.save(new SearchLog(keyword, userId));
 
-        // 2. 랭킹 카운트 증가
+        // 랭킹 카운트 증가
         rankingCounter.increaseKeyword(keyword);
 
-        // 3. Redis 최근 검색어 저장
+        // Redis 최근 검색어 저장
         saveRecentSearch(keyword, identifier, userId);
     }
 
@@ -55,6 +59,7 @@ public class SearchLogManager {
             RecentSearchResponse newLog = new RecentSearchResponse(keyword, LocalDateTime.now());
             String jsonValue = objectMapper.writeValueAsString(newLog);
             List<String> currentList = redisTemplate.opsForList().range(key, 0, 9);
+
             if (currentList != null) {
                 for (String item : currentList) {
                     if (item.contains("\"keyword\":\"" + keyword + "\"")) {
@@ -63,7 +68,7 @@ public class SearchLogManager {
                 }
             }
 
-            redisTemplate.opsForList().leftPush(key, jsonValue);     // 리스트의 맨 앞에 추가
+            redisTemplate.opsForList().leftPush(key, jsonValue);    // 리스트의 맨 앞에 추가
             redisTemplate.opsForList().trim(key, 0, 9);   // 최근 검색어를 10개까지만 유지
             redisTemplate.expire(key, Duration.ofDays(7));          // 최근 검색어 데이터도 7일 정도 지나면 자동 삭제(TTL)
         } catch (JsonProcessingException e) {

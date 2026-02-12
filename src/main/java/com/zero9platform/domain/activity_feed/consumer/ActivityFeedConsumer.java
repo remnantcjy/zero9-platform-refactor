@@ -21,6 +21,7 @@ public class ActivityFeedConsumer {
      */
     @RabbitListener(queues = RabbitConfig.FEED_QUEUE)
     public void consumeFeedEvent(FeedCreateEvent event) {
+
         log.info("[RabbitMQ Consumer] 메시지 수신 - 유저: {}, 타입: {}", event.getUserId(), event.getType());
 
         try {
@@ -34,6 +35,7 @@ public class ActivityFeedConsumer {
         } catch (Exception e) {
             // 실패 시 로그를 남기고 메시지는 큐의 설정에 따라 재시도
             log.error("[RabbitMQ Consumer] 피드 처리 중 에러 발생: {}", e.getMessage());
+
             throw e;
         }
     }

@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class FeedCreateEvent {
+
     private final FeedType type;
     private final Long targetId;
     private final String title;

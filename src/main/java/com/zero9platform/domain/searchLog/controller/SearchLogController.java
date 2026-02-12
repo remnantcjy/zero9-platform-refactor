@@ -85,8 +85,7 @@ public class SearchLogController {
     /**
      * 비속어 단어 추가
      */
-//    @PostMapping("/search-logs/profanities/{word}")
-    @PostMapping("/admin/profanities/{word}")
+    @PostMapping("/admin/profanity/{word}")
     public ResponseEntity<CommonResponse<String>> addWord(@PathVariable String word) {
 
         profanityFilter.addWord(word);
@@ -97,7 +96,7 @@ public class SearchLogController {
     /**
      * 비속어 단어 삭제
      */
-    @DeleteMapping("/admin/profanities/{word}")
+    @DeleteMapping("/admin/profanity/{word}")
     public ResponseEntity<CommonResponse<String>> removeWord(@PathVariable String word) {
 
         profanityFilter.removeWord(word);
@@ -108,8 +107,7 @@ public class SearchLogController {
     /**
      * DB 데이터를 ES로 전송 (수동 전체 데이터 보정용)
      */
-    @PostMapping("/search-logs/bulkreindex")
-//    @PostMapping("/admin/search/bulkreindex")
+    @PostMapping("/admin/search/bulkreindex")
     public ResponseEntity<CommonResponse<String>> reindex() {
 
         searchIndexer.bulkIndexingAll();

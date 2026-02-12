@@ -48,14 +48,12 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
 
                 // 세션 설정: STATELESS (JWT 기반 인증)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // Security 예외 처리
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패 (401)
-                        .accessDeniedHandler(jwtAccessDeniedHandler) // 권한 실패 (403)
+                        .accessDeniedHandler(jwtAccessDeniedHandler) // 인가 실패 (403)
                 )
 
                 // 인가(Authorization) 설정
@@ -70,7 +68,6 @@ public class SecurityConfig {
                                 "/main.html",
                                 "/css/**",
                                 "/js/**",
-
                                 "/zero9/auth/**",
                                 "/zero9/test/**"
                         ).permitAll()

@@ -8,7 +8,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Getter
@@ -31,7 +30,7 @@ public class GroupPurchasePost extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = true)
+    @Column
     private String image;
 
     @Column(nullable = false)
@@ -124,6 +123,7 @@ public class GroupPurchasePost extends BaseEntity {
      * 모집상태 전환 -> 해당 엔티티 클래스 안에서만 사용 가능 (protected 접근 제어)
      */
     protected void updateProgressStatus(LocalDateTime now) {
+
         // 이 메서드는 "생성 / 수정" 시점에만 사용
         // 모집상태 전환은 Scheduler + Bulk Update 쿼리 메서드로만 처리
         GppProgressStatus newStatus;
@@ -145,5 +145,4 @@ public class GroupPurchasePost extends BaseEntity {
 //    public void increaseViewCount() {
 //        this.viewCount++;
 //    }
-
 }
