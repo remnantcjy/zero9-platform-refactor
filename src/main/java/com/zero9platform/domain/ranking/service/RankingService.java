@@ -7,11 +7,9 @@ import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import com.zero9platform.domain.grouppurchase_post.repository.GroupPurchasePostRepository;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
-import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.ranking.model.response.*;
 import com.zero9platform.domain.ranking.repository.FavoriteRankingSnapshotRepository;
 import com.zero9platform.domain.ranking.repository.KeywordRankingSnapshotRepository;
-import com.zero9platform.domain.searchLog.repository.SearchLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.PageRequest;
@@ -45,29 +43,6 @@ public class RankingService {
     private static final int RANKING_LIMIT = 10;
     private static final String GPP_WEEKLY_RANKING_KEY_PREFIX = "gpp:ranking:weekly:";
     private static final int WEEK_DAYS = 7;
-
-    /**
-     * 공동구매 게시물 랭킹 (조회수 기준)
-     */
-    @Transactional(readOnly = true)
-    public List<GroupPurchasePostRankingListResponse> groupPurchasePostRanking() {
-
-        // 조회수 기준 상위 10개 공동구매 게시물 조회
-        List<GroupPurchasePost> posts = groupPurchasePostRepository.findTop10ByDeletedAtIsNullOrderByViewCountDesc();
-
-        AtomicInteger rank = new AtomicInteger(1);
-
-        // 집계 결과를 랭킹 응답 DTO로 변환
-        return posts.stream()
-                .map(aggregate -> GroupPurchasePostRankingListResponse.from(
-                                rank.getAndIncrement(),
-                                aggregate.getId(),
-                                aggregate.getProductName(),
-                                aggregate.getViewCount()
-                        )
-                )
-                .toList();
-    }
 
     /**
      * 공동구매 게시물 전체 누적 랭킹 (Redis)
@@ -423,72 +398,4 @@ public class RankingService {
             default -> LocalDateTime.now().minusDays(1);
         };
     }
-
-//    /**
-//     * 공동구매 조회수 랭킹
-//     */
-//    @Transactional(readOnly = true)
-//    public List<GroupPurchasePostRankingListResponse> groupPurchasePostRanking(RankingPeriod period) {
-//        RankingPeriod resolved = resolvePeriod(period);
-//        Map<String, Long> counters = rankingCounter.getAll(resolved);
-//        AtomicInteger rank = new AtomicInteger(1);
-//
-//        return counters.entrySet().stream()
-//                .filter(e -> e.getKey().startsWith(viewPrefix(resolved)))
-//                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-//                .limit(10)
-//                .map(e -> {
-//                    Long gppId = extractLastId(e.getKey());
-//                    GroupPurchasePost gpp = groupPurchasePostRepository
-//                            .findByIdAndDeletedAtIsNull(gppId)
-//                            .orElseThrow(() -> new CustomException(ExceptionCode.NOT_FOUND_POST));
-//
-//                    return GroupPurchasePostRankingListResponse.of(
-//                            rank.getAndIncrement(),
-//                            gpp.getId(),
-//                            gpp.getProductName(),
-//                            e.getValue()
-//                    );
-//                })
-//                .toList();
-//    }
-//
-//    /**
-//     * 기간별 상품 찜 랭킹 (관리자용)
-//     * period: DAILY / WEEKLY / MONTHLY
-//     */
-//    @Transactional(readOnly = true)
-//    public List<ProductPostFavoriteRankingListResponse> loadPeriodFavoriteRanking(AuthUser authUser, RankingPeriod period, LocalDate from, LocalDate to) {
-//
-//        // 관리자 권한 검증
-//        if (!"ADMIN".equals(authUser.getUserRole().name())) {throw new CustomException(ExceptionCode.NO_PERMISSION);}
-//
-//        // period 공백 검증
-//        if (period == null || period.name().isBlank()) {period = RankingPeriod.REALTIME;}
-//
-//        // 기간 랭킹 허용 값 검증
-//        if (period != RankingPeriod.REALTIME && period != RankingPeriod.DAILY && period != RankingPeriod.WEEKLY && period != RankingPeriod.MONTHLY) {throw new CustomException(ExceptionCode.INVALID_PERIOD);}
-//
-//        // 날짜 검증
-//        if (from != null && to != null && from.isAfter(to)) {throw new CustomException(ExceptionCode.INVALID_DATE_RANGE);}
-//
-//        // period 공백 검증
-//        LocalDateTime[] range = RankingPeriodPolicy.resolve(period, from, to);
-//
-//        // 기간 내 찜 기준 랭킹 집계
-//        List<ProductPostFavoriteRankingAggregateResponse> favorite = productPostFavoriteRepository.findTopByFavoriteBetween(range[0], range[1], ProgressStatus.DOING.name(), PageRequest.of(0, 10));
-//
-//        AtomicInteger rank = new AtomicInteger(1);
-//        List<ProductPostFavoriteRankingListResponse> result = favorite.stream()
-//                .map(a ->
-//                        ProductPostFavoriteRankingListResponse.from(
-//                                rank.getAndIncrement(),
-//                                a.getProductPostId(),
-//                                a.getTitle(),
-//                                a.getFavoriteCount()
-//                        ))
-//                .toList();
-//
-//        return result;
-//    }
 }
