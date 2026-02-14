@@ -93,7 +93,9 @@ public class SearchLogService {
                             .query(cleanKeyword)
                             .fuzziness("1");
                 }))
-                .withSort(s -> s.field(f -> f.field("startDate").order(SortOrder.Desc)))
+                // 검색 정렬 순위
+                .withSort(s -> s.score(sc -> sc.order(SortOrder.Desc))) // 1순위: 유사도 점수 높은 순 (정확도)
+                .withSort(s -> s.field(f -> f.field("startDate").order(SortOrder.Desc))) // 2순위: 점수가 같을 경우 최신 시작일 순
                 .withPageable(pageable)
                 .build();
 
