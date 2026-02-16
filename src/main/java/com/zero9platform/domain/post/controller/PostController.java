@@ -41,9 +41,9 @@ public class PostController {
      *  공지 / 문의 상세조회
      */
     @GetMapping("/{postId}")
-    public ResponseEntity<CommonResponse<PostGetDetailResponse>> postGetDetailHandler(@PathVariable Long postId) {
+    public ResponseEntity<CommonResponse<PostGetDetailResponse>> postGetDetailHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long postId, @RequestParam(required = false) String password) {
 
-        PostGetDetailResponse response = postService.postGetDetail(postId);
+        PostGetDetailResponse response = postService.postGetDetail(authUser.getId(), postId, password);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("게시물 상세조회 성공", response));
     }
@@ -76,7 +76,7 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public ResponseEntity<CommonResponse<Void>> postDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long postId) {
 
-        postService.postDelete(authUser, postId);
+        postService.postDelete(authUser.getId(), postId);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("게시물 삭제 성공", null));
     }

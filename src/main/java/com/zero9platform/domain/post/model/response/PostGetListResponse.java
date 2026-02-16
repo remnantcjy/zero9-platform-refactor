@@ -14,6 +14,7 @@ public class PostGetListResponse {
     private final Long userId;
     private final String type;
     private final String title;
+    private final boolean isSecret;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -24,6 +25,7 @@ public class PostGetListResponse {
                 post.getUser().getId(),
                 post.getType(),
                 post.getTitle(),
+                post.isSecret(),
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

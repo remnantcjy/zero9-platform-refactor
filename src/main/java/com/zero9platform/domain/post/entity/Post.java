@@ -31,21 +31,30 @@ public class Post extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @Column(nullable = false)
+    private boolean isSecret = false; // 실제 비밀글 여부 상태
+
+    @Column(length = 255)
+    private String password; // 비밀번호
 
     @Column
     private LocalDateTime deletedAt;
 
-    public Post(User user, String type,String title, String content) {
+    public Post(User user, String type,String title, String content, boolean isSecret, String password) {
         this.user = user;
         this.type = type;
         this.title = title;
         this.content = content;
+        this.isSecret = isSecret;
+        this.password = password;
         this.deletedAt = null;
     }
 
-    public void update(String title, String content) {
+    public void update(String title, String content, Boolean isSecret, String password) {
         if(title != null) this.title = title;
         if(content != null) this.content = content;
+        if(isSecret != null) this.isSecret = isSecret;
+        if(password != null) this.password = password;
     }
 
     public void delete() {
