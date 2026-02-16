@@ -15,6 +15,7 @@ public class PostGetDetailResponse {
     private final String type;
     private final String title;
     private final String content;
+    private final boolean isSecret;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -26,6 +27,7 @@ public class PostGetDetailResponse {
                 post.getType(),
                 post.getTitle(),
                 post.getContent(),
+                post.isSecret(),
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

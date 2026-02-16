@@ -15,8 +15,11 @@ import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 공지 및 문의사항 생성
@@ -34,11 +38,16 @@ public class PostService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
+        // 공지사항은 관리자만 작성 가능
         if (request.getPostType() == PostType.NOTICE && !UserRole.ADMIN.name().equals(user.getRole())) {
             throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
         }
 
-        Post saved = postRepository.save(new Post(user, request.getPostType().name(), request.getTitle(), request.getContent()));
+        String encodedPassword = (request.isSecret() && request.getPassword() != null)
+                ? passwordEncoder.encode(request.getPassword()) : null;
+
+
+        Post saved = postRepository.save(new Post(user, request.getPostType().name(), request.getTitle(), request.getContent(), request.isSecret(), encodedPassword));
 
         return PostCreateResponse.from(saved);
     }
@@ -47,10 +56,27 @@ public class PostService {
      * 공지 / 문의 상세조회
      */
     @Transactional(readOnly = true)
-    public PostGetDetailResponse postGetDetail(Long id) {
+    public PostGetDetailResponse postGetDetail(Long userId, Long postId, String inputPassword) {
 
-        Post post = postRepository.findByIdAndDeletedAtIsNull(id)
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
+
+        // 해당 글이 비밀글인 경우
+        if (post.isSecret()) {
+            boolean isAdmin = UserRole.ADMIN.name().equals(user.getRole());
+            boolean isOwner = Objects.equals(user.getId(), post.getUser().getId());
+
+            // 관리자도 아니고 작성자도 아닌 경우만 비밀번호 체크 수행
+            if (!isAdmin && !isOwner) {
+                if (inputPassword == null || !passwordEncoder.matches(inputPassword, post.getPassword())) {
+                    throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
+                }
+            }
+        }
+
         return PostGetDetailResponse.from(post);
     }
 
@@ -70,23 +96,24 @@ public class PostService {
     @Transactional
     public PostUpdateResponse postUpdate(Long userId, Long id, PostUpdateRequest request) {
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        // 공지사항인 경우: 관리자 권한 확인
+        // 권한 체크
         if (PostType.NOTICE.name().equals(post.getType())) {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
-            if (!UserRole.ADMIN.name().equals(user.getRole())) {
-                throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
-            }
-        }
-        // 문의사항인 경우: 작성자 본인 확인
-        else {
+            if (!UserRole.ADMIN.name().equals(user.getRole())) throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
+        } else {
             validOwner(post, userId);
         }
 
-        post.update(request.getTitle(), request.getContent());
+        String encodedPw = (request.getIsSecret() != null && request.getIsSecret() && request.getPassword() != null)
+                ? passwordEncoder.encode(request.getPassword()) : post.getPassword();
+
+        post.update(request.getTitle(), request.getContent(), request.getIsSecret(), encodedPw);
+
         return PostUpdateResponse.from(post);
     }
 
@@ -94,12 +121,15 @@ public class PostService {
      * 공지 및 문의 삭제
      */
     @Transactional
-    public void postDelete(AuthUser authUser, Long id) {
+    public void postDelete(Long userId, Long id) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        validOwnerOrAdmin(post, authUser.getId(), authUser.getUserRole());
+        validOwnerOrAdmin(post, userId, UserRole.valueOf(user.getRole()));
 
         post.delete();
     }

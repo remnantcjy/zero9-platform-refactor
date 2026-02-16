@@ -1,5 +1,6 @@
 package com.zero9platform.domain.post.model.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zero9platform.common.enums.PostType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -22,4 +23,9 @@ public class PostCreateRequest {
 
     @NotBlank(message = "내용은 필수입니다.")
     private String content;
+
+    @JsonProperty("isSecret")
+    private boolean isSecret;
+
+    private String password;
 }

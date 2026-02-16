@@ -1,5 +1,6 @@
 package com.zero9platform.domain.post.model.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,4 +15,9 @@ public class PostUpdateRequest {
     private String title;
 
     private String content;
+
+    @JsonProperty("isSecret")
+    private Boolean isSecret;
+
+    private String password;
 }
