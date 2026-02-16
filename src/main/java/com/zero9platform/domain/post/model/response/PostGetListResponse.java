@@ -12,8 +12,8 @@ public class PostGetListResponse {
 
     private final Long id;
     private final Long userId;
+    private final String type;
     private final String title;
-    private final Long viewCount;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -22,8 +22,8 @@ public class PostGetListResponse {
         return new PostGetListResponse(
                 post.getId(),
                 post.getUser().getId(),
+                post.getType(),
                 post.getTitle(),
-                post.getViewCount(),
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );
