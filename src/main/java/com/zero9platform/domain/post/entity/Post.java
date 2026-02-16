@@ -22,34 +22,30 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(nullable = false, length = 50)
+    private String type;
+
     @Column(nullable = false, length = 255)
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column
-    private String image;
-
-    @Column(nullable = false)
-    private Long viewCount = 0L;
 
     @Column
     private LocalDateTime deletedAt;
 
-    public Post(User user, String title, String content, String image) {
+    public Post(User user, String type,String title, String content) {
         this.user = user;
+        this.type = type;
         this.title = title;
         this.content = content;
-        this.image = image;
-        this.viewCount = 0L;
         this.deletedAt = null;
     }
 
-    public void update(String title, String content, String image) {
+    public void update(String title, String content) {
         if(title != null) this.title = title;
         if(content != null) this.content = content;
-        if(image != null) this.image = image;
     }
 
     public void delete() {

@@ -1,6 +1,7 @@
 package com.zero9platform.domain.post.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.PostType;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.domain.auth.model.AuthUser;
@@ -25,52 +26,46 @@ public class PostService {
     private final UserRepository userRepository;
 
     /**
-     *  일반 게시물 생성
+     * 공지 및 문의사항 생성
      */
     @Transactional
-    public PostCreateResponse postCreate(Long userid, PostCreateRequest request) {
+    public PostCreateResponse postCreate(Long userId, PostCreateRequest request) {
 
-        User user = userRepository.findById(userid)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        Post saved = postRepository.save(new Post(user, request.getTitle(), request.getContent(), request.getImage()));
+        if (request.getPostType() == PostType.NOTICE && !UserRole.ADMIN.name().equals(user.getRole())) {
+            throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
+        }
+
+        Post saved = postRepository.save(new Post(user, request.getPostType().name(), request.getTitle(), request.getContent()));
 
         return PostCreateResponse.from(saved);
     }
 
     /**
-     *  일반 게시물 상세조회
+     * 공지 / 문의 상세조회
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public PostGetDetailResponse postGetDetail(Long id) {
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
-
-        int updated = postRepository.increaseViewCount(id);
-
-        if (updated == 0) {
-
-            // 증가가 안 됐다 = 삭제 처리됐거나 대상 없음
-            throw new CustomException(ExceptionCode.POST_NOT_FOUND);
-        }
-
         return PostGetDetailResponse.from(post);
     }
 
     /**
-     *  일반 게시물 전체목록 조회
+     * 유형별 목록 조회
      */
     @Transactional(readOnly = true)
-    public Page<PostGetListResponse> postGetPage(Pageable pageable) {
+    public Page<PostGetListResponse> postGetPage(PostType postType, Pageable pageable) {
 
-        Page<Post> page = postRepository.findAllByDeletedAtIsNull(pageable);
-
-        return page.map(PostGetListResponse::from);
+        return postRepository.findAllByTypeAndDeletedAtIsNull(postType.name(), pageable)
+                .map(PostGetListResponse::from);
     }
 
     /**
-     *  일반 게시물 수정
+     * 공지 및 문의 수정
      */
     @Transactional
     public PostUpdateResponse postUpdate(Long userId, Long id, PostUpdateRequest request) {
@@ -78,15 +73,25 @@ public class PostService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ExceptionCode.POST_NOT_FOUND));
 
-        validOwner(post, userId);
+        // 공지사항인 경우: 관리자 권한 확인
+        if (PostType.NOTICE.name().equals(post.getType())) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
+            if (!UserRole.ADMIN.name().equals(user.getRole())) {
+                throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
+            }
+        }
+        // 문의사항인 경우: 작성자 본인 확인
+        else {
+            validOwner(post, userId);
+        }
 
-        post.update(request.getTitle(), request.getContent(), request.getImage());
-
+        post.update(request.getTitle(), request.getContent());
         return PostUpdateResponse.from(post);
     }
 
     /**
-     *  일반 게시물 식제
+     * 공지 및 문의 삭제
      */
     @Transactional
     public void postDelete(AuthUser authUser, Long id) {
@@ -100,19 +105,19 @@ public class PostService {
     }
 
     /**
-     *  게시물 작성자 본인 여부 검증
+     * 게시물 작성자 본인 여부 검증
      */
     private void validOwner(Post post, Long userId) {
 
         Long ownerId = post.getUser().getId();
 
-        if(!ownerId.equals(userId)) {
+        if (!ownerId.equals(userId)) {
             throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
         }
     }
 
     /**
-     *  게시물 작성자 본인 여부 or 관리자 여부 검증
+     * 게시물 작성자 본인 여부 or 관리자 여부 검증
      */
     private void validOwnerOrAdmin(Post post, Long userId, UserRole userRole) {
 

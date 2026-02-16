@@ -12,10 +12,9 @@ public class PostUpdateResponse {
 
     private final Long id;
     private final Long userId;
+    private final String type;
     private final String title;
     private final String content;
-    private final String image;
-    private final Long viewCount;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
@@ -24,10 +23,9 @@ public class PostUpdateResponse {
         return new PostUpdateResponse(
                 post.getId(),
                 post.getUser().getId(),
+                post.getType(),
                 post.getTitle(),
                 post.getContent(),
-                post.getImage(),
-                post.getViewCount(),
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );
