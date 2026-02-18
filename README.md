@@ -113,23 +113,34 @@ com.zero9platform
 ---
 
 ## ERD
-![ERD](./image/zero9_V3_ERD.png)
+
+<details>
+<summary><b>👉펼치기</b></summary>
+
+![ERD](image/Zero9_V3_ERD.png)
+
+</details>
 
 ---
 
 ## 서비스 플로우
-![service_flow.png](./image/service_flow.png)
+
+<details>
+<summary><b>👉펼치기</b></summary>
+
+![service_flow.png](image/Service_flow.png)
+
+</details>
 
 ---
-## 아키텍처 플로우
-<이미지로 대체 예정>
-Client
-→ Spring Boot Application
-→ MySQL (Core Data)
-→ Redis (Real-time Aggregation)
-→ Elasticsearch (Search Engine)
-→ RabbitMQ (Async Processing)
-→ S3 (Object Storage)
+## 아키텍처 플로루
+<details>
+<summary><b>👉펼치기</b></summary>
+
+![Architecture_Flow.png](image/Architecture_Flow.png)
+
+</details>
+
 ---
 ## 주요 기능
 ### 1) 인증/인가
@@ -192,6 +203,8 @@ Client
     • RabbitMQ 기반 비동기 처리 구조 도입
     • 서비스 간 독립성 확보 및 장애 상황에서도 데이터 신뢰성 유지
 
+---
+
 ### 2) Elasticsearch 도입
 #### 배경
     • JPQL로 %Like% 형식의 DB 조회 방식은 대용량 데이터 및 트래픽 처리에 있어서 성능저하와 병목 현상 발생
@@ -200,6 +213,8 @@ Client
 #### 해결
     • Elasticsearch 도입
     • DB 기반 Backfill Reindexing으로 대용량 데이터 검색기능 향상과 정합성 유지
+
+---
 
 ### 3) Redis 도입
 #### 배경
@@ -210,6 +225,8 @@ Client
 	• Redis(ZSet/Counter) 기반 실시간 집계·캐싱을 공통 인프라로 적용(피드/랭킹/공구 게시판)
 	• Scheduler 기반 주기적 Snapshot 저장으로 영속화 및 DB Write 분산
 
+---
+
 ### 4) Pessimistic Lock 도입
 #### 배경
 	• 주문/결제 시 재고 차감 동시성 문제
@@ -218,6 +235,8 @@ Client
 #### 해결
 	• 비관적 락 적용으로 데이터 불일치 방지
 	• 재고 정합성 우선 설계
+
+---
 
 ### 5) Scheduler 도입
 #### 배경
@@ -232,6 +251,8 @@ Client
 	• 공동구매 일정 자동 상태 전환 로직 구현
 	• Redis 집계 데이터를 일정 주기로 Snapshot 저장하여 DB Write 분산
 	• 실시간 처리 영역과 배치성 처리 영역을 명확히 분리
+
+---
 
 ### 6) Toss Payments (PG) 도입
 #### 배경
@@ -272,7 +293,7 @@ Client
 <details>
 <summary><b>👆 K6 피드 대용량 트래픽 테스트 결과</b></summary>
 
-![feed_K6_test.png](image/feed_K6_test.png)
+![feed_K6_test.png](image/Feed_K6_test.png)
 </details>
 
 ---
@@ -285,11 +306,11 @@ Client
 871ms  
 ██████████████████████████████████████████████████████████
 
-- `%LIKE%` 기반 검색
+- `%LIKE%` 기반 검색으로 기술적 고도화의 한계
 - 데이터 증가 시 Full Scan 위험
 - 트랜잭션 DB 부하 집중
 
-### After – Elasticsearch Multi-match
+### After – Elasticsearch Multi-match + Reindexing
 
 51ms  
 ████
@@ -307,7 +328,7 @@ Client
 
 <summary><b>👆 K6 통합검색 대용량 트래픽 테스트 결과</b></summary>
 
-![searchLog_K6_test.png](image/searchLog_K6_test.png)
+![searchLog_K6_test.png](image/SearchLog_K6_test.png)
 
 </details>
 
@@ -318,22 +339,20 @@ Client
 
 ### DB Only
 
-227ms  
-████████████████████████████████████████
+2.14s  
+████████████████████████████████████████████████████████████████
 
-### In-Memory Cache (Caffeine)
+- 기간별 랭킹 조회 시 DB 조회/정렬 부하 집중
+- 트래픽 집중 구간에서 응답 지연 및 변동 폭 증가
 
-13ms  
-███
+### After – Redis Remote Cache
 
-### Redis Remote Cache
-
-15~23ms  
+17ms  
 ████
 
-- Local + Remote 2단계 캐시 전략 적용
 - 반복 조회 API 응답 속도 안정화
-- 트래픽 집중 구간에서도 응답 시간 편차 최소화
+- 랭킹 조회는 Redis(ZSet/캐시) 기반으로 처리하여 DB 조회 부하 제거
+- Scheduler 기반 Snapshot 저장으로 영속 데이터(DB)와 실시간 집계 데이터 분리
 
 </details>
 
@@ -348,14 +367,6 @@ Client
 ## 트러블 슈팅 : LazyConnectionDataSourceProxy - 불필요한 커넥션 점유 해결
 
 ---
-
-## 인프라 아키텍처
-<details>
-<summary><b>👆펼치기</b></summary>
-
-![img.png](image/img.png)
-
-</details>
 
 ---
 
