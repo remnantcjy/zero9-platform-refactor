@@ -1,10 +1,12 @@
 package com.zero9platform.domain.comment.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.common.enums.PostType;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
 import com.zero9platform.common.model.PageResponse;
+import com.zero9platform.domain.activity_feed.event.FeedCreateEvent;
 import com.zero9platform.domain.comment.entity.Comment;
 import com.zero9platform.domain.comment.model.request.CommentCreateRequest;
 import com.zero9platform.domain.comment.model.request.CommentUpdateRequest;
@@ -16,6 +18,7 @@ import com.zero9platform.domain.post.repository.PostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 공지 / 문의  답변(댓글) 작성
@@ -45,6 +49,16 @@ public class CommentService {
         validateCommentPolicy(post, user);
 
         Comment saved = commentRepository.save(new Comment(post, user, request.getContent()));
+
+        // 문의사항(INQUIRY)에 답변이 달린 경우에만 답변완료 피드 발행
+        if (PostType.INQUIRY.name().equals(post.getType())) {
+            eventPublisher.publishEvent(new FeedCreateEvent(
+                    FeedType.INQUIRY_ANSWER,
+                    post.getId(),
+                    post.getTitle(),
+                    post.getUser().getId() // 알림 받을 질문자 ID
+            ));
+        }
         return CommentCreateResponse.from(saved);
     }
 
