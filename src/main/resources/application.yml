@@ -48,7 +48,7 @@ spring:
 
 # elasticsearch 설정
 elasticsearch:
-  uris: http://localhost:9200
+  uris: http://elasticsearch:9200
 
 # JWT 설정
 jwt:
