@@ -34,7 +34,7 @@ public class ActivityFeedService {
         log.info("[ActivityFeed] 개인 피드 생성 시도 - 유저: {}, 타깃: {}", userId, targetId);
 
         // 개인 피드  동일 유저에게 동일 타입/대상의 피드가 중복 생성되지 않도록 체크 후 저장
-        if (userId != null) {
+        if (userId != null || type == FeedType.NOTICE) {
             // 타입별 고유 식별값(Type, Target, User)을 기준으로 중복 여부 검증
             if (!feedRepository.existsByTypeAndTargetIdAndUserId(type.name(), targetId, userId)) {
                 // 신규 이력 생성
