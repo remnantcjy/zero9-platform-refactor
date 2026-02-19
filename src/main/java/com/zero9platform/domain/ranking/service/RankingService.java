@@ -266,8 +266,6 @@ public class RankingService {
         return result;
     }
 
-
-
     /**
      * 인기 검색어 랭킹 조회
      */
