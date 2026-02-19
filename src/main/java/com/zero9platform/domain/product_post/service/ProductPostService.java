@@ -7,14 +7,10 @@ import com.zero9platform.common.enums.ProgressStatus;
 import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.model.request.ProductPostCreateRequest;
 import com.zero9platform.domain.product_post.model.request.ProductPostUpdateRequest;
-import com.zero9platform.domain.product_post.model.response.ProductPostCreateResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostGetDetailResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostGetListResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostUpdateResponse;
+import com.zero9platform.domain.product_post.model.response.*;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
@@ -32,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -105,6 +102,9 @@ public class ProductPostService {
         return ProductPostGetDetailResponse.from(productPost, productImage, favoriteCount);
     }
 
+    /**
+     * 상품목록 전체 조회
+     */
     @Transactional(readOnly = true)
     public Page<ProductPostGetListResponse> productPostGetList(Pageable pageable) {
 
@@ -119,6 +119,16 @@ public class ProductPostService {
 
             return ProductPostGetListResponse.from(productPost, imageUrl, favoriteCount);
         });
+    }
+
+    /**
+     * 내가 등록한 판매 게시물 보기
+     * limit version
+     */
+    @Transactional(readOnly = true)
+    public List<ProductPostGetMyListResponse> myProductPostGetLimitList(Long userId, Pageable pageable) {
+
+        return productPostRepository.findMyPostsWithFavoriteCount(userId, pageable);
     }
 
     /**
