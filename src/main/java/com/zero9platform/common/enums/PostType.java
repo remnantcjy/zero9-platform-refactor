@@ -7,5 +7,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum PostType {
     NOTICE,   // 공지사항
-    INQUIRY;   // 문의사항
+    INQUIRY   // 문의사항
 }

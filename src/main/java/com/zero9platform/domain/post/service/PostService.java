@@ -1,10 +1,11 @@
 package com.zero9platform.domain.post.service;
 
 import com.zero9platform.common.enums.ExceptionCode;
+import com.zero9platform.common.enums.FeedType;
 import com.zero9platform.common.enums.PostType;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.domain.auth.model.AuthUser;
+import com.zero9platform.domain.activity_feed.event.FeedCreateEvent;
 import com.zero9platform.domain.post.entity.Post;
 import com.zero9platform.domain.post.model.request.PostCreateRequest;
 import com.zero9platform.domain.post.model.request.PostUpdateRequest;
@@ -13,6 +14,8 @@ import com.zero9platform.domain.post.repository.PostRepository;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -28,6 +32,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 공지 및 문의사항 생성
@@ -49,6 +54,11 @@ public class PostService {
 
         Post saved = postRepository.save(new Post(user, request.getPostType().name(), request.getTitle(), request.getContent(), request.isSecret(), encodedPassword));
 
+        // 4. 피드 이벤트 발행 (딱 이거면 끝)
+        // 공지(NOTICE)면 userId에 null을, 문의(INQUIRY)면 본인 userId를 넘김
+        FeedType feedType = (request.getPostType() == PostType.NOTICE) ? FeedType.NOTICE : FeedType.INQUIRY;
+        Long targetUserId = (request.getPostType() == PostType.NOTICE) ? null : userId;
+        eventPublisher.publishEvent(new FeedCreateEvent(feedType, saved.getId(), saved.getTitle(), targetUserId));
         return PostCreateResponse.from(saved);
     }
 
