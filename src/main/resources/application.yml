@@ -1,13 +1,12 @@
 spring:
   application:
     name: Zero9-Platform
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
 
   config:
     import: optional:file:.env[.properties]
+
+  profiles:
+    active: local   # 기본은 로컬
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -15,18 +14,10 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
-  rabbitmq:
-    host: ${RABBITMQ_HOST}
-    port: ${RABBITMQ_PORT}
-    username: ${RABBITMQ_USERNAME}
-    password: ${RABBITMQ_PASSWORD}
-    listener:
-      simple:
-        prefetch: 10   # 한 번에 처리할 메시지 개수
   jpa:
     open-in-view: false #트랜잭션을 컨트롤러에서 끊고, 영속성 컨텍스트를 서비스까지만 열어두는 설정
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         jdbc:
@@ -40,9 +31,19 @@ spring:
         format_sql: false
     show-sql: true
 
-# elasticsearch 설정
-elasticsearch:
-  uris: http://localhost:9200
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    listener:
+      simple:
+        prefetch: 10   # 한 번에 처리할 메시지 개수
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
 
 # JWT 설정
 jwt:
