@@ -33,7 +33,7 @@ public class GroupPurchasePostService {
 
     private final GroupPurchasePostRepository groupPurchasePostRepository;
     private final UserRepository userRepository;
-//    private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
+    //    private final GroupPurchasePostViewCountService groupPurchasePostViewCountService;
     private final GroupPurchasePostViewCountRedisService groupPurchasePostViewCountRedisService;
     private final S3Service s3Service;
     private final AmazonS3 amazonS3;
@@ -119,7 +119,7 @@ public class GroupPurchasePostService {
                 (gpp.getImage() != null && !gpp.getImage().trim().isEmpty()) ? amazonS3.getUrl(bucket, gpp.getImage()).toString() : null
         ));
     }
-    
+
     /**
      * 공동구매 게시물 상세 조회
      */
@@ -151,29 +151,27 @@ public class GroupPurchasePostService {
     @Transactional
     public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request, Long userId, MultipartFile file) {
 
-        // 1. 게시물 조회
+        // 1. 공동구매 게시물 조회 [삭제처리 제외 + 유효성 검사]
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
 
-        // 2. 사용자 조회
+        // 2. User 조회 (AuthUser)
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        // 3. 검증
+        // 3. 유효성 검증 - 시작일/종료일 타당성 + 작성자 검증
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new CustomException(ExceptionCode.GPP_INVALID_DATE_RANGE);
         }
-
-        if (!gpp.getUser().getId().equals(user.getId())) {
+        if (!gpp.getUser().getId().equals(user.getId())) { // 본래의 작성자 - 현재 접속중인 작성자 비교
             throw new CustomException(ExceptionCode.GPP_NO_PERMISSION);
         }
 
-        // 4. 이미지 처리 (핵심 개선)
+        // 4. 이미지 처리
         String oldImageKey = gpp.getImage();
         String finalImageKey = oldImageKey; // 기본값: 기존 이미지 유지
 
         if (file != null && !file.isEmpty()) {
-
             // 새 이미지 업로드
             String uploadedImage = s3Service.upload(file, S3_FOLDER);
 
@@ -186,24 +184,29 @@ public class GroupPurchasePostService {
             }
         }
 
-        // 5. 엔티티 수정
-        LocalDateTime now = LocalDateTime.now();
+        // 5. Enum 변환 - 카테고리, 진행상태
+        Category category = request.getCategory();
+//      GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
 
+        // 6. 엔티티 수정
+        LocalDateTime now = LocalDateTime.now();
         gpp.update(
                 request.getProductName(),
                 request.getContent(),
                 finalImageKey,
                 request.getPrice(),
                 request.getLinkUrl(),
-                request.getCategory().name(),
+                category.name(),
+//                gppProgressStatus.name(),
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atStartOfDay(),
                 now
         );
 
-        // 6. 이벤트
+        // 엘라스틱서치 비동기 데이터 추가
         eventPublisher.publishEvent(SearchEvent.from(gpp, false));
 
+        // 6. 응답 반환
         return GroupPurchasePostDetailResponse.from(gpp, finalImageKey);
     }
 
