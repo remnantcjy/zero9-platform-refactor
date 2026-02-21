@@ -75,7 +75,9 @@ public class SecurityConfig {
                                 "/payment/**",
                                 "/joinpage/**",
                                 "/admin/**",
-                                "/auth/**"
+                                "/auth/**",
+                                "/gp_post/**",
+                                "/search_log/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/zero9/auth/**",
