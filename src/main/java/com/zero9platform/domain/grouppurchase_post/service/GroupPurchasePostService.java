@@ -116,7 +116,7 @@ public class GroupPurchasePostService {
         // 2. 응답객체 매핑 후 반환
         return page.map(gpp -> GroupPurchasePostListResponse.from(
                 gpp,
-                gpp.getImage() != null ? amazonS3.getUrl(bucket, gpp.getImage()).toString() : null
+                (gpp.getImage() != null && !gpp.getImage().trim().isEmpty()) ? amazonS3.getUrl(bucket, gpp.getImage()).toString() : null
         ));
     }
     
@@ -139,7 +139,7 @@ public class GroupPurchasePostService {
         // DB 조회수 + Redis 조회수 = 실시간 조회수 (사용자가 보는 화면)
         long realtimeViewCount = gpp.getViewCount() + incrementedValue;
 
-        String imgUrl = gpp.getImage() != null ? amazonS3.getUrl(bucket, gpp.getImage()).toString() : null;
+        String imgUrl = gpp.getImage() != null && !gpp.getImage().trim().isEmpty() ? amazonS3.getUrl(bucket, gpp.getImage()).toString() : null;
 
         // 4. Response 변환
         return GroupPurchasePostReadResponse.from(gpp, imgUrl, realtimeViewCount);
@@ -151,61 +151,59 @@ public class GroupPurchasePostService {
     @Transactional
     public GroupPurchasePostDetailResponse gpPostUpdate(Long gppId, GroupPurchasePostUpdateRequest request, Long userId, MultipartFile file) {
 
-        // 1. 공동구매 게시물 조회 [삭제처리 제외 + 유효성 검사]
+        // 1. 게시물 조회
         GroupPurchasePost gpp = groupPurchasePostRepository.findByIdAndDeletedAtIsNull(gppId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.GPP_NOT_FOUND));
-        
-        // 2. User 조회 (AuthUser)
+
+        // 2. 사용자 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
-        // 3. 유효성 검증 - 시작일/종료일 타당성 + 작성자 검증
+        // 3. 검증
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new CustomException(ExceptionCode.GPP_INVALID_DATE_RANGE);
         }
-        if (!gpp.getUser().getId().equals(user.getId())) { // 본래의 작성자 - 현재 접속중인 작성자 비교
+
+        if (!gpp.getUser().getId().equals(user.getId())) {
             throw new CustomException(ExceptionCode.GPP_NO_PERMISSION);
         }
 
-        // 4. 이미지 파일 업로드 S3 서비스 호출
+        // 4. 이미지 처리 (핵심 개선)
         String oldImageKey = gpp.getImage();
-        String newImageKey = null;
+        String finalImageKey = oldImageKey; // 기본값: 기존 이미지 유지
 
         if (file != null && !file.isEmpty()) {
-            newImageKey = s3Service.upload(file, S3_FOLDER);
+
+            // 새 이미지 업로드
+            String uploadedImage = s3Service.upload(file, S3_FOLDER);
+
+            // DB 반영 값 변경
+            finalImageKey = uploadedImage;
+
+            // 기존 이미지 삭제 (업로드 성공 후)
+            if (oldImageKey != null) {
+                s3Service.s3Delete(oldImageKey);
+            }
         }
 
-        // 5. Enum 변환 - 카테고리, 진행상태
-        Category category = request.getCategory();
-//        GppProgressStatus gppProgressStatus = request.getGppProgressStatus();
-
-        // 이미지 교체 로직
-        String finalImageKey = newImageKey != null ? newImageKey : oldImageKey;
-
-        // 6. 엔티티 수정
+        // 5. 엔티티 수정
         LocalDateTime now = LocalDateTime.now();
+
         gpp.update(
                 request.getProductName(),
                 request.getContent(),
                 finalImageKey,
                 request.getPrice(),
                 request.getLinkUrl(),
-                category.name(),
-//                gppProgressStatus.name(),
+                request.getCategory().name(),
                 request.getStartDate().atStartOfDay(),
                 request.getEndDate().atStartOfDay(),
                 now
         );
 
-        // 기존 이미지 삭제 (새 이미지가 있을 때만)
-        if (newImageKey != null && oldImageKey != null) {
-            s3Service.s3Delete(oldImageKey);
-        }
-
-        // 엘라스틱서치 비동기 데이터 추가
+        // 6. 이벤트
         eventPublisher.publishEvent(SearchEvent.from(gpp, false));
 
-        // 6. 응답 변환
         return GroupPurchasePostDetailResponse.from(gpp, finalImageKey);
     }
 

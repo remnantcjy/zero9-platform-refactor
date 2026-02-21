@@ -137,45 +137,45 @@ public class ProductPostService {
     @Transactional
     public ProductPostUpdateResponse productPostUpdate(Long userId, Long productPostId, ProductPostUpdateRequest request, MultipartFile file) {
 
-        // 인가 확인 (사용자 제외)
         User user = validPermission(userId);
 
         ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
-        // 상품판매 게시물의 상태가 'READY'일 때만 수정 가능
-        if (!productPost.getProgressStatus().equals(ProgressStatus.READY.name())) {
+        if (!ProgressStatus.READY.name().equals(productPost.getProgressStatus())) {
             throw new CustomException(ExceptionCode.PRODUCT_POST_CANNOT_UPDATE_ALREADY_STARTED);
         }
 
-        // 본인만 수정 가능
         validProductPostOwner(user, productPost);
 
-        // 이미지 파일 업로드 S3 서비스 호출
-        String newImageKey = null;
         String oldImageKey = productPost.getImage();
+        String newImageKey = null;
 
         if (file != null && !file.isEmpty()) {
             newImageKey = s3Service.upload(file, S3_FOLDER);
         }
 
-        String category = request.getCategory() != null ? request.getCategory().name() : null;
+        String finalImageKey = (newImageKey != null) ? newImageKey : oldImageKey;
 
-        // 이미지 교체 로직
-        String finalImageKey = newImageKey != null ? newImageKey : oldImageKey;
+        String category = (request.getCategory() != null) ? request.getCategory().name() : productPost.getCategory(); // 기존 유지
 
-        //엘라스틱서치 비동기 업데이트
-        eventPublisher.publishEvent(SearchEvent.from(productPost, false));
+        productPost.update(
+                category,
+                request.getTitle(),
+                request.getName(),
+                request.getContent(),
+                request.getOriginalPrice(),
+                finalImageKey,
+                request.getStartDate(),
+                request.getEndDate(),
+                LocalDateTime.now()
+        );
 
-        // 기존 이미지 삭제 (새 이미지가 있을 때만)
         if (newImageKey != null && oldImageKey != null) {
             s3Service.s3Delete(oldImageKey);
         }
 
-        // 현재 시간 생성
-        LocalDateTime now = LocalDateTime.now();
-
-        productPost.update(category, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), finalImageKey, request.getStartDate(), request.getEndDate(), now);
+        eventPublisher.publishEvent(SearchEvent.from(productPost, false));
 
         return ProductPostUpdateResponse.from(productPost);
     }
