@@ -1,13 +1,18 @@
 package com.zero9platform.domain.ranking.controller;
 
+import com.zero9platform.common.enums.RankingPeriod;
 import com.zero9platform.common.model.CommonResponse;
-import com.zero9platform.domain.ranking.model.response.*;
+import com.zero9platform.domain.ranking.model.response.GroupPurchasePostTodayRankingResponse;
+import com.zero9platform.domain.ranking.model.response.GroupPurchasePostTotalRankingResponse;
+import com.zero9platform.domain.ranking.model.response.ProductPostFavoriteRankingListResponse;
+import com.zero9platform.domain.ranking.model.response.SearchLogRankingListResponse;
 import com.zero9platform.domain.ranking.service.RankingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -20,20 +25,7 @@ public class RankingController {
     private final RankingService rankingService;
 
     /**
-     * 공동구매 게시물 랭킹 (조회수 기준)
-     */
-    @GetMapping("/ranking/gpp")
-    public ResponseEntity<CommonResponse<List<GroupPurchasePostRankingListResponse>>> groupPurchasePostRankingHandler() {
-
-        // 검색 서비스 호출
-        List<GroupPurchasePostRankingListResponse> groupPurchasePostRankingListResponse = rankingService.groupPurchasePostRanking();
-
-        // 공통 응답 포맷으로 반환
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 랭킹 조회 성공", groupPurchasePostRankingListResponse));
-    }
-
-    /**
-     * 공동구매 게시물 전체 누적 랭킹 TOP10 (조회수 기준)
+     * 공동구매 게시물 전체 누적 랭킹 TOP10 (전체 조회수 기준)
      */
     @GetMapping("/ranking/gpp/total")
     public ResponseEntity<CommonResponse<List<GroupPurchasePostTotalRankingResponse>>> groupPurchasePostTotalRankingHandler() {
@@ -44,7 +36,7 @@ public class RankingController {
     }
 
     /**
-     * 공동구매 게시물 오늘의 실시간 랭킹 TOP10 (조회수 기준)
+     * 공동구매 게시물 오늘의 실시간 랭킹 TOP10 (오늘 ~00시 조회수 기준)
      */
     @GetMapping("/ranking/gpp/today")
     public ResponseEntity<CommonResponse<List<GroupPurchasePostTodayRankingResponse>>> groupPurchasePostTodayRankingHandler() {
@@ -55,30 +47,38 @@ public class RankingController {
     }
 
     /**
-     * 상품판매 게시물 랭킹 (찜 기준)
+     * 공동구매 게시물 주간 랭킹 TOP10 (최근 7일간의 조회수 기준)
      */
-    @GetMapping("/ranking/favorite")
-    public ResponseEntity<CommonResponse<List<ProductPostFavoriteRankingListResponse>>> productPostFavoriteRankingHandler() {
+    @GetMapping("/ranking/gpp/week")
+    public ResponseEntity<CommonResponse<List<GroupPurchasePostTodayRankingResponse>>> groupPurchasePostWeeklyRankingHandler() {
 
-        // 검색 서비스 호출
-        List<ProductPostFavoriteRankingListResponse> productPostFavoriteRankingListResponse = rankingService.productPostFavoriteRanking();
+        List<GroupPurchasePostTodayRankingResponse> response = rankingService.groupPurchasePostWeeklyRanking();
 
-        // 공통 응답 포맷으로 반환
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 판매 게시물 랭킹 조회 성공", productPostFavoriteRankingListResponse));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("공동구매 게시물 주간 랭킹 조회 성공", response));
     }
 
     /**
      * 인기 검색어 랭킹 (클릭로그 or 키워드 조회수)
      */
     @GetMapping("/ranking/searchLog")
-    public ResponseEntity<CommonResponse<List<SearchLogRankingListResponse>>> searchLogKeywordRankingHandler() {
+    public ResponseEntity<CommonResponse<List<SearchLogRankingListResponse>>> searchLogKeywordRankingHandler(@RequestParam(required = false) RankingPeriod period) {
 
-        // 검색 서비스 호출
-        List<SearchLogRankingListResponse> searchLogRankingListResponse = rankingService.searchLogKeywordRanking();
+        List<SearchLogRankingListResponse> searchLogRankingListResponse = rankingService.searchKeywordRanking(period);
 
-        // 공통 응답 포맷으로 반환
-        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인기 검색어 차트 조회 성공", searchLogRankingListResponse));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("인기 검색어 랭킹 조회 성공", searchLogRankingListResponse));
     }
+
+    /**
+     * 실시간 공동구매 상품 게시물 랭킹(찜) (유저용 - 실시간)
+     */
+    @GetMapping("/ranking/favorite")
+    public ResponseEntity<CommonResponse<List<ProductPostFavoriteRankingListResponse>>> productPostFavoriteRankingHandler(@RequestParam(required = false) RankingPeriod period) {
+
+        List<ProductPostFavoriteRankingListResponse> productPostFavoriteRankingListResponse = rankingService.favoriteRanking(period);
+
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 판매 게시물 랭킹 조회 성공", productPostFavoriteRankingListResponse));
+    }
+
 }
 
 

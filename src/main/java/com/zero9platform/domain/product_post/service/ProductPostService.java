@@ -7,22 +7,20 @@ import com.zero9platform.common.enums.ProgressStatus;
 import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
-import com.zero9platform.common.model.PageResponse;
-import com.zero9platform.domain.activity_feed.service.ActivityFeedService;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.model.request.ProductPostCreateRequest;
 import com.zero9platform.domain.product_post.model.request.ProductPostUpdateRequest;
-import com.zero9platform.domain.product_post.model.response.ProductPostCreateResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostGetDetailResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostGetListResponse;
-import com.zero9platform.domain.product_post.model.response.ProductPostUpdateResponse;
+import com.zero9platform.domain.product_post.model.response.*;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
+import com.zero9platform.domain.product_post_favorite.repository.ProductPostFavoriteRepository;
 import com.zero9platform.domain.product_post_option.entity.ProductPostOption;
 import com.zero9platform.domain.product_post_option.model.request.ProductPostOptionCreateRequest;
+import com.zero9platform.domain.searchLog.model.event.SearchEvent;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -30,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -38,11 +37,12 @@ public class ProductPostService {
 
     private final UserRepository userRepository;
     private final ProductPostRepository productPostRepository;
-    private final ActivityFeedService activityFeedService;
     private final S3Service s3Service;
     private final AmazonS3 amazonS3;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final String S3_FOLDER = "product_post";
+    private final ProductPostFavoriteRepository productPostFavoriteRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -80,6 +80,9 @@ public class ProductPostService {
 
         ProductPost savedProductPost = productPostRepository.save(productPost);
 
+        //엘라스틱서치 비동기 업데이트
+        eventPublisher.publishEvent(SearchEvent.from(savedProductPost, false));
+
         return ProductPostCreateResponse.from(savedProductPost);
     }
 
@@ -92,21 +95,40 @@ public class ProductPostService {
         ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
+        Long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
+
         String productImage = productPost.getImage() != null ? amazonS3.getUrl(bucket, productPost.getImage()).toString() : null;
 
-        return ProductPostGetDetailResponse.from(productPost, productImage);
+        return ProductPostGetDetailResponse.from(productPost, productImage, favoriteCount);
     }
 
+    /**
+     * 상품목록 전체 조회
+     */
     @Transactional(readOnly = true)
     public Page<ProductPostGetListResponse> productPostGetList(Pageable pageable) {
 
         Page<ProductPost> productPostsPage = productPostRepository.findAllByOrderByUpdatedAtDesc(pageable);
 
-        return productPostsPage.map(productPost -> ProductPostGetListResponse.from(
-                        productPost,
-                        productPost.getImage() != null ? amazonS3.getUrl(bucket, productPost.getImage()).toString() : null
-                )
-        );
+        return productPostsPage.map(productPost -> {
+            // 찜 개수 조회
+            Long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
+
+            // 이미지 URL 생성
+            String imageUrl = (productPost.getImage() != null) ? amazonS3.getUrl(bucket, productPost.getImage()).toString() : null;
+
+            return ProductPostGetListResponse.from(productPost, imageUrl, favoriteCount);
+        });
+    }
+
+    /**
+     * 내가 등록한 판매 게시물 보기
+     * limit version
+     */
+    @Transactional(readOnly = true)
+    public List<ProductPostGetMyListResponse> myProductPostGetLimitList(Long userId, Pageable pageable) {
+
+        return productPostRepository.findMyPostsWithFavoriteCount(userId, pageable);
     }
 
     /**
@@ -115,42 +137,45 @@ public class ProductPostService {
     @Transactional
     public ProductPostUpdateResponse productPostUpdate(Long userId, Long productPostId, ProductPostUpdateRequest request, MultipartFile file) {
 
-        // 인가 확인 (사용자 제외)
         User user = validPermission(userId);
 
         ProductPost productPost = productPostRepository.findById(productPostId)
                 .orElseThrow(() -> new CustomException(ExceptionCode.PRODUCT_POST_NOT_FOUND));
 
-        // 상품판매 게시물의 상태가 'READY'일 때만 수정 가능
-        if (!productPost.getProgressStatus().equals(ProgressStatus.READY.name())) {
-            throw new CustomException(ExceptionCode.PP_CANNOT_UPDATE_ALREADY_STARTED);
+        if (!ProgressStatus.READY.name().equals(productPost.getProgressStatus())) {
+            throw new CustomException(ExceptionCode.PRODUCT_POST_CANNOT_UPDATE_ALREADY_STARTED);
         }
 
-        // 본인만 수정 가능
         validProductPostOwner(user, productPost);
 
-        // 이미지 파일 업로드 S3 서비스 호출
-        String newImageKey = null;
         String oldImageKey = productPost.getImage();
+        String newImageKey = null;
 
         if (file != null && !file.isEmpty()) {
             newImageKey = s3Service.upload(file, S3_FOLDER);
         }
 
-        String category = request.getCategory() != null ? request.getCategory().name() : null;
+        String finalImageKey = (newImageKey != null) ? newImageKey : oldImageKey;
 
-        // 이미지 교체 로직
-        String finalImageKey = newImageKey != null ? newImageKey : oldImageKey;
+        String category = (request.getCategory() != null) ? request.getCategory().name() : productPost.getCategory(); // 기존 유지
 
-        // 기존 이미지 삭제 (새 이미지가 있을 때만)
+        productPost.update(
+                category,
+                request.getTitle(),
+                request.getName(),
+                request.getContent(),
+                request.getOriginalPrice(),
+                finalImageKey,
+                request.getStartDate(),
+                request.getEndDate(),
+                LocalDateTime.now()
+        );
+
         if (newImageKey != null && oldImageKey != null) {
             s3Service.s3Delete(oldImageKey);
         }
 
-        // 현재 시간 생성
-        LocalDateTime now = LocalDateTime.now();
-
-        productPost.update(category, request.getTitle(), request.getName(), request.getContent(), request.getOriginalPrice(), finalImageKey, request.getStartDate(), request.getEndDate(), now);
+        eventPublisher.publishEvent(SearchEvent.from(productPost, false));
 
         return ProductPostUpdateResponse.from(productPost);
     }
@@ -160,7 +185,7 @@ public class ProductPostService {
      */
     private static void validProductPostOwner(User user, ProductPost productPost) {
         if (!Objects.equals(user.getId(), productPost.getUser().getId())) {
-            throw new CustomException(ExceptionCode.NO_PERMISSION);
+            throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
         }
     }
 
@@ -173,7 +198,7 @@ public class ProductPostService {
                 .orElseThrow(() -> new CustomException(ExceptionCode.USER_NOT_FOUND));
 
         if (UserRole.valueOf(user.getRole()) == UserRole.USER) {
-            throw new CustomException(ExceptionCode.NO_PERMISSION);
+            throw new CustomException(ExceptionCode.AUTH_NO_PERMISSION);
         }
 
         return user;
@@ -186,12 +211,12 @@ public class ProductPostService {
 
         // 판매 시작일
         if (startDate.isBefore(LocalDateTime.now())) {
-            throw new CustomException(ExceptionCode.PP_INVALID_DATE_RANGE);
+            throw new CustomException(ExceptionCode.PRODUCT_POST_INVALID_DATE_RANGE);
         }
 
         // 판매 종료일
         if (endDate.isBefore(startDate)) {
-            throw new CustomException(ExceptionCode.PP_INVALID_DATE_RANGE);
+            throw new CustomException(ExceptionCode.PRODUCT_POST_INVALID_DATE_RANGE);
         }
     }
 }

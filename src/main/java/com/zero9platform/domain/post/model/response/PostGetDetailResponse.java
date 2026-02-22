@@ -12,21 +12,22 @@ public class PostGetDetailResponse {
 
     private final Long id;
     private final Long userId;
+    private final String type;
     private final String title;
     private final String content;
-    private final String image;
-    private final Long viewCount;
+    private final boolean isSecret;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
     public static PostGetDetailResponse from(Post post) {
+
         return new PostGetDetailResponse(
                 post.getId(),
                 post.getUser().getId(),
+                post.getType(),
                 post.getTitle(),
                 post.getContent(),
-                post.getImage(),
-                post.getViewCount(),
+                post.isSecret(),
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

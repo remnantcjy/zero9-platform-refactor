@@ -17,7 +17,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 
 @Configuration
@@ -49,14 +48,12 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, SecurityContextHolderAwareRequestFilter.class)
 
                 // 세션 설정: STATELESS (JWT 기반 인증)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // Security 예외 처리
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패 (401)
-                        .accessDeniedHandler(jwtAccessDeniedHandler) // 권한 실패 (403)
+                        .accessDeniedHandler(jwtAccessDeniedHandler) // 인가 실패 (403)
                 )
 
                 // 인가(Authorization) 설정
@@ -66,12 +63,23 @@ public class SecurityConfig {
                                 "/**"
                         ).permitAll() // CORS Preflight 허용
                         .requestMatchers(
-                                "/login.html",
-                                "/logout.html",
-                                "/main.html",
-                                "/css/**",
-                                "/js/**",
-
+                                "/", "/index.html", "/main.html",
+                                "/**/*.css", "/**/*.js",
+                                "/**/*.png", "/**/*.jpg", "/**/*.jpeg",
+                                "/**/*.svg", "/**/*.ico"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/img/**",
+                                "/goods/**",
+                                "/mypage/**",
+                                "/payment/**",
+                                "/joinpage/**",
+                                "/admin/**",
+                                "/auth/**",
+                                "/gp_post/**",
+                                "/search_log/**"
+                        ).permitAll()
+                        .requestMatchers(
                                 "/zero9/auth/**",
                                 "/zero9/test/**"
                         ).permitAll()
@@ -87,13 +95,11 @@ public class SecurityConfig {
                                 "/zero9/product-posts/*",
                                 "/zero9/gp-posts/**",
                                 "/zero9/posts/**",
-                                "/zero9/searchLog/**",
-                                "/zero9/click-log/**",
+                                "/zero9/search-logs/**",
                                 "/zero9/gpp-comments/**",
                                 "/zero9/comments",
                                 "/zero9/influencers/*/follows",
                                 "/zero9/feeds/all",
-                                "/zero9/feeds",
                                 "/zero9/ranking/**"
                         ).permitAll()
                         .requestMatchers("/zero9/admin/**").hasRole(UserRole.ADMIN.name())

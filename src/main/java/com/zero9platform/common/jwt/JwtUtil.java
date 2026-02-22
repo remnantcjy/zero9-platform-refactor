@@ -20,7 +20,7 @@ import java.util.Date;
 public class JwtUtil {
 
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long TOKEN_TIME = 60 * 60 * 1000L; // 10분
+    private static final long TOKEN_TIME = 200 * 60 * 1000L; // 10분
     private static final long REFRESH_TOKEN_TIME = 14 * 24 * 60 * 60 * 1000L; // 14일
 
     @Value("${jwt.secret.key}")
@@ -30,8 +30,8 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-
         byte[] bytes = Base64.getDecoder().decode(secretKey);
+
         key = Keys.hmacShaKeyFor(bytes);
     }
 

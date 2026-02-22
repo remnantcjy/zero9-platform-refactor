@@ -24,11 +24,10 @@ public class CommentController {
     private final CommentService commentService;
 
     /**
-     * 일반 게시물 댓글 작성
+     *  공지 / 문의  답변(댓글) 작성
      */
     @PostMapping
     public ResponseEntity<CommonResponse<CommentCreateResponse>> commentCreateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long postId, @Valid @RequestBody CommentCreateRequest request) {
-
 
         CommentCreateResponse response = commentService.commentCreate(authUser.getId(), postId, request);
 
@@ -36,36 +35,35 @@ public class CommentController {
     }
 
     /**
-     * 일반 게시물 댓글 전체목록 조회
+     *  공지 / 문의  답변(댓글) 전체목록 조회
      */
     @GetMapping
-    public ResponseEntity<CommonResponse<PageResponse<CommentGetListResponse>>> commentGetPageHandler(@PathVariable Long postId, Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<CommentGetListResponse>>> commentGetPageHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long postId, Pageable pageable) {
 
-        PageResponse<CommentGetListResponse> response = commentService.commentGetPage(postId, pageable);
+        PageResponse<CommentGetListResponse> response = commentService.commentGetPage(authUser.getId(), postId, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("댓글 조회 성공", response));
     }
 
     /**
-     * 일반 게시물 댓글 수정
+     *  공지 / 문의  답변(댓글) 수정
      */
     @PutMapping("/{commentId}")
     public ResponseEntity<CommonResponse<Void>> commentUpdateHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long postId, @PathVariable Long commentId, @Valid @RequestBody CommentUpdateRequest request) {
 
         commentService.commentUpdate(authUser.getId(), postId, commentId, request);
 
-        return ResponseEntity.ok(CommonResponse.success("댓글 수정 성공", null));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("댓글 수정 성공", null));
     }
 
     /**
-     * 일반 게시물 댓글 삭제
+     *  공지 / 문의  답변(댓글) 삭제
      */
     @DeleteMapping("/{commentId}")
     public ResponseEntity<CommonResponse<Void>> commentDeleteHandler(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long postId, @PathVariable Long commentId) {
 
         commentService.commentDelete(authUser.getId(), postId, commentId);
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(CommonResponse.success("댓글 삭제 성공", null));
+        return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("댓글 삭제 성공", null));
     }
 }

@@ -1,5 +1,6 @@
 package com.zero9platform.domain.grouppurchase_post.model.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.zero9platform.domain.grouppurchase_post.entity.GroupPurchasePost;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,12 +16,16 @@ public class GroupPurchasePostListResponse {
     private Long userId;
     private String image;
     private Long viewCount;
-//    private Long favoriteCount; // 추후 좋아요 기능 연동
     private Long price;
     private String category;
     private String gppProgressStatus;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime startDate;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime endDate;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -32,7 +37,6 @@ public class GroupPurchasePostListResponse {
                 groupPurchasePost.getUser().getId(),
                 image,
                 groupPurchasePost.getViewCount(),
-//                0L, // favoriteCount 임시값 (추후 연관관계 추가 시 수정)
                 groupPurchasePost.getPrice(),
                 groupPurchasePost.getCategoryDescription(),
                 groupPurchasePost.getProgressStatusDescription(),
@@ -42,5 +46,4 @@ public class GroupPurchasePostListResponse {
                 groupPurchasePost.getUpdatedAt()
         );
     }
-
 }
