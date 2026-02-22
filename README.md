@@ -143,9 +143,7 @@ com.zero9platform
 ## 아키텍처 플로우
 <details>
 <summary><b>👉펼치기</b></summary>
-
-![Architecture_Flow.png](image/Architecture_Flow.png)
-
+<img width="5775" height="3335" alt="image" src="https://github.com/user-attachments/assets/7858e1cd-be20-47ca-be92-4afb69deca89" />
 </details>
 
 ---
