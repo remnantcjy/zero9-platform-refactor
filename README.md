@@ -335,23 +335,23 @@ com.zero9platform
 
 ### Before – &LIKE& 기반 Full Scan
 
-871ms  
+871ms
 ████████████████████████████████████████████████
 
-- 검색어 변형에 대한 대응이 부족하여 원하는
-  결과가 노출되지 않는 문제
+- 검색어 변형에 대한 대응이 부족하여 원하는 결과가 노출되지 않는 문제
 - `%LIKE%` 기반 검색으로 기술적 고도화의 한계
-- 데이터 증가 시 Full Scan 위험
+- 데이터 증가 시 Full Scan/인덱스 미활용 위험
+- 검색 트래픽이 트랜잭션 DB 부하로 직결
 
-### After – Elasticsearch Multi-match + CQRS 분리
+### After – Elasticsearch Multi-match + 읽기/쓰기 분리
 
 51ms  
 ████
 
 - 약 17배 성능 개선 및 검색 부하 결제 시스템으로부터 완전 격리
 - 역색인(Inverted Index) 기반 전문 검색 및 형태소 분석 도입
-- Scoring & Boosting: 제목(title^10) 가중치 부여로 검색 정합성 고도화
-- 읽기(ES)와 쓰기(RDB) 저장소를 분리하는 CQRS 아키텍처 구현
+- Scoring & 필드가중치 : title^10, nickname^10, content^1 가중치 적용
+- 읽기(ES) / 쓰기(RDB) 분리로 검색 부하를 트랜잭션 DB에서 격리
 
   ## 약 17배 성능 개선
   ## 검색과 트랜잭션 DB 분리 성공
@@ -361,6 +361,8 @@ com.zero9platform
 <details>
 
 <summary><b>👆 K6 통합검색 대용량 트래픽 테스트 결과</b></summary>
+•	최대 50 VUs, stage ramp-up, think time(2–5s) 포함
+•	결과(로컬 기준): http_req_failed 0%, p95 34.8ms, avg 20.1ms think time이 포함되어 RPS는 낮게 측정될 수 있습니다.
 
 ![searchLog_K6_test.png](image/SearchLog_K6_test.png)
 
