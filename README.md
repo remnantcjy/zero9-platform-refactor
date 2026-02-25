@@ -362,7 +362,7 @@ com.zero9platform
 
 <summary><b>👆 K6 통합검색 대용량 트래픽 테스트 결과</b></summary>
 
-![searchLog_K6_test.png](image/SearchLog_K6_test.png)
+<img width="906" height="878" alt="SearchLog_K6_test" src="https://github.com/user-attachments/assets/5fd1e093-0c67-41b4-8c8d-15643d6c9c72" />
 
 </details>
 
