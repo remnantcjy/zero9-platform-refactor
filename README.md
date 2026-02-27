@@ -364,7 +364,7 @@ com.zero9platform
 •	최대 50 VUs, stage ramp-up, think time(2–5s) 포함
 •	결과(로컬 기준): http_req_failed 0%, p95 34.8ms, avg 20.1ms think time이 포함되어 RPS는 낮게 측정될 수 있습니다.
 
-![searchLog_K6_test.png](image/SearchLog_K6_test.png)
+<img width="906" height="878" alt="SearchLog_K6_test" src="https://github.com/user-attachments/assets/5fd1e093-0c67-41b4-8c8d-15643d6c9c72" />
 
 </details>
 
