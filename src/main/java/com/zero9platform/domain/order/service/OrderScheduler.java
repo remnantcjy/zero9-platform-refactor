@@ -18,7 +18,7 @@ public class OrderScheduler {
 
     private final OrderRepository orderRepository;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 */10 * * * *")
     @Transactional
     public void updateOrderStatus() {
 
