@@ -57,9 +57,9 @@ public class ProductPostController {
      * 상품 게시물 목록 조회
      */
     @GetMapping("/product-posts")
-    public ResponseEntity<CommonResponse<PageResponse<ProductPostGetListResponse>>> productPostGetListHandler(Pageable pageable) {
+    public ResponseEntity<CommonResponse<PageResponse<ProductPostGetListResponse>>> productPostGetListHandler(@RequestParam(required = false) String progressStatus, Pageable pageable) {
 
-        PageResponse<ProductPostGetListResponse> response = PageResponse.from(productPostService.productPostGetList(pageable));
+        PageResponse<ProductPostGetListResponse> response = productPostService.productPostGetList(progressStatus, pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommonResponse.success("상품 게시물 목록 조회 성공", response));
     }

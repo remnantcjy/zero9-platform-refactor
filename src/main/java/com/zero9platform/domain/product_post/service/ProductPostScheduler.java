@@ -7,6 +7,8 @@ import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.repository.ProductPostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,6 +24,7 @@ public class ProductPostScheduler {
 
     private final ProductPostRepository productPostRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final CacheManager cacheManager;
 
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
@@ -56,6 +59,19 @@ public class ProductPostScheduler {
                         eventPublisher.publishEvent(new FeedCreateEvent(FeedType.SOLD_OUT, post.getId(), post.getTitle(), null));
                     });
         }
+
+        // 캐시 일관성 유지
+        // 상태 변경된 건 (DOING -> END 등)이 있다면 기존 목록 캐시를 비움
+        if (doingCount > 0 || endCount > 0) {
+
+            Cache cache = cacheManager.getCache("productPostsDoing");
+
+            if (cache != null) {
+                cache.clear();
+                log.info("[CACHE_EVICT] 상품 상태 변경(DOING: {}, END: {})으로 인해 'productPostsDoing' 캐시 초기화", doingCount, endCount);
+            }
+        }
+
 
         // 오픈 예고
         List<ProductPost> upcomingPosts = productPostRepository.findUpcomingPosts(now, tomorrow);

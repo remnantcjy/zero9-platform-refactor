@@ -96,4 +96,6 @@ public interface ProductPostRepository extends JpaRepository<ProductPost, Long> 
         ORDER BY p.createdAt DESC
     """)
     List<ProductPostGetMyListResponse> findMyPostsWithFavoriteCount(@Param("userId") Long userId, Pageable pageable);
+
+    Page<ProductPost> findByProgressStatusOrderByUpdatedAtDesc(String progressStatus, Pageable pageable);
 }

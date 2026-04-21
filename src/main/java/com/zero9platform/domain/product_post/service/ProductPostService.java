@@ -7,6 +7,8 @@ import com.zero9platform.common.enums.ProgressStatus;
 import com.zero9platform.common.enums.StockStatus;
 import com.zero9platform.common.enums.UserRole;
 import com.zero9platform.common.exception.CustomException;
+import com.zero9platform.common.model.CachedPageResponse;
+import com.zero9platform.common.model.PageResponse;
 import com.zero9platform.domain.product_post.entity.ProductPost;
 import com.zero9platform.domain.product_post.model.request.ProductPostCreateRequest;
 import com.zero9platform.domain.product_post.model.request.ProductPostUpdateRequest;
@@ -19,7 +21,9 @@ import com.zero9platform.domain.searchLog.model.event.SearchEvent;
 import com.zero9platform.domain.user.entity.User;
 import com.zero9platform.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +35,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductPostService {
@@ -40,9 +45,9 @@ public class ProductPostService {
     private final S3Service s3Service;
     private final AmazonS3 amazonS3;
     private final ApplicationEventPublisher eventPublisher;
-
     private static final String S3_FOLDER = "product_post";
     private final ProductPostFavoriteRepository productPostFavoriteRepository;
+    private final ProductPostCacheService productPostCacheService;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -106,19 +111,17 @@ public class ProductPostService {
      * 상품목록 전체 조회
      */
     @Transactional(readOnly = true)
-    public Page<ProductPostGetListResponse> productPostGetList(Pageable pageable) {
+    public PageResponse<ProductPostGetListResponse> productPostGetList(String progressStatus, Pageable pageable) {
 
-        Page<ProductPost> productPostsPage = productPostRepository.findAllByOrderByUpdatedAtDesc(pageable);
+        CachedPageResponse<ProductPostGetListResponse> result;
 
-        return productPostsPage.map(productPost -> {
-            // 찜 개수 조회
-            Long favoriteCount = productPostFavoriteRepository.countByProductPost_Id(productPost.getId());
+        if ("DOING".equals(progressStatus)) {
+            result = productPostCacheService.getCachedProductPosts(progressStatus, pageable);
+        } else {
+            result = productPostCacheService.fetchProductPostsFromDB(progressStatus, pageable);
+        }
 
-            // 이미지 URL 생성
-            String imageUrl = (productPost.getImage() != null) ? amazonS3.getUrl(bucket, productPost.getImage()).toString() : null;
-
-            return ProductPostGetListResponse.from(productPost, imageUrl, favoriteCount);
-        });
+        return PageResponse.of(result.getContent(), pageable, result.getTotalElements());
     }
 
     /**

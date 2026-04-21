@@ -1,22 +1,25 @@
 package com.zero9platform.domain.product_post.model.response;
 
 import com.zero9platform.domain.product_post.entity.ProductPost;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductPostGetListResponse {
 
-    private final Long id;
-    private final String title;
-    private final String name;
-    private final Long originalPrice;
-    private final String image;
-    private final Long favoriteCount;
-    private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
+    private Long id;
+    private String title;
+    private String name;
+    private Long originalPrice;
+    private String image;
+    private Long favoriteCount;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public static ProductPostGetListResponse from(ProductPost productPost, String image, Long favoriteCount) {
 
